@@ -24,7 +24,7 @@ The frontend will be developed as a separate application in a separate repositor
 
 ## 2. Technology Stack
 
-- Java Java 25
+- Java 25
 - Spring Boot 4.1.0
 - Maven
 - Spring Web
