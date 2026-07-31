@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: redbank
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/redbank
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+
+  docker:
+    compose:
+      enabled: true
