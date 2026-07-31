@@ -2,85 +2,65 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>4.1.0</version>
-    <relativePath/> <!-- lookup parent from repository -->
+    <relativePath/>
   </parent>
+  <!-- lookup parent from repository -->
+  <modelVersion>4.0.0</modelVersion>
   <groupId>com.redmath</groupId>
   <artifactId>redbank</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name/>
   <description/>
   <url/>
+
   <licenses>
     <license/>
   </licenses>
+
   <developers>
     <developer/>
   </developers>
+
   <scm>
     <connection/>
     <developerConnection/>
     <tag/>
     <url/>
   </scm>
-  <properties>
-    <java.version>25</java.version>
 
-    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
-    <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
-    <spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
+  <properties>
+    <cucumber.version>7.34.5</cucumber.version>
     <findsecbugs.version>1.14.0</findsecbugs.version>
     <jacoco.version>0.8.15</jacoco.version>
-
-    <pitest.version>1.25.3</pitest.version>
+    <java.version>25</java.version>
+    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+    <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
     <pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
-
-    <cucumber.version>7.34.5</cucumber.version>
-
+    <pitest.version>1.25.3</pitest.version>
+    <spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
+    <springdoc-openapi-starter-webmvc-ui.version>3.0.2</springdoc-openapi-starter-webmvc-ui.version>
   </properties>
+
   <dependencies>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-opentelemetry</artifactId>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit-platform-engine</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webmvc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-liquibase</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>3.0.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-docker-compose</artifactId>
-      <scope>runtime</scope>
-      <optional>true</optional>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-spring</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -93,9 +73,28 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc-openapi-starter-webmvc-ui.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-docker-compose</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa-test</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-liquibase</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -104,8 +103,16 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-opentelemetry</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security-oauth2-client-test</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -114,35 +121,28 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security-test</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc-test</artifactId>
       <scope>test</scope>
     </dependency>
-
-
     <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-java</artifactId>
-      <scope>test</scope>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-spring</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-junit-platform-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-
   </dependencies>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -158,15 +158,37 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>spotbugs-validation</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${maven-checkstyle-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>checkstyle-validation</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
-          <excludes>
-            <exclude>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-            </exclude>
-          </excludes>
+          <configLocation>google_checks.xml</configLocation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <failOnViolation>true</failOnViolation>
+          <consoleOutput>true</consoleOutput>
         </configuration>
       </plugin>
       <plugin>
@@ -207,27 +229,6 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${maven-checkstyle-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>checkstyle-validation</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <configLocation>google_checks.xml</configLocation>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
-          <failOnViolation>true</failOnViolation>
-          <consoleOutput>true</consoleOutput>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
         <version>${maven-pmd-plugin.version}</version>
         <executions>
@@ -251,23 +252,6 @@
           </rulesets>
         </configuration>
       </plugin>
-
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>${spotbugs-maven-plugin.version}</version>
-
-
-        <executions>
-          <execution>
-            <id>spotbugs-validation</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -279,7 +263,6 @@
               <goal>prepare-agent</goal>
             </goals>
           </execution>
-
           <execution>
             <id>jacoco-report</id>
             <phase>verify</phase>
@@ -287,7 +270,6 @@
               <goal>report</goal>
             </goals>
           </execution>
-
           <execution>
             <id>jacoco-coverage-check</id>
             <phase>verify</phase>
@@ -311,12 +293,10 @@
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.pitest</groupId>
         <artifactId>pitest-maven</artifactId>
         <version>${pitest.version}</version>
-
         <dependencies>
           <dependency>
             <groupId>org.pitest</groupId>
@@ -324,7 +304,6 @@
             <version>${pitest-junit5-plugin.version}</version>
           </dependency>
         </dependencies>
-
         <executions>
           <execution>
             <id>pitest-mutation-testing</id>
@@ -334,7 +313,6 @@
             </goals>
           </execution>
         </executions>
-
         <configuration>
           <targetClasses>
             <param>com.redmath.redbank.*</param>
@@ -342,17 +320,14 @@
           <targetTests>
             <param>com.redmath.redbank.*</param>
           </targetTests>
-
           <threads>4</threads>
           <outputFormats>
             <param>HTML</param>
             <param>XML</param>
           </outputFormats>
-
           <mutationThreshold>60</mutationThreshold>
           <coverageThreshold>70</coverageThreshold>
           <failWhenNoMutations>false</failWhenNoMutations>
-
           <excludedClasses>
             <param>com.redmath.redbank.RedbankApplication</param>
             <param>com.redmath.redbank.*.config.*</param>
@@ -361,8 +336,18 @@
           </excludedClasses>
         </configuration>
       </plugin>
-
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
-
 </project>
