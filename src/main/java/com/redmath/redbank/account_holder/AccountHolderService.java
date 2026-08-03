@@ -1,12 +1,5 @@
 package com.redmath.redbank.account_holder;
 
-import com.redmath.redbank.balance.BalanceRepository;
-import com.redmath.redbank.user.User;
-import com.redmath.redbank.user.UserRepository;
-import com.redmath.redbank.user.UserStatus;
-import com.redmath.redbank.user.role.Role;
-import com.redmath.redbank.user.role.RoleName;
-import com.redmath.redbank.user.role.RoleRepository;
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
