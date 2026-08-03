@@ -9,7 +9,7 @@ The backend will provide:
 - Public user registration
 - Admin approval or rejection of registrations
 - Email/password authentication
-- OAuth2 login
+- Google OAuth2 login
 - Role-based authorization
 - Account-holder profile management
 - Deposits, withdrawals, and transfers
@@ -127,7 +127,10 @@ An administrator is a user assigned the `ADMIN` role. An approved customer is as
 
 ### 5.1 Public registration
 
-A visitor can register using name, email, password, and address.
+A visitor can register using name, email, phone number, password, and address.
+
+Email addresses must be normalized before storage. Email addresses and phone numbers must be
+unique. Passwords must be BCrypt-hashed before the user is persisted.
 
 New registrations must have:
 
@@ -164,17 +167,119 @@ Rejection must:
 The backend must support:
 
 - Email/password login
-- OAuth2 login, such as Google or GitHub
+- Google OAuth2 login
 - JWT-protected REST endpoints
 - Role-based authorization
-- Password hashing
-- Stateless API authentication where practical
+- BCrypt password hashing
+- Access-token refresh
+- Logout with refresh-token invalidation
+- Authenticated password changes
+- Stateless bearer-token authentication
 
 OAuth provider information may be stored directly on the user record for this assignment. A separate OAuth identity table is not required.
 
 Passwords must never be stored or returned in plain text.
 
-All actions except public registration, login, OAuth callbacks, health endpoints, and Swagger endpoints must require authentication.
+### 6.1 Email/password behavior
+
+- Registration creates a `PENDING_APPROVAL` user and does not issue tokens.
+- Login must normalize the email and return a generic invalid-credentials response for an unknown
+  email or incorrect password.
+- Only users with `status = ACTIVE` may log in or refresh tokens.
+- A successful login returns an access token and a refresh token with token type `Bearer`.
+- `PUT /api/auth/password` must verify the current password, reject reuse of the current password,
+  BCrypt-hash the new password, and invalidate all existing refresh tokens.
+
+### 6.2 Token types and claims
+
+The authentication system issues two distinct RSA-signed JWT types. The Base64-encoded PKCS#8
+private key and X.509 public key are supplied through environment-backed configuration and must not
+be committed or logged.
+
+#### Access token
+
+The access token is the bearer credential for protected API requests. Its configured lifetime is
+15 minutes.
+
+```text
+Claim      Value
+-----      -----
+sub        normalized user email
+iat        issued-at time
+exp        expiration time
+jti        unique token identifier
+userId     user database ID
+roles      sorted role-name list
+tokenType  access
+accountId  account-holder/account ID when the user has an account
+```
+
+Until account creation is integrated with approval, `accountId` may be absent. It must be added for
+approved account holders once that relationship is available.
+
+Roles are loaded through `USER_ROLES`; the `User` entity does not contain a roles collection. The
+`roles` claim is converted to Spring Security authorities using the `ROLE_` prefix.
+
+#### Refresh token
+
+The refresh token is used only to obtain a new token pair or to log out. It must never authenticate
+a protected API request. Its configured lifetime is 7 days.
+
+```text
+Claim                Value
+-----                -----
+sub                  normalized user email
+iat                  issued-at time
+exp                  expiration time
+jti                  unique token identifier
+userId               user database ID
+tokenType            refresh
+refreshTokenVersion  current version stored on the user
+```
+
+Access and refresh tokens must be validated as different token types. A decoder expecting
+`tokenType = access` must reject refresh tokens, and a decoder expecting `tokenType = refresh` must
+reject access tokens.
+
+Login and successful refresh return the same token-pair response:
+
+```text
+accessToken
+refreshToken
+tokenType = Bearer
+```
+
+Refresh and logout requests contain:
+
+```text
+refreshToken
+```
+
+Password-change requests contain:
+
+```text
+currentPassword
+newPassword
+```
+
+### 6.3 Refresh and logout lifecycle
+
+- Raw refresh tokens are not stored in the database.
+- `USERS.refresh_token_version` is the server-side revocation value.
+- The system supports one active refresh-token chain per user.
+- Successful login increments the version before issuing the token pair, invalidating earlier
+  refresh-token chains.
+- Refresh uses rotation: validate the token, lock the user row, compare versions, increment the
+  version, and issue a new token pair.
+- Rotated, logged-out, or otherwise outdated refresh tokens must be rejected.
+- Logout validates the current refresh token and increments the version.
+- Password changes increment the version and therefore invalidate all refresh tokens.
+- Row-level locking must prevent two simultaneous uses of the same refresh token from succeeding.
+- Access JWTs are stateless and remain valid until their short expiration. On logout or password
+  change, the client must remove its locally stored access and refresh tokens.
+
+
+
 
 Authorization rules:
 
@@ -203,7 +308,7 @@ An account holder must never access another holder's private profile, balance, o
 
 ### Module 1: Authentication and Account Management
 
-Includes registration, login, OAuth2 login, JWT security, admin approval and rejection, user profile management, account-holder creation, account activation/freezing/closure, tests, Swagger documentation, and system tests.
+Includes registration, login, Google OAuth2 login, JWT security, admin approval and rejection, user profile management, account-holder creation, account activation/freezing/closure, tests, Swagger documentation, and system tests.
 
 ### Module 2: Transaction Management
 
@@ -242,7 +347,9 @@ USERS
 -----
 id
 email
+phone_number
 password_hash
+refresh_token_version
 name
 address
 status
@@ -263,6 +370,9 @@ ACTIVE
 REJECTED
 DEACTIVATED
 ```
+
+`refresh_token_version` must be non-null and default to `0`. It invalidates refresh tokens without
+storing raw token values.
 
 ### 8.2 ROLES
 
@@ -489,8 +599,7 @@ OAuth2:
 
 ```http
 GET /oauth2/authorization/google
-GET /oauth2/authorization/github
-GET /login/oauth2/code/{provider}
+GET /login/oauth2/code/google
 ```
 
 ### Current user profile
@@ -628,8 +737,16 @@ Registration:
 - Name is required.
 - Email is required and valid.
 - Email must be unique.
+- Phone number is required and unique.
 - Password must satisfy the configured password policy.
 - Address is required.
+
+Password change:
+
+- A valid access token is required.
+- The current password must be correct.
+- The new password must satisfy the configured password policy.
+- The new password must differ from the current password.
 
 Transactions:
 
@@ -672,6 +789,11 @@ Use PostgreSQL Testcontainers for repositories, queries, constraints, rollbacks,
 ### API tests
 
 Cover validation, success responses, error responses, authentication, authorization, and ownership restrictions.
+
+Authentication tests must cover registration, active and inactive login, access-token validation,
+role mapping, access/refresh token-type separation, refresh rotation, refresh-token reuse rejection,
+concurrent refresh attempts, logout invalidation, password changes, and consistent `401`/`403`
+responses.
 
 ### System tests
 
@@ -726,7 +848,7 @@ Recommended command:
 - Admin approval and rejection
 - Predefined administrator
 - Email/password login
-- OAuth2 login
+- Google OAuth2 login
 - JWT-protected APIs
 - Account-holder profile
 - Account status management
@@ -753,6 +875,7 @@ Recommended command:
 - Cards
 - Multiple accounts per user unless later required
 - Separate OAuth identity table
+- GitHub OAuth unless the project scope is expanded
 - Reversal-request workflow
 - Physical deletion of completed financial history
 - Frontend implementation in this repository
