@@ -27,6 +27,10 @@ databaseChangeLog:
                   value: ACTIVE
 
               - column:
+                  name: phone_number
+                  value: "+10000000000"
+
+              - column:
                   name: approved_at
                   valueComputed: CURRENT_TIMESTAMP
 
