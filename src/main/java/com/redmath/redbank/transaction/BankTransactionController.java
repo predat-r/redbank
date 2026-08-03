@@ -4,6 +4,7 @@ import com.redmath.redbank.transaction.dto.BankTransactionDto;
 import com.redmath.redbank.transaction.request.TransferRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +40,6 @@ public class BankTransactionController {
             Authentication authentication,
             @Valid @RequestBody TransferRequest request) {
         BankTransaction transaction = bankTransactionService.transfer(authentication.getName(), request);
-        return ResponseEntity.ok(BankTransactionDto.from(transaction));
+        return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
     }
 }
