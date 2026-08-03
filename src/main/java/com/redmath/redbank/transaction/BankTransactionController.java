@@ -1,6 +1,7 @@
 package com.redmath.redbank.transaction;
 
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
+import com.redmath.redbank.transaction.request.DepositRequest;
 import com.redmath.redbank.transaction.request.TransferRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,13 @@ public class BankTransactionController {
             Authentication authentication,
             @Valid @RequestBody TransferRequest request) {
         BankTransaction transaction = bankTransactionService.transfer(authentication.getName(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
+    }
+
+    @PostMapping("/deposits")
+    public ResponseEntity<BankTransactionDto> createDeposit(
+            @Valid @RequestBody DepositRequest request) {
+        BankTransaction transaction = bankTransactionService.deposit(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
     }
 }

@@ -4,6 +4,7 @@ import com.redmath.redbank.account_holder.AccountHolder;
 import com.redmath.redbank.account_holder.AccountHolderRepository;
 import com.redmath.redbank.account_holder.AccountStatus;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
+import com.redmath.redbank.transaction.request.DepositRequest;
 import com.redmath.redbank.transaction.request.TransferRequest;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserRepository;
@@ -49,6 +50,20 @@ public class BankTransactionService {
         AccountHolder myAccount = getAndValidateInitiatorAccount(email);
         BankTransaction transaction = buildBaseTransaction(TransactionType.TRANSFER, request.getAmount(), request.getDescription());
         processTransferRules(transaction, myAccount, request.getDestinationAccountNumber());
+        return bankTransactionRepository.save(transaction);
+    }
+
+    @Transactional
+    public BankTransaction deposit(DepositRequest request) {
+        AccountHolder targetAccount = accountHolderRepository.findByAccountNumber(request.getAccountNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
+
+        if (targetAccount.getAccountStatus() == AccountStatus.CLOSED) {
+            throw new IllegalArgumentException("Destination account is closed");
+        }
+
+        BankTransaction transaction = buildBaseTransaction(TransactionType.DEPOSIT, request.getAmount(), request.getDescription());
+        transaction.setDestinationAccountHolder(targetAccount);
         return bankTransactionRepository.save(transaction);
     }
 

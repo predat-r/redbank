@@ -10,7 +10,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TransferRequest {
+public class DepositRequest {
+
+    @NotBlank(message = "Account number is required")
+    private String accountNumber;
 
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
@@ -18,7 +21,4 @@ public class TransferRequest {
 
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
-
-    @NotBlank(message = "Destination account number is required")
-    private String destinationAccountNumber;
 }
