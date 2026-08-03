@@ -1,6 +1,5 @@
 package com.redmath.redbank.balance;
 
-import com.redmath.redbank.balance.Balance.BalanceIndicator;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
