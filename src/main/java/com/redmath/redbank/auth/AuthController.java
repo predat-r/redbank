@@ -1,6 +1,8 @@
 package com.redmath.redbank.auth;
 
 import com.redmath.redbank.auth.AuthService;
+import com.redmath.redbank.auth.dto.LoginRequest;
+import com.redmath.redbank.auth.dto.LoginResponse;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.auth.dto.RegisterResponse;
 import jakarta.validation.Valid;
@@ -25,5 +27,13 @@ public class AuthController {
       @Valid @RequestBody RegisterRequest request
   ) {
     return authService.register(request);
+  }
+
+
+  @PostMapping("/login")
+  public LoginResponse login(
+      @Valid @RequestBody LoginRequest request
+  ) {
+    return authService.login(request);
   }
 }

@@ -4,6 +4,7 @@ import com.redmath.redbank.auth.dto.LoginRequest;
 import com.redmath.redbank.auth.dto.LoginResponse;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.auth.dto.RegisterResponse;
+import com.redmath.redbank.security.jwt.JwtService;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserRepository;
 import com.redmath.redbank.user.UserStatus;
@@ -18,6 +19,7 @@ public class AuthService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final JwtService jwtService;
 
 
   public RegisterResponse register(RegisterRequest request) {
@@ -58,6 +60,10 @@ public class AuthService {
     if (user.getStatus() != UserStatus.ACTIVE) {
       throw new IllegalStateException("User account is not active");
     }
+
+    String accessToken = jwtService.generateToken(user);
+
+    return new LoginResponse(accessToken, "Bearer");
   }
 
 }
