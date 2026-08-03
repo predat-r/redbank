@@ -1,5 +1,7 @@
 package com.redmath.redbank.auth;
 
+import com.redmath.redbank.auth.dto.LoginRequest;
+import com.redmath.redbank.auth.dto.LoginResponse;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.auth.dto.RegisterResponse;
 import com.redmath.redbank.user.User;
@@ -19,9 +21,7 @@ public class AuthService {
 
 
   public RegisterResponse register(RegisterRequest request) {
-    String normalizedEmail = request.email()
-        .trim()
-        .toLowerCase();
+    String normalizedEmail = request.email().trim().toLowerCase();
 
     String normalizedPhoneNumber = request.phoneNumber().trim();
 
@@ -35,23 +35,29 @@ public class AuthService {
 
     Instant now = Instant.now();
 
-    User user = User.builder()
-        .email(normalizedEmail)
-        .phoneNumber(normalizedPhoneNumber)
-        .passwordHash(passwordEncoder.encode(request.password()))
-        .name(request.name().trim())
-        .address(request.address().trim())
-        .status(UserStatus.PENDING_APPROVAL)
-        .createdAt(now)
-        .updatedAt(now)
-        .build();
+    User user = User.builder().email(normalizedEmail).phoneNumber(normalizedPhoneNumber)
+        .passwordHash(passwordEncoder.encode(request.password())).name(request.name().trim())
+        .address(request.address().trim()).status(UserStatus.PENDING_APPROVAL).createdAt(now)
+        .updatedAt(now).build();
 
     User savedUser = userRepository.save(user);
 
-    return new RegisterResponse(
-        savedUser.getId(),
-        savedUser.getEmail(),
-        savedUser.getStatus()
-    );
+    return new RegisterResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getStatus());
   }
+
+
+  public LoginResponse login(LoginRequest request) {
+    String normalizedEmail = request.email().trim().toLowerCase();
+
+    User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
+        .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+
+    if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+      throw new IllegalArgumentException("Invalid email or password");
+    }
+    if (user.getStatus() != UserStatus.ACTIVE) {
+      throw new IllegalStateException("User account is not active");
+    }
+  }
+
 }
