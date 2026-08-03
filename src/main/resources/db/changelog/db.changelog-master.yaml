@@ -19,3 +19,6 @@ databaseChangeLog:
 
   - include:
       file: db/changelog/seed/007-assign-admin-role.yaml
+
+  - include:
+          file: db/changelog/tables/005-create-bank-transactions-table.yaml
