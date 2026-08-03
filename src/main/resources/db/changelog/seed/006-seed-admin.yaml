@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-seed-admin
+      author: haris
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: email
+                  value: admin@redbank.com
+
+              - column:
+                  name: password_hash
+                  value: ${admin.password-hash}
+
+              - column:
+                  name: name
+                  value: RedBank Administrator
+
+              - column:
+                  name: address
+                  value: RedBank Head Office
+
+              - column:
+                  name: status
+                  value: ACTIVE
+
+              - column:
+                  name: approved_at
+                  valueComputed: CURRENT_TIMESTAMP
+
+      rollback:
+        - delete:
+            tableName: users
+            where: email = 'admin@redbank.com'
