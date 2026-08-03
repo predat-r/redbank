@@ -12,33 +12,33 @@ import lombok.Setter;
 @Setter
 public class BankTransactionDto {
 
-    private Long id;
-    private String transactionReference;
-    private String sourceAccountNumber;
-    private String destinationAccountNumber;
-    private TransactionType type;
-    private String description;
-    private BigDecimal amount;
-    private TransactionStatus status;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime completedAt;
+  private Long id;
+  private String transactionReference;
+  private String sourceAccountNumber;
+  private String destinationAccountNumber;
+  private TransactionType type;
+  private String description;
+  private BigDecimal amount;
+  private TransactionStatus status;
+  private OffsetDateTime createdAt;
+  private OffsetDateTime completedAt;
 
-    public static BankTransactionDto from(BankTransaction transaction) {
-        BankTransactionDto dto = new BankTransactionDto();
-        dto.setId(transaction.getId());
-        dto.setTransactionReference(transaction.getTransactionReference());
-        if (transaction.getSourceAccountHolder() != null) {
-            dto.setSourceAccountNumber(transaction.getSourceAccountHolder().getAccountNumber());
-        }
-        if (transaction.getDestinationAccountHolder() != null) {
-            dto.setDestinationAccountNumber(transaction.getDestinationAccountHolder().getAccountNumber());
-        }
-        dto.setType(transaction.getType());
-        dto.setDescription(transaction.getDescription());
-        dto.setAmount(transaction.getAmount());
-        dto.setStatus(transaction.getStatus());
-        dto.setCreatedAt(transaction.getCreatedAt());
-        dto.setCompletedAt(transaction.getCompletedAt());
-        return dto;
+  public static BankTransactionDto from(BankTransaction transaction) {
+    BankTransactionDto dto = new BankTransactionDto();
+    dto.setId(transaction.getId());
+    dto.setTransactionReference(transaction.getTransactionReference());
+    if (transaction.getSourceAccountHolder() != null) {
+      dto.setSourceAccountNumber(transaction.getSourceAccountHolder().getAccountNumber());
     }
+    if (transaction.getDestinationAccountHolder() != null) {
+      dto.setDestinationAccountNumber(transaction.getDestinationAccountHolder().getAccountNumber());
+    }
+    dto.setType(transaction.getType());
+    dto.setDescription(transaction.getDescription());
+    dto.setAmount(transaction.getAmount());
+    dto.setStatus(transaction.getStatus());
+    dto.setCreatedAt(transaction.getCreatedAt());
+    dto.setCompletedAt(transaction.getCompletedAt());
+    return dto;
+  }
 }

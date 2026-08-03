@@ -20,43 +20,44 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/accounts/me")
 public class BankTransactionController {
 
-    private final BankTransactionService bankTransactionService;
+  private final BankTransactionService bankTransactionService;
 
-    public BankTransactionController(BankTransactionService bankTransactionService) {
-        this.bankTransactionService = bankTransactionService;
-    }
+  public BankTransactionController(BankTransactionService bankTransactionService) {
+    this.bankTransactionService = bankTransactionService;
+  }
 
-    @GetMapping("/transactions")
-    public ResponseEntity<Page<BankTransactionDto>> getMyTransactions(
-            Authentication authentication,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size) {
+  @GetMapping("/transactions")
+  public ResponseEntity<Page<BankTransactionDto>> getMyTransactions(
+      Authentication authentication,
+      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "size", defaultValue = "10") int size) {
 
-        Page<BankTransaction> transactions = bankTransactionService.getTransactionsForUser(
-                authentication.getName(), page, size);
-        return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
-    }
+    Page<BankTransaction> transactions = bankTransactionService.getTransactionsForUser(
+        authentication.getName(), page, size);
+    return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
+  }
 
-    @PostMapping("/transfers")
-    public ResponseEntity<BankTransactionDto> createTransfer(
-            Authentication authentication,
-            @Valid @RequestBody TransferRequest request) {
-        BankTransaction transaction = bankTransactionService.transfer(authentication.getName(), request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
-    }
+  @PostMapping("/transfers")
+  public ResponseEntity<BankTransactionDto> createTransfer(
+      Authentication authentication,
+      @Valid @RequestBody TransferRequest request) {
+    BankTransaction transaction = bankTransactionService.transfer(authentication.getName(),
+        request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
+  }
 
-    @PostMapping("/deposits")
-    public ResponseEntity<BankTransactionDto> createDeposit(
-            @Valid @RequestBody DepositRequest request) {
-        BankTransaction transaction = bankTransactionService.deposit(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
-    }
+  @PostMapping("/deposits")
+  public ResponseEntity<BankTransactionDto> createDeposit(
+      @Valid @RequestBody DepositRequest request) {
+    BankTransaction transaction = bankTransactionService.deposit(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
+  }
 
-    @PostMapping("/withdrawals")
-    public ResponseEntity<BankTransactionDto> createWithdrawal(
-        @Valid @RequestBody WithdrawalRequest request) {
-        BankTransaction transaction = bankTransactionService.withdraw(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
-    }
+  @PostMapping("/withdrawals")
+  public ResponseEntity<BankTransactionDto> createWithdrawal(
+      @Valid @RequestBody WithdrawalRequest request) {
+    BankTransaction transaction = bankTransactionService.withdraw(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
+  }
 
 }

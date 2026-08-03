@@ -12,13 +12,13 @@ import lombok.Setter;
 @Setter
 public class TransferRequest {
 
-    @NotNull(message = "Amount is required")
-    @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
-    private BigDecimal amount;
+  @NotNull(message = "Amount is required")
+  @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
+  private BigDecimal amount;
 
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
-    private String description;
+  @Size(max = 500, message = "Description cannot exceed 500 characters")
+  private String description;
 
-    @NotBlank(message = "Destination account number is required")
-    private String destinationAccountNumber;
+  @NotBlank(message = "Destination account number is required")
+  private String destinationAccountNumber;
 }

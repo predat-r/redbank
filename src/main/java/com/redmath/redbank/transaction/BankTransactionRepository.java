@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BankTransactionRepository extends JpaRepository<BankTransaction, Long> {
 
-    Page<BankTransaction> findBySourceAccountHolderIdOrDestinationAccountHolderId(
-            Long sourceId, Long destinationId, Pageable pageable);
+  Page<BankTransaction> findBySourceAccountHolderIdOrDestinationAccountHolderId(
+      Long sourceId, Long destinationId, Pageable pageable);
 }

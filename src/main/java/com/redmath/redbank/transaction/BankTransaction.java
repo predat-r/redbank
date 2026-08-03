@@ -25,38 +25,38 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BankTransaction {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "transaction_reference", nullable = false, unique = true, length = 64, updatable = false)
-    private String transactionReference;
+  @Column(name = "transaction_reference", nullable = false, unique = true, length = 64, updatable = false)
+  private String transactionReference;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "source_account_holder_id")
-    private AccountHolder sourceAccountHolder;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "source_account_holder_id")
+  private AccountHolder sourceAccountHolder;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destination_account_holder_id")
-    private AccountHolder destinationAccountHolder;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "destination_account_holder_id")
+  private AccountHolder destinationAccountHolder;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, length = 20, updatable = false)
-    private TransactionType type;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type", nullable = false, length = 20, updatable = false)
+  private TransactionType type;
 
-    @Column(name = "description", length = 500)
-    private String description;
+  @Column(name = "description", length = 500)
+  private String description;
 
-    @Column(name = "amount", nullable = false, precision = 19, scale = 2, updatable = false)
-    private BigDecimal amount;
+  @Column(name = "amount", nullable = false, precision = 19, scale = 2, updatable = false)
+  private BigDecimal amount;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private TransactionStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status", nullable = false, length = 20)
+  private TransactionStatus status;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private OffsetDateTime createdAt;
 
-    @Column(name = "completed_at")
-    private OffsetDateTime completedAt;
+  @Column(name = "completed_at")
+  private OffsetDateTime completedAt;
 }
