@@ -1,6 +1,7 @@
 package com.redmath.redbank.transaction.request;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -21,6 +22,6 @@ public class TransferRequest {
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
 
-    @NotNull(message = "Destination account holder ID is required")
-    private Long destinationAccountHolderId;
+    @NotBlank(message = "Destination account number is required")
+    private String destinationAccountNumber;
 }

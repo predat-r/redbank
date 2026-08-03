@@ -48,7 +48,7 @@ public class BankTransactionService {
     public BankTransaction transfer(String email, TransferRequest request) {
         AccountHolder myAccount = getAndValidateInitiatorAccount(email);
         BankTransaction transaction = buildBaseTransaction(TransactionType.TRANSFER, request.getAmount(), request.getDescription());
-        processTransferRules(transaction, myAccount, request.getDestinationAccountHolderId());
+        processTransferRules(transaction, myAccount, request.getDestinationAccountNumber());
         return bankTransactionRepository.save(transaction);
     }
 
@@ -83,14 +83,14 @@ public class BankTransactionService {
                 .toUpperCase();
     }
 
-    private void processTransferRules(BankTransaction transaction, AccountHolder sourceAccount, Long destinationAccountHolderId) {
-        if (destinationAccountHolderId == null) {
-            throw new IllegalArgumentException("Destination account holder ID is required for transfers");
+    private void processTransferRules(BankTransaction transaction, AccountHolder sourceAccount, String destinationAccountNumber) {
+        if (destinationAccountNumber == null || destinationAccountNumber.isBlank()) {
+            throw new IllegalArgumentException("Destination account number is required for transfers");
         }
-        if (sourceAccount.getId().equals(destinationAccountHolderId)) {
+        if (sourceAccount.getAccountNumber().equals(destinationAccountNumber)) {
             throw new IllegalArgumentException("Source and destination accounts must differ");
         }
-        AccountHolder destAccount = accountHolderRepository.findById(destinationAccountHolderId)
+        AccountHolder destAccount = accountHolderRepository.findByAccountNumber(destinationAccountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
 
         if (destAccount.getAccountStatus() == AccountStatus.CLOSED) {
