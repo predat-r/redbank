@@ -17,6 +17,8 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+    parameters:
+      admin.password-hash: ${ADMIN_PASSWORD_HASH}
 
 
   security:
