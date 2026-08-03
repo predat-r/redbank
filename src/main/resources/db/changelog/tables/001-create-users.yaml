@@ -36,6 +36,13 @@ databaseChangeLog:
                   type: VARCHAR(255)
 
               - column:
+                  name: refresh_token_version
+                  type: BIGINT
+                  defaultValueNumeric: "0"
+                  constraints:
+                    nullable: false
+
+              - column:
                   name: name
                   type: VARCHAR(150)
                   constraints:

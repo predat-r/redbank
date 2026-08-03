@@ -30,6 +30,9 @@ public class User {
   @Column(name = "password_hash", length = 255)
   private String passwordHash;
 
+  @Column(name = "refresh_token_version", nullable = false)
+  private long refreshTokenVersion;
+
   @Column(nullable = false, length = 150)
   private String name;
 
@@ -61,4 +64,9 @@ public class User {
 
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  public void incrementRefreshTokenVersion(Instant now) {
+    this.refreshTokenVersion++;
+    this.updatedAt = now;
+  }
 }
