@@ -73,6 +73,19 @@ public class GlobalExceptionHandler {
         request);
   }
 
+  @ExceptionHandler(InvalidPasswordChangeException.class)
+  public ProblemDetail handleInvalidPasswordChange(
+      InvalidPasswordChangeException exception,
+      HttpServletRequest request
+  ) {
+    return createProblem(
+        HttpStatus.BAD_REQUEST,
+        "Password change failed",
+        exception.getMessage(),
+        request
+    );
+  }
+
   private ProblemDetail createProblem(HttpStatus status, String title, String detail,
       HttpServletRequest request) {
     ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
