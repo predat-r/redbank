@@ -1,1 +1,21 @@
-databaseChangeLog: []
+databaseChangeLog:
+  - include:
+      file: db/changelog/tables/001-create-users.yaml
+
+  - include:
+      file: db/changelog/tables/002-create-roles.yaml
+
+  - include:
+      file: db/changelog/tables/003-create-user-roles.yaml
+
+  - include:
+      file: db/changelog/tables/004-create-account-holders.yaml
+
+  - include:
+      file: db/changelog/seed/005-seed-roles.yaml
+
+  - include:
+      file: db/changelog/seed/006-seed-admin.yaml
+
+  - include:
+      file: db/changelog/seed/007-assign-admin-role.yaml

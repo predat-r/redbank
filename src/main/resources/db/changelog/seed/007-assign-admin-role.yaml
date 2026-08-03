@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-assign-admin-role
+      author: haris
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO user_roles (
+                  user_id,
+                  role_id,
+                  assigned_at
+              )
+              SELECT
+                  u.id,
+                  r.id,
+                  CURRENT_TIMESTAMP
+              FROM users u
+              JOIN roles r ON r.name = 'ADMIN'
+              WHERE u.email = 'admin@redbank.com';
+
+      rollback:
+        - sql:
+            sql: |
+              DELETE FROM user_roles
+              WHERE user_id = (
+                  SELECT id
+                  FROM users
+                  WHERE email = 'admin@redbank.com'
+              )
+              AND role_id = (
+                  SELECT id
+                  FROM roles
+                  WHERE name = 'ADMIN'
+              );
