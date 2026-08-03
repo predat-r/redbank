@@ -1,0 +1,108 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-users
+      author: haris
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_users
+                    nullable: false
+
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_users_email
+
+              - column:
+                  name: password_hash
+                  type: VARCHAR(255)
+
+              - column:
+                  name: name
+                  type: VARCHAR(150)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: address
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: status
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: oauth_provider
+                  type: VARCHAR(50)
+
+              - column:
+                  name: oauth_provider_id
+                  type: VARCHAR(255)
+
+              - column:
+                  name: rejection_reason
+                  type: VARCHAR(500)
+
+              - column:
+                  name: approved_by_user_id
+                  type: BIGINT
+
+              - column:
+                  name: approved_at
+                  type: TIMESTAMP WITH TIME ZONE
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: users
+            baseColumnNames: approved_by_user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_users_approved_by
+            onDelete: SET NULL
+
+        - sql:
+            sql: |
+              ALTER TABLE users
+              ADD CONSTRAINT chk_users_status
+              CHECK (
+                  status IN (
+                      'PENDING_APPROVAL',
+                      'ACTIVE',
+                      'REJECTED',
+                      'DEACTIVATED'
+                  )
+              );
+
+        - createIndex:
+            tableName: users
+            indexName: idx_users_status
+            columns:
+              - column:
+                  name: status
