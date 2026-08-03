@@ -47,7 +47,7 @@ public class BankTransaction {
     @Column(name = "description", length = 500)
     private String description;
 
-    @Column(name = "amount", nullable = false, precision = 19, scale = 4, updatable = false)
+    @Column(name = "amount", nullable = false, precision = 19, scale = 2, updatable = false)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
