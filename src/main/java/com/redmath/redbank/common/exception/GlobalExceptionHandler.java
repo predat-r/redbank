@@ -1,99 +1,108 @@
 package com.redmath.redbank.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.time.OffsetDateTime;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(InvalidCredentialsException.class)
-  public ProblemDetail handleInvalidCredentials(InvalidCredentialsException exception,
-      HttpServletRequest request) {
-    return createProblem(HttpStatus.UNAUTHORIZED, "Authentication failed", exception.getMessage(),
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ApiError> handleResourceNotFound(
+      ResourceNotFoundException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+  }
+
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ApiError> handleNoResourceFound(
+      NoResourceFoundException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.NOT_FOUND, "Endpoint not found: " + request.getRequestURI(),
         request);
+  }
+
+  @ExceptionHandler(InvalidCredentialsException.class)
+  public ResponseEntity<ApiError> handleInvalidCredentials(
+      InvalidCredentialsException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<ApiError> handleMethodNotSupported(
+      HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request);
   }
 
   @ExceptionHandler(UserAccountNotActiveException.class)
-  public ProblemDetail handleInactiveAccount(UserAccountNotActiveException exception,
-      HttpServletRequest request) {
-    return createProblem(HttpStatus.FORBIDDEN, "User account is not active", exception.getMessage(),
-        request);
+  public ResponseEntity<ApiError> handleInactiveAccount(
+      UserAccountNotActiveException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ApiError> handleIllegalArgument(
+      IllegalArgumentException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
   }
 
   @ExceptionHandler(DuplicateUserException.class)
-  public ProblemDetail handleDuplicateUser(DuplicateUserException exception,
-      HttpServletRequest request) {
-    return createProblem(HttpStatus.CONFLICT, "Registration conflict", exception.getMessage(),
-        request);
+  public ResponseEntity<ApiError> handleDuplicateUser(
+      DuplicateUserException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ProblemDetail handleValidation(MethodArgumentNotValidException exception,
-      HttpServletRequest request) {
-    Map<String, String> fieldErrors = new LinkedHashMap<>();
-
-    exception.getBindingResult().getFieldErrors()
-        .forEach(error -> fieldErrors.putIfAbsent(error.getField(), error.getDefaultMessage()));
-
-    ProblemDetail problem = createProblem(HttpStatus.BAD_REQUEST, "Validation failed",
-        "One or more request fields are invalid", request);
-
-    problem.setProperty("fieldErrors", fieldErrors);
-
-    return problem;
+  public ResponseEntity<ApiError> handleValidationException(
+      MethodArgumentNotValidException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ProblemDetail handleUnreadableRequest(HttpMessageNotReadableException exception,
-      HttpServletRequest request) {
-    return createProblem(HttpStatus.BAD_REQUEST, "Invalid request body",
+  public ResponseEntity<ApiError> handleUnreadableRequest(
+      HttpMessageNotReadableException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.BAD_REQUEST,
         "The request body is missing or contains malformed JSON", request);
   }
 
   @ExceptionHandler(InvalidSortException.class)
-  public ProblemDetail handleInvalidSort(InvalidSortException exception,
-      HttpServletRequest request) {
-    return createProblem(HttpStatus.BAD_REQUEST, "Invalid sort parameter", exception.getMessage(),
-        request);
+  public ResponseEntity<ApiError> handleInvalidSort(
+      InvalidSortException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
   }
 
   @ExceptionHandler(InvalidRefreshTokenException.class)
-  public ProblemDetail handleInvalidRefreshToken(InvalidRefreshTokenException exception,
-      HttpServletRequest request) {
-    return createProblem(HttpStatus.UNAUTHORIZED, "Invalid refresh token", exception.getMessage(),
-        request);
+  public ResponseEntity<ApiError> handleInvalidRefreshToken(
+      InvalidRefreshTokenException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
   }
 
   @ExceptionHandler(InvalidPasswordChangeException.class)
-  public ProblemDetail handleInvalidPasswordChange(
-      InvalidPasswordChangeException exception,
-      HttpServletRequest request
-  ) {
-    return createProblem(
-        HttpStatus.BAD_REQUEST,
-        "Password change failed",
-        exception.getMessage(),
-        request
-    );
+  public ResponseEntity<ApiError> handleInvalidPasswordChange(
+      InvalidPasswordChangeException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
   }
 
-  private ProblemDetail createProblem(HttpStatus status, String title, String detail,
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiError> handleGeneric(
+      Exception ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+  }
+
+  private ResponseEntity<ApiError> buildResponse(HttpStatus status, String message,
       HttpServletRequest request) {
-    ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
-
-    problem.setTitle(title);
-    problem.setInstance(URI.create(request.getRequestURI()));
-    problem.setProperty("timestamp", Instant.now());
-
-    return problem;
+    ApiError error = new ApiError(
+        OffsetDateTime.now(),
+        status.value(),
+        status.getReasonPhrase(),
+        message,
+        request.getRequestURI()
+    );
+    return new ResponseEntity<>(error, status);
   }
 }

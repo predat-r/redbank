@@ -14,8 +14,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,8 +22,7 @@ import lombok.Setter;
 @Table(name = "bank_transactions")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class BankTransaction {
 
   @Id
@@ -50,7 +47,7 @@ public class BankTransaction {
   @Column(name = "description", length = 500)
   private String description;
 
-  @Column(name = "amount", nullable = false, precision = 19, scale = 4, updatable = false)
+  @Column(name = "amount", nullable = false, precision = 19, scale = 2, updatable = false)
   private BigDecimal amount;
 
   @Enumerated(EnumType.STRING)
