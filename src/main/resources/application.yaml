@@ -17,3 +17,14 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+    parameters:
+      admin.password-hash: ${ADMIN_PASSWORD_HASH}
+
+
+  security:
+
+    jwt:
+      access-token-ttl: 15m
+      refresh-token-ttl: 7d
+      private-key: ${JWT_PRIVATE_KEY}
+      public-key: ${JWT_PUBLIC_KEY}
