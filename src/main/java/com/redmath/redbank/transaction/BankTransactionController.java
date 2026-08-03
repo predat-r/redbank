@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ public class BankTransactionController {
   }
 
   @GetMapping("/transactions")
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public ResponseEntity<Page<BankTransactionDto>> getMyTransactions(
       Authentication authentication,
       @RequestParam(name = "page", defaultValue = "0") int page,
@@ -38,6 +40,7 @@ public class BankTransactionController {
   }
 
   @PostMapping("/transfers")
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public ResponseEntity<BankTransactionDto> createTransfer(
       Authentication authentication,
       @Valid @RequestBody TransferRequest request) {
@@ -47,6 +50,7 @@ public class BankTransactionController {
   }
 
   @PostMapping("/deposits")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<BankTransactionDto> createDeposit(
       @Valid @RequestBody DepositRequest request) {
     BankTransaction transaction = bankTransactionService.deposit(request);
@@ -54,10 +58,10 @@ public class BankTransactionController {
   }
 
   @PostMapping("/withdrawals")
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public ResponseEntity<BankTransactionDto> createWithdrawal(
       @Valid @RequestBody WithdrawalRequest request) {
     BankTransaction transaction = bankTransactionService.withdraw(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
   }
-
 }
