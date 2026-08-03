@@ -1,7 +1,8 @@
 databaseChangeLog:
   - changeSet:
-      id: create-balances-table
-      author: ahmad.tariq
+      id: 006-create-balance
+      author: ahmad
+
       changes:
         - createTable:
             tableName: balance
@@ -12,41 +13,62 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    primaryKeyName: pk_balance
                     nullable: false
+
               - column:
                   name: account_holder_id
                   type: BIGINT
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_balance_account_holder
-                    references: account_holders(id)
+
               - column:
                   name: transaction_id
                   type: BIGINT
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_balance_transaction
-                    references: bank_transactions(id)
+
               - column:
                   name: entry_date
                   type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
                   constraints:
                     nullable: false
+
               - column:
                   name: amount
                   type: DECIMAL(19, 2)
                   constraints:
                     nullable: false
+
               - column:
                   name: indicator
                   type: VARCHAR(10)
                   constraints:
                     nullable: false
+
               - column:
                   name: running_balance
                   type: DECIMAL(19, 2)
                   constraints:
                     nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: balance
+            baseColumnNames: account_holder_id
+            referencedTableName: account_holders
+            referencedColumnNames: id
+            constraintName: fk_balance_account_holder
+            onDelete: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: balance
+            baseColumnNames: transaction_id
+            referencedTableName: bank_transactions
+            referencedColumnNames: id
+            constraintName: fk_balance_transaction
+            onDelete: RESTRICT
+
         - createIndex:
             indexName: idx_balance_account_latest
             tableName: balance
@@ -56,3 +78,30 @@ databaseChangeLog:
               - column:
                   name: id
                   descending: true
+
+        - sql:
+            sql: |
+              ALTER TABLE balance
+              ADD CONSTRAINT chk_balance_indicator
+              CHECK (
+                  indicator IN (
+                      'DEBIT',
+                      'CREDIT'
+                  )
+              );
+
+        - sql:
+            sql: |
+              ALTER TABLE balance
+              ADD CONSTRAINT chk_balance_amount_positive
+              CHECK (amount > 0);
+
+        - sql:
+            sql: |
+              ALTER TABLE balance
+              ADD CONSTRAINT chk_balance_running_balance_non_negative
+              CHECK (running_balance >= 0);
+
+      rollback:
+        - dropTable:
+            tableName: balance

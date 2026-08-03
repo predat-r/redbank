@@ -55,10 +55,6 @@ public class BankTransaction {
     @Column(name = "status", nullable = false, length = 20)
     private TransactionStatus status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_user_id", nullable = false)
-    private User createdByUser;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

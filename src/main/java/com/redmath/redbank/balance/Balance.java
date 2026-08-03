@@ -55,11 +55,4 @@ public class Balance {
   @Column(name = "running_balance", nullable = false, precision = 19, scale = 2)
   private BigDecimal runningBalance;
 
-  public enum BalanceIndicator {
-    DEBIT,
-    CREDIT
-  }
 }
-
-
-
