@@ -1,4 +1,4 @@
-package com.redmath.redbank.user;
+package com.redmath.redbank.user.role;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

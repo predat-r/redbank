@@ -1,5 +1,6 @@
-package com.redmath.redbank.user;
+package com.redmath.redbank.user.role;
 
+import com.redmath.redbank.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

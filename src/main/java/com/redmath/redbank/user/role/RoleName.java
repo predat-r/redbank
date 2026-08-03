@@ -1,4 +1,4 @@
-package com.redmath.redbank.user;
+package com.redmath.redbank.user.role;
 
 public enum RoleName {
   ADMIN,
