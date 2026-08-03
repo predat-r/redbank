@@ -22,4 +22,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select user from User user where user.id = :userId")
   Optional<User> findByIdForUpdate(@Param("userId") Long userId);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("""
+      select user
+      from User user
+      where lower(user.email) = lower(:email)
+      """)
+  Optional<User> findByEmailForUpdate(@Param("email") String email);
 }

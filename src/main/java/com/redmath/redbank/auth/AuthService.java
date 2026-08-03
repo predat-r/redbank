@@ -77,10 +77,11 @@ public class AuthService {
     );
   }
 
+  @Transactional
   public LoginResponse login(LoginRequest request) {
     String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
 
-    User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
+    User user = userRepository.findByEmailForUpdate(normalizedEmail)
         .orElseThrow(InvalidCredentialsException::new);
 
     if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
@@ -90,6 +91,8 @@ public class AuthService {
     if (user.getStatus() != UserStatus.ACTIVE) {
       throw new UserAccountNotActiveException();
     }
+
+    user.incrementRefreshTokenVersion(Instant.now());
 
     String accessToken = jwtService.generateAccessToken(user);
     String refreshToken = jwtService.generateRefreshToken(user);

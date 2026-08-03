@@ -40,7 +40,7 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth -> auth.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                    "/api/auth/register", "/api/auth/login").permitAll()
+                    "/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN").anyRequest().authenticated())
         .exceptionHandling(
             exceptions -> exceptions.authenticationEntryPoint(securityErrorResponseHandler)

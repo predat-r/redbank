@@ -3,6 +3,7 @@ package com.redmath.redbank.auth;
 import com.redmath.redbank.auth.AuthService;
 import com.redmath.redbank.auth.dto.LoginRequest;
 import com.redmath.redbank.auth.dto.LoginResponse;
+import com.redmath.redbank.auth.dto.RefreshTokenRequest;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.auth.dto.RegisterResponse;
 import jakarta.validation.Valid;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
   private final AuthService authService;
 
 
@@ -35,5 +37,13 @@ public class AuthController {
       @Valid @RequestBody LoginRequest request
   ) {
     return authService.login(request);
+  }
+
+
+  @PostMapping("/refresh")
+  public LoginResponse refresh(
+      @Valid @RequestBody RefreshTokenRequest request
+  ) {
+    return authService.refresh(request);
   }
 }
