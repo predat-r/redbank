@@ -1,15 +1,20 @@
 package com.redmath.redbank.transaction;
 
+import com.redmath.redbank.transaction.dto.BankTransactionDto;
+import com.redmath.redbank.transaction.request.TransferRequest;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/accounts/me/transactions")
+@RequestMapping("/api/accounts/me")
 public class BankTransactionController {
 
     private final BankTransactionService bankTransactionService;
@@ -18,7 +23,7 @@ public class BankTransactionController {
         this.bankTransactionService = bankTransactionService;
     }
 
-    @GetMapping
+    @GetMapping("/transactions")
     public ResponseEntity<Page<BankTransactionDto>> getMyTransactions(
             Authentication authentication,
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -27,5 +32,13 @@ public class BankTransactionController {
         Page<BankTransaction> transactions = bankTransactionService.getTransactionsForUser(
                 authentication.getName(), page, size);
         return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
+    }
+
+    @PostMapping("/transfers")
+    public ResponseEntity<BankTransactionDto> createTransfer(
+            Authentication authentication,
+            @Valid @RequestBody TransferRequest request) {
+        BankTransaction transaction = bankTransactionService.transfer(authentication.getName(), request);
+        return ResponseEntity.ok(BankTransactionDto.from(transaction));
     }
 }

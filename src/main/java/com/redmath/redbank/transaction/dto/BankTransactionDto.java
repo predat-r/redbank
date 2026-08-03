@@ -1,5 +1,8 @@
-package com.redmath.redbank.transaction;
+package com.redmath.redbank.transaction.dto;
 
+import com.redmath.redbank.transaction.BankTransaction;
+import com.redmath.redbank.transaction.TransactionStatus;
+import com.redmath.redbank.transaction.TransactionType;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import lombok.Getter;
