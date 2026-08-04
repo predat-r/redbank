@@ -4,7 +4,6 @@ import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionService;
 import com.redmath.redbank.transaction.dto.AdminBankTransactionDetailDto;
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/admin")
-@SecurityRequirement(name = "bearerAuth")
 public class AdminBankTransactionController {
 
   private final BankTransactionService bankTransactionService;

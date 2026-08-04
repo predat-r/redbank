@@ -5,9 +5,12 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -58,6 +61,17 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler({
+      AccessDeniedException.class,
+      AuthorizationDeniedException.class
+  })
+  public ResponseEntity<ApiError> handleAccessDenied(
+      Exception ex,
+      HttpServletRequest request
+  ) {
+    return buildResponse(HttpStatus.FORBIDDEN, "Access Denied: You do not have permission to access this resource", request);
+  }
+
+  @ExceptionHandler({
       DuplicateUserException.class,
       RegistrationAlreadyReviewedException.class,
       ConflictException.class,
@@ -74,13 +88,18 @@ public class GlobalExceptionHandler {
       IllegalArgumentException.class,
       InvalidSortException.class,
       InvalidPasswordChangeException.class,
-      InsufficientFundsException.class
+      InsufficientFundsException.class,
+      InvalidDataAccessApiUsageException.class
   })
   public ResponseEntity<ApiError> handleBadRequest(
-      RuntimeException ex,
+      Exception ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    String message = ex.getMessage();
+    if (ex instanceof InvalidDataAccessApiUsageException) {
+      message = "Invalid sort field or parameter specified";
+    }
+    return buildResponse(HttpStatus.BAD_REQUEST, message, request);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
