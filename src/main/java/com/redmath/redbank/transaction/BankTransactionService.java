@@ -51,6 +51,12 @@ public class BankTransactionService {
         accountHolder.getId(), accountHolder.getId(), PageRequest.of(safePage, safeSize));
   }
 
+  public Page<BankTransaction> getAllTransactions(int page, int size) {
+    int safePage = Math.max(page, 0);
+    int safeSize = (size <= 0 || size > MAX_PAGE_SIZE) ? DEFAULT_PAGE_SIZE : size;
+    return bankTransactionRepository.findAll(PageRequest.of(safePage, safeSize));
+  }
+
   @Transactional
   public BankTransaction transfer(String email, TransferRequest request) {
     AccountHolder myAccount = getAndValidateInitiatorAccount(email);
