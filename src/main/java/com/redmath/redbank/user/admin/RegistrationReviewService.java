@@ -56,15 +56,24 @@ public class RegistrationReviewService {
     Role accountHolderRole = roleRepository.findByName(RoleName.ACCOUNT_HOLDER)
         .orElseThrow(() -> new IllegalStateException("ACCOUNT_HOLDER role is not configured"));
 
+    Role pendingUserRole = roleRepository.findByName(RoleName.PENDING_USER)
+        .orElseThrow(() -> new IllegalStateException("PENDING_USER role is not configured"));
+
     Instant now = Instant.now();
 
     user.approveRegistration(admin, now);
 
-    UserRoleId userRoleId = new UserRoleId(user.getId(), accountHolderRole.getId());
+    UserRoleId pendingUserRoleId = new UserRoleId(user.getId(), pendingUserRole.getId());
 
-    if (!userRoleRepository.existsById(userRoleId)) {
-      UserRole userRole = UserRole.builder().id(userRoleId).user(user).role(accountHolderRole)
-          .assignedAt(now).build();
+    if (!userRoleRepository.existsById(pendingUserRoleId)) {
+      throw new IllegalStateException("Pending user role assignment is missing");
+    }
+    userRoleRepository.deleteById(pendingUserRoleId);
+    UserRoleId accountHolderRoleId = new UserRoleId(user.getId(), accountHolderRole.getId());
+
+    if (!userRoleRepository.existsById(accountHolderRoleId)) {
+      UserRole userRole = UserRole.builder().id(accountHolderRoleId).user(user)
+          .role(accountHolderRole).assignedAt(now).build();
 
       userRoleRepository.save(userRole);
     }
@@ -106,6 +115,13 @@ public class RegistrationReviewService {
     if (user.getStatus() != UserStatus.PENDING_APPROVAL) {
       throw new RegistrationAlreadyReviewedException();
     }
+    Role pendingUserRole = roleRepository.findByName(RoleName.PENDING_USER)
+        .orElseThrow(() -> new IllegalStateException("PENDING_USER role is not configured"));
+    UserRoleId pendingUserRoleId = new UserRoleId(user.getId(), pendingUserRole.getId());
+    if (!userRoleRepository.existsById(pendingUserRoleId)) {
+      throw new IllegalStateException("Pending user role assignment is missing");
+    }
+    userRoleRepository.deleteById(pendingUserRoleId);
 
     String rejectionReason = request.rejectionReason();
 
