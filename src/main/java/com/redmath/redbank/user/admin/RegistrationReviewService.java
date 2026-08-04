@@ -1,5 +1,7 @@
 package com.redmath.redbank.user.admin;
 
+import com.redmath.redbank.account_holder.AccountHolder;
+import com.redmath.redbank.account_holder.AccountHolderService;
 import com.redmath.redbank.common.exception.InvalidSortException;
 import com.redmath.redbank.common.exception.RegistrationAlreadyReviewedException;
 import com.redmath.redbank.common.exception.RegistrationNotFoundException;
@@ -33,6 +35,7 @@ public class RegistrationReviewService {
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final UserRoleRepository userRoleRepository;
+  private final AccountHolderService accountHolderService;
 
 
   @Transactional
@@ -73,17 +76,7 @@ public class RegistrationReviewService {
       userRoleRepository.save(userRole);
     }
 
-    /*
-     * TODO: Replace the exception below with the teammate-owned call:
-     *
-     * accountHolderService.createForApprovedUser(user, now);
-     *
-     * That call must create the account holder, account number, opening
-     * transaction, and opening balance inside this same transaction.
-     */
-    throw new IllegalStateException(
-        "Account-holder provisioning is not wired yet"
-    );
+    accountHolderService.createAccountHolder(userId);
   }
 
   @Transactional(readOnly = true)
