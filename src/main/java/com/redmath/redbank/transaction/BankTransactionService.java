@@ -3,6 +3,9 @@ package com.redmath.redbank.transaction;
 import com.redmath.redbank.account_holder.AccountHolder;
 import com.redmath.redbank.account_holder.AccountHolderService;
 import com.redmath.redbank.account_holder.AccountStatus;
+import com.redmath.redbank.audit.AuditAction;
+import com.redmath.redbank.audit.AuditService;
+import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.balance.BalanceIndicator;
 import com.redmath.redbank.balance.BalanceService;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
@@ -22,14 +25,17 @@ public class BankTransactionService {
 
   private final BankTransactionRepository bankTransactionRepository;
   private final AccountHolderService accountHolderService;
+  private final AuditService auditService;
   private final BalanceService balanceService;
 
   public BankTransactionService(
       BankTransactionRepository bankTransactionRepository,
       AccountHolderService accountHolderService,
+      AuditService auditService,
       BalanceService balanceService) {
     this.bankTransactionRepository = bankTransactionRepository;
     this.accountHolderService = accountHolderService;
+    this.auditService = auditService;
     this.balanceService = balanceService;
   }
 
@@ -80,7 +86,7 @@ public class BankTransactionService {
   }
 
   @Transactional
-  public BankTransaction deposit(DepositRequest request) {
+  public BankTransaction deposit(Long adminUserId, DepositRequest request) {
     AccountHolder targetAccount = accountHolderService.findByAccountNumber(
             request.getAccountNumber())
         .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
@@ -97,6 +103,8 @@ public class BankTransactionService {
     transaction = bankTransactionRepository.save(transaction);
 
     balanceService.recordLedgerEntry(targetAccount, transaction, BalanceIndicator.CREDIT);
+    auditService.record(adminUserId, AuditAction.ADMIN_DEPOSIT_RECORDED,
+        AuditTargetType.TRANSACTION, transaction.getId().toString(), null);
 
     return transaction;
   }

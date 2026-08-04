@@ -3,12 +3,14 @@ package com.redmath.redbank.account_holder.admin;
 import com.redmath.redbank.account_holder.AccountHolder;
 import com.redmath.redbank.account_holder.AccountHolderRepository;
 import com.redmath.redbank.account_holder.AccountStatus;
+import com.redmath.redbank.audit.AuditAction;
+import com.redmath.redbank.audit.AuditService;
+import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.common.exception.ConflictException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.UserService;
 import java.util.Set;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -20,11 +22,13 @@ public class AdminAccountHolderService {
   private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "accountNumber",
       "accountStatus", "createdAt", "updatedAt");
   private final AccountHolderRepository accountHolderRepository;
+  private final AuditService auditService;
   private final UserService userService;
 
   public AdminAccountHolderService(AccountHolderRepository accountHolderRepository,
-      UserService userService) {
+      AuditService auditService, UserService userService) {
     this.accountHolderRepository = accountHolderRepository;
+    this.auditService = auditService;
     this.userService = userService;
   }
 
@@ -38,7 +42,7 @@ public class AdminAccountHolderService {
   }
 
   @Transactional
-  public void freezeAccountHolder(Long accountId) {
+  public void freezeAccountHolder(Long accountId, Long adminUserId) {
     AccountHolder accountHolder = getOrThrow(accountId);
 
     if (accountHolder.getAccountStatus() == AccountStatus.CLOSED) {
@@ -50,10 +54,12 @@ public class AdminAccountHolderService {
 
     accountHolder.setAccountStatus(AccountStatus.FROZEN);
     accountHolderRepository.save(accountHolder);
+    auditService.record(adminUserId, AuditAction.ACCOUNT_FROZEN, AuditTargetType.ACCOUNT,
+        accountId.toString(), null);
   }
 
   @Transactional
-  public void deactivateAccountHolder(Long accountId) {
+  public void deactivateAccountHolder(Long accountId, Long adminUserId) {
     AccountHolder accountHolder = getOrThrow(accountId);
 
     if (accountHolder.getAccountStatus() == AccountStatus.CLOSED) {
@@ -63,6 +69,8 @@ public class AdminAccountHolderService {
     accountHolder.setAccountStatus(AccountStatus.CLOSED);
     accountHolderRepository.save(accountHolder);
     userService.deactivateUser(accountHolder.getUser().getId());
+    auditService.record(adminUserId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
+        accountId.toString(), null);
   }
 
   private AccountHolder getOrThrow(Long accountId) {

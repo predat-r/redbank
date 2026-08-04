@@ -1,5 +1,8 @@
 package com.redmath.redbank.account_holder;
 
+import com.redmath.redbank.audit.AuditAction;
+import com.redmath.redbank.audit.AuditService;
+import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.common.exception.ConflictException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.User;
@@ -15,10 +18,14 @@ public class AccountHolderService {
 
   private final AccountHolderRepository accountHolderRepository;
   private final UserService userService;
+  private final AuditService auditService;
 
-  public AccountHolderService(AccountHolderRepository accountHolderRepository, UserService userService) {
+  public AccountHolderService(AccountHolderRepository accountHolderRepository,
+      UserService userService,
+      AuditService auditService) {
     this.accountHolderRepository = accountHolderRepository;
     this.userService = userService;
+    this.auditService = auditService;
   }
 
   public AccountHolder getAccountHolderByUserId(Long userId) {
@@ -26,7 +33,7 @@ public class AccountHolderService {
       throw new IllegalArgumentException("User id is required");
     }
     Optional<AccountHolder> accountHolder = accountHolderRepository.findByUserId(userId);
-    if(accountHolder.isEmpty()){
+    if (accountHolder.isEmpty()) {
       throw new ResourceNotFoundException("Account holder not found for user id: " + userId);
     }
     return accountHolder.get();
@@ -37,9 +44,11 @@ public class AccountHolderService {
     if (accountNumber == null || accountNumber.isBlank()) {
       throw new IllegalArgumentException("Account number is required");
     }
-    AccountHolder accountHolder = accountHolderRepository.getAccountHoldersByAccountNumber(accountNumber);
+    AccountHolder accountHolder = accountHolderRepository.getAccountHoldersByAccountNumber(
+        accountNumber);
     if (accountHolder == null) {
-      throw new ResourceNotFoundException("Account holder not found for account number: " + accountNumber);
+      throw new ResourceNotFoundException(
+          "Account holder not found for account number: " + accountNumber);
     }
     return accountHolder.getUser().getName();
   }
@@ -53,7 +62,7 @@ public class AccountHolderService {
   }
 
   @Transactional
-  public void createAccountHolder(User user) {
+  public AccountHolder createAccountHolder(User user) {
     if (user == null) {
       throw new IllegalArgumentException("User is required");
     }
@@ -74,41 +83,49 @@ public class AccountHolderService {
     accountHolder.setApprovedAt(now);
     accountHolder.setCreatedAt(now);
     accountHolder.setUpdatedAt(now);
-    accountHolderRepository.save(accountHolder);
+    return accountHolderRepository.save(accountHolder);
   }
 
   @Transactional
   public void freezeMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getOrThrowByUserId(userId);
-    freezeMyAccountHolderInternal(accountHolder);
+    if (freezeMyAccountHolderInternal(accountHolder)) {
+      auditService.record(userId, AuditAction.ACCOUNT_FROZEN, AuditTargetType.ACCOUNT,
+          accountHolder.getId().toString(), null);
+    }
   }
 
   @Transactional
   public void deactivateMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getOrThrowByUserId(userId);
-    deactivateMyAccountHolderInternal(accountHolder);
+    if (deactivateMyAccountHolderInternal(accountHolder)) {
+      auditService.record(userId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
+          accountHolder.getId().toString(), null);
+    }
   }
 
-  private void freezeMyAccountHolderInternal(AccountHolder accountHolder) {
+  private boolean freezeMyAccountHolderInternal(AccountHolder accountHolder) {
     if (accountHolder.getAccountStatus() == AccountStatus.CLOSED) {
       throw new ConflictException("Closed accounts cannot be frozen");
     }
     if (accountHolder.getAccountStatus() == AccountStatus.FROZEN) {
-      return;
+      return false;
     }
 
     accountHolder.setAccountStatus(AccountStatus.FROZEN);
     accountHolderRepository.save(accountHolder);
+    return true;
   }
 
-  private void deactivateMyAccountHolderInternal(AccountHolder accountHolder) {
+  private boolean deactivateMyAccountHolderInternal(AccountHolder accountHolder) {
     if (accountHolder.getAccountStatus() == AccountStatus.CLOSED) {
-      return;
+      return false;
     }
 
     accountHolder.setAccountStatus(AccountStatus.CLOSED);
     accountHolderRepository.save(accountHolder);
     userService.deactivateUser(accountHolder.getUser().getId());
+    return true;
   }
 
   private AccountHolder getOrThrowByUserId(Long userId) {
@@ -116,7 +133,8 @@ public class AccountHolderService {
       throw new IllegalArgumentException("User id is required");
     }
     return accountHolderRepository.findByUserId(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("Account holder not found for user: " + userId));
+        .orElseThrow(
+            () -> new ResourceNotFoundException("Account holder not found for user: " + userId));
   }
 
   private String generateUniqueAccountNumber() {
