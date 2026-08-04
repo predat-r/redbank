@@ -3,7 +3,6 @@ package com.redmath.redbank.account_holder;
 import com.redmath.redbank.common.exception.ConflictException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.User;
-import com.redmath.redbank.user.UserRepository;
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
@@ -17,9 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AccountHolderService {
 
-  private static final Set<String> ALLOWED_SORT_FIELDS =
-      Set.of("id", "accountNumber", "accountStatus", "createdAt", "updatedAt");
+  private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "accountNumber",
+      "accountStatus", "createdAt", "updatedAt");
   private final AccountHolderRepository accountHolderRepository;
+
   public AccountHolderService(AccountHolderRepository accountHolderRepository) {
     this.accountHolderRepository = accountHolderRepository;
   }
@@ -28,9 +28,8 @@ public class AccountHolderService {
     if (userId == null) {
       throw new IllegalArgumentException("User id is required");
     }
-    return accountHolderRepository.findByUserId(userId)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Account holder not found for user id: " + userId));
+    return accountHolderRepository.findByUserId(userId).orElseThrow(
+        () -> new ResourceNotFoundException("Account holder not found for user id: " + userId));
   }
 
   public AccountHolder getAccountHolderById(Long accountId) {
@@ -41,8 +40,8 @@ public class AccountHolderService {
     if (accountNumber == null || accountNumber.isBlank()) {
       throw new IllegalArgumentException("Account number is required");
     }
-    return accountHolderRepository.findByAccountNumber(accountNumber)
-        .orElseThrow(() -> new ResourceNotFoundException(
+    return accountHolderRepository.findByAccountNumber(accountNumber).orElseThrow(
+        () -> new ResourceNotFoundException(
             "Account holder not found for account number: " + accountNumber));
   }
 
@@ -89,13 +88,13 @@ public class AccountHolderService {
   }
 
   @Transactional
-  public void freezeMyAccountHolder(Long userId){
+  public void freezeMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getAccountHolderByUserId(userId);
     freezeAccountHolder(accountHolder.getId());
   }
 
   @Transactional
-  public void deactivateMyAccountHolder(Long userId){
+  public void deactivateMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getAccountHolderByUserId(userId);
     deactivateAccountHolder(accountHolder.getId());
   }
@@ -139,8 +138,8 @@ public class AccountHolderService {
   private String generateUniqueAccountNumber() {
     String candidate;
     do {
-      candidate = "RB" + UUID.randomUUID().toString().replace("-", "")
-          .substring(0, 10).toUpperCase();
+      candidate =
+          "RB" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
     } while (accountHolderRepository.existsByAccountNumber(candidate));
     return candidate;
   }

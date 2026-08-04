@@ -69,7 +69,7 @@ public class RegistrationReviewService {
       userRoleRepository.save(userRole);
     }
 
-    accountHolderService.createAccountHolder(userId);
+    accountHolderService.createAccountHolder(user);
 
     auditService.record(adminUserId, AuditAction.REGISTRATION_APPROVED, AuditTargetType.USER,
         userId.toString(), null);
