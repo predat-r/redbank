@@ -1,13 +1,12 @@
 package com.redmath.redbank.user.admin;
 
-import com.redmath.redbank.account_holder.AccountHolder;
 import com.redmath.redbank.account_holder.AccountHolderService;
 import com.redmath.redbank.common.exception.InvalidSortException;
 import com.redmath.redbank.common.exception.RegistrationAlreadyReviewedException;
 import com.redmath.redbank.common.exception.RegistrationNotFoundException;
 import com.redmath.redbank.common.exception.UserAccountNotActiveException;
 import com.redmath.redbank.user.User;
-import com.redmath.redbank.user.UserRepository;
+import com.redmath.redbank.user.UserService;
 import com.redmath.redbank.user.UserStatus;
 import com.redmath.redbank.user.dto.PendingRegistrationResponse;
 import com.redmath.redbank.user.dto.RejectRegistrationRequest;
@@ -32,22 +31,22 @@ public class RegistrationReviewService {
 
   private static final Set<String> ALLOWED_SORT_FIELDS =
       Set.of("createdAt", "id");
-  private final UserRepository userRepository;
+
+  private final UserService userService;
   private final RoleRepository roleRepository;
   private final UserRoleRepository userRoleRepository;
   private final AccountHolderService accountHolderService;
 
-
   @Transactional
   public void approveRegistration(Long userId, Long adminUserId) {
-    User user = userRepository.findByIdForUpdate(userId)
+    User user = userService.findByIdForUpdate(userId)
         .orElseThrow(RegistrationNotFoundException::new);
 
     if (user.getStatus() != UserStatus.PENDING_APPROVAL) {
       throw new RegistrationAlreadyReviewedException();
     }
 
-    User admin = userRepository.findById(adminUserId)
+    User admin = userService.findById(adminUserId)
         .filter(candidate -> candidate.getStatus() == UserStatus.ACTIVE)
         .orElseThrow(UserAccountNotActiveException::new);
 
@@ -83,21 +82,21 @@ public class RegistrationReviewService {
   public Page<PendingRegistrationResponse> findPendingRegistrations(Pageable pageable) {
     validateSort(pageable);
 
-    return userRepository
+    return userService
         .findAllByStatus(UserStatus.PENDING_APPROVAL, pageable)
         .map(this::toResponse);
   }
 
-  private PendingRegistrationResponse toResponse(User user) {
-    return new PendingRegistrationResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getPhoneNumber(),
-        user.getName(),
-        user.getAddress(),
-        user.getStatus(),
-        user.getCreatedAt()
-    );
+  @Transactional(readOnly = true)
+  public PendingRegistrationResponse findPendingRegistration(Long userId) {
+    User user = userService.findById(userId)
+        .orElseThrow(RegistrationNotFoundException::new);
+
+    if (user.getStatus() != UserStatus.PENDING_APPROVAL) {
+      throw new RegistrationAlreadyReviewedException();
+    }
+
+    return toResponse(user);
   }
 
   @Transactional
@@ -105,7 +104,7 @@ public class RegistrationReviewService {
       Long userId,
       RejectRegistrationRequest request
   ) {
-    User user = userRepository.findByIdForUpdate(userId)
+    User user = userService.findByIdForUpdate(userId)
         .orElseThrow(RegistrationNotFoundException::new);
 
     if (user.getStatus() != UserStatus.PENDING_APPROVAL) {
@@ -125,16 +124,16 @@ public class RegistrationReviewService {
     user.rejectRegistration(rejectionReason, Instant.now());
   }
 
-  @Transactional(readOnly = true)
-  public PendingRegistrationResponse findPendingRegistration(Long userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(RegistrationNotFoundException::new);
-
-    if (user.getStatus() != UserStatus.PENDING_APPROVAL) {
-      throw new RegistrationAlreadyReviewedException();
-    }
-
-    return toResponse(user);
+  private PendingRegistrationResponse toResponse(User user) {
+    return new PendingRegistrationResponse(
+        user.getId(),
+        user.getEmail(),
+        user.getPhoneNumber(),
+        user.getName(),
+        user.getAddress(),
+        user.getStatus(),
+        user.getCreatedAt()
+    );
   }
 
   private void validateSort(Pageable pageable) {

@@ -4,7 +4,7 @@ import com.redmath.redbank.common.exception.InvalidSortException;
 import com.redmath.redbank.common.exception.InvalidUserStatusTransitionException;
 import com.redmath.redbank.common.exception.UserNotFoundException;
 import com.redmath.redbank.user.User;
-import com.redmath.redbank.user.UserRepository;
+import com.redmath.redbank.user.UserService;
 import com.redmath.redbank.user.UserStatus;
 import com.redmath.redbank.user.dto.AdminUserResponse;
 import com.redmath.redbank.user.role.RoleName;
@@ -22,45 +22,31 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminUserService {
 
-
   private static final Set<String> ALLOWED_SORT_FIELDS =
       Set.of("createdAt", "id");
+
   private final UserRoleRepository userRoleRepository;
-  private final UserRepository userRepository;
+  private final UserService userService;
 
   @Transactional(readOnly = true)
   public Page<AdminUserResponse> findUsers(Pageable pageable) {
     validateSort(pageable);
 
-    return userRepository.findAll(pageable)
+    return userService.findAll(pageable)
         .map(this::toResponse);
   }
 
   @Transactional(readOnly = true)
   public AdminUserResponse findUser(Long userId) {
-    User user = userRepository.findById(userId)
+    User user = userService.findById(userId)
         .orElseThrow(UserNotFoundException::new);
 
     return toResponse(user);
   }
 
-  private AdminUserResponse toResponse(User user) {
-    return new AdminUserResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getPhoneNumber(),
-        user.getName(),
-        user.getAddress(),
-        user.getStatus(),
-        user.getCreatedAt(),
-        user.getUpdatedAt()
-    );
-  }
-
-
   @Transactional
   public void activateUser(Long userId) {
-    User user = userRepository.findByIdForUpdate(userId)
+    User user = userService.findByIdForUpdate(userId)
         .orElseThrow(UserNotFoundException::new);
 
     if (user.getStatus() == UserStatus.ACTIVE) {
@@ -78,7 +64,7 @@ public class AdminUserService {
 
   @Transactional
   public void deactivateUser(Long userId) {
-    User user = userRepository.findByIdForUpdate(userId)
+    User user = userService.findByIdForUpdate(userId)
         .orElseThrow(UserNotFoundException::new);
 
     if (user.getStatus() == UserStatus.DEACTIVATED) {
@@ -103,6 +89,19 @@ public class AdminUserService {
     }
 
     user.deactivate(Instant.now());
+  }
+
+  private AdminUserResponse toResponse(User user) {
+    return new AdminUserResponse(
+        user.getId(),
+        user.getEmail(),
+        user.getPhoneNumber(),
+        user.getName(),
+        user.getAddress(),
+        user.getStatus(),
+        user.getCreatedAt(),
+        user.getUpdatedAt()
+    );
   }
 
   private void validateSort(Pageable pageable) {
