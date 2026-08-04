@@ -1,7 +1,6 @@
 package com.redmath.redbank.user.admin;
 
 import com.redmath.redbank.user.dto.AdminUserResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 public class AdminUserController {
 
   private final AdminUserService adminUserService;

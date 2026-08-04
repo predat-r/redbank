@@ -1,7 +1,6 @@
 package com.redmath.redbank.audit;
 
 import com.redmath.redbank.audit.dto.AuditLogResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/audit-logs")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 public class AuditLogController {
 
   private final AuditService auditService;
