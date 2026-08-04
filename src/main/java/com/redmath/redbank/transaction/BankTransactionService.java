@@ -9,8 +9,6 @@ import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.request.DepositRequest;
 import com.redmath.redbank.transaction.request.TransferRequest;
 import com.redmath.redbank.transaction.request.WithdrawalRequest;
-import com.redmath.redbank.user.User;
-import com.redmath.redbank.user.UserRepository;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
@@ -23,25 +21,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class BankTransactionService {
 
   private final BankTransactionRepository bankTransactionRepository;
-  private final UserRepository userRepository;
   private final AccountHolderService accountHolderService;
   private final BalanceService balanceService;
 
-  public BankTransactionService(BankTransactionRepository bankTransactionRepository,
-      UserRepository userRepository,
+  public BankTransactionService(
+      BankTransactionRepository bankTransactionRepository,
       AccountHolderService accountHolderService,
       BalanceService balanceService) {
     this.bankTransactionRepository = bankTransactionRepository;
-    this.userRepository = userRepository;
     this.accountHolderService = accountHolderService;
     this.balanceService = balanceService;
   }
 
-  public Page<BankTransaction> getTransactionsForUser(String email, Pageable pageable) {
-    User user = userRepository.findByEmailIgnoreCase(email)
-        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    AccountHolder accountHolder = accountHolderService.findByUser(user)
-        .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
+  public Page<BankTransaction> getTransactionsForUser(Long userId, Pageable pageable) {
+    AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(userId);
     return bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(
         accountHolder.getId(), accountHolder.getId(), pageable);
   }
@@ -70,8 +63,8 @@ public class BankTransactionService {
   }
 
   @Transactional
-  public BankTransaction transfer(String email, TransferRequest request) {
-    AccountHolder myAccount = getAndValidateInitiatorAccount(email);
+  public BankTransaction transfer(Long userId, TransferRequest request) {
+    AccountHolder myAccount = getAndValidateInitiatorAccount(userId);
     BankTransaction transaction = buildBaseTransaction(TransactionType.TRANSFER,
         request.getAmount(), request.getDescription());
     processTransferRules(transaction, myAccount, request.getDestinationAccountNumber());
@@ -109,8 +102,8 @@ public class BankTransactionService {
   }
 
   @Transactional
-  public BankTransaction withdraw(String email, WithdrawalRequest request) {
-    AccountHolder sourceAccount = getAndValidateInitiatorAccount(email);
+  public BankTransaction withdraw(Long userId, WithdrawalRequest request) {
+    AccountHolder sourceAccount = getAndValidateInitiatorAccount(userId);
 
     BankTransaction transaction = buildBaseTransaction(TransactionType.WITHDRAWAL,
         request.getAmount(), request.getDescription());
@@ -123,12 +116,8 @@ public class BankTransactionService {
     return transaction;
   }
 
-
-  private AccountHolder getAndValidateInitiatorAccount(String email) {
-    User user = userRepository.findByEmailIgnoreCase(email)
-        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    AccountHolder myAccount = accountHolderService.findByUser(user)
-        .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
+  private AccountHolder getAndValidateInitiatorAccount(Long userId) {
+    AccountHolder myAccount = accountHolderService.getAccountHolderByUserId(userId);
 
     if (myAccount.getAccountStatus() != AccountStatus.ACTIVE) {
       throw new IllegalArgumentException("Initiating account must be active");

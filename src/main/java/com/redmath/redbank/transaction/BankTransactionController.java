@@ -1,7 +1,6 @@
 package com.redmath.redbank.transaction;
 
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
-
 import com.redmath.redbank.transaction.request.TransferRequest;
 import com.redmath.redbank.transaction.request.WithdrawalRequest;
 import jakarta.validation.Valid;
@@ -12,7 +11,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,30 +32,42 @@ public class BankTransactionController {
   @GetMapping("/transactions")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public ResponseEntity<Page<BankTransactionDto>> getMyTransactions(
-      Authentication authentication,
+      @AuthenticationPrincipal Jwt jwt,
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
+    Long userId = extractUserId(jwt);
     Page<BankTransaction> transactions = bankTransactionService.getTransactionsForUser(
-        authentication.getName(), pageable);
+        userId, pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
   }
 
   @PostMapping("/transfers")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public ResponseEntity<BankTransactionDto> createTransfer(
-      Authentication authentication,
+      @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody TransferRequest request) {
-    BankTransaction transaction = bankTransactionService.transfer(authentication.getName(),
-        request);
+
+    Long userId = extractUserId(jwt);
+    BankTransaction transaction = bankTransactionService.transfer(userId, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
   }
 
   @PostMapping("/withdrawals")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public ResponseEntity<BankTransactionDto> createWithdrawal(
-      Authentication authentication,
+      @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody WithdrawalRequest request) {
-    BankTransaction transaction = bankTransactionService.withdraw(authentication.getName(), request);
+
+    Long userId = extractUserId(jwt);
+    BankTransaction transaction = bankTransactionService.withdraw(userId, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
+  }
+
+  private Long extractUserId(Jwt jwt) {
+    Number userId = jwt.getClaim("userId");
+    if (userId == null) {
+      throw new IllegalArgumentException("User ID missing from authentication token");
+    }
+    return userId.longValue();
   }
 }
