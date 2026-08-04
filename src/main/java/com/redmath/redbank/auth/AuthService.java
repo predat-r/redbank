@@ -6,16 +6,22 @@ import com.redmath.redbank.auth.dto.LoginResponse;
 import com.redmath.redbank.auth.dto.RefreshTokenRequest;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.auth.dto.RegisterResponse;
+import com.redmath.redbank.auth.dto.RegistrationStatusResponse;
 import com.redmath.redbank.common.exception.DuplicateUserException;
 import com.redmath.redbank.common.exception.InvalidCredentialsException;
 import com.redmath.redbank.common.exception.InvalidPasswordChangeException;
 import com.redmath.redbank.common.exception.InvalidRefreshTokenException;
 import com.redmath.redbank.common.exception.UserAccountNotActiveException;
+import com.redmath.redbank.common.exception.UserNotFoundException;
 import com.redmath.redbank.security.jwt.JwtService;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserService;
 import com.redmath.redbank.user.UserStatus;
+import com.redmath.redbank.user.role.Role;
+import com.redmath.redbank.user.role.RoleName;
 import com.redmath.redbank.user.role.RoleRepository;
+import com.redmath.redbank.user.role.UserRole;
+import com.redmath.redbank.user.role.UserRoleId;
 import com.redmath.redbank.user.role.UserRoleRepository;
 import java.time.Instant;
 import java.util.Locale;
@@ -37,13 +43,9 @@ public class AuthService {
   private final UserRoleRepository userRoleRepository;
   private final RoleRepository roleRepository;
 
-  public AuthService(
-      UserService userService,
-      PasswordEncoder passwordEncoder,
-      JwtService jwtService,
-      @Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder,
-      UserRoleRepository userRoleRepository, RoleRepository roleRepository
-  ) {
+  public AuthService(UserService userService, PasswordEncoder passwordEncoder,
+      JwtService jwtService, @Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder,
+      UserRoleRepository userRoleRepository, RoleRepository roleRepository) {
     this.userService = userService;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
@@ -54,9 +56,7 @@ public class AuthService {
 
   @Transactional
   public RegisterResponse register(RegisterRequest request) {
-    String normalizedEmail = request.email()
-        .trim()
-        .toLowerCase(Locale.ROOT);
+    String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
 
     String normalizedPhoneNumber = request.phoneNumber().trim();
 
@@ -70,31 +70,29 @@ public class AuthService {
 
     Instant now = Instant.now();
 
-    User user = User.builder()
-        .email(normalizedEmail)
-        .phoneNumber(normalizedPhoneNumber)
-        .passwordHash(passwordEncoder.encode(request.password()))
-        .name(request.name().trim())
-        .address(request.address().trim())
-        .status(UserStatus.PENDING_APPROVAL)
-        .createdAt(now)
-        .updatedAt(now)
-        .build();
+    User user = User.builder().email(normalizedEmail).phoneNumber(normalizedPhoneNumber)
+        .passwordHash(passwordEncoder.encode(request.password())).name(request.name().trim())
+        .address(request.address().trim()).status(UserStatus.PENDING_APPROVAL).createdAt(now)
+        .updatedAt(now).build();
 
     User savedUser = userService.save(user);
-
-    return new RegisterResponse(
-        savedUser.getId(),
-        savedUser.getEmail(),
-        savedUser.getStatus()
-    );
+    Role role = roleRepository.findByName(RoleName.PENDING_USER)
+        .orElseThrow(() -> new IllegalStateException("PENDING_USER role is not configured"));
+    UserRoleId userRoleId = new UserRoleId(savedUser.getId(), role.getId());
+    UserRole userRole = UserRole.builder().id(userRoleId).user(savedUser).role(role).assignedAt(now)
+        .build();
+    userRoleRepository.save(userRole);
+    savedUser.incrementRefreshTokenVersion(now);
+    String accessToken = jwtService.generateAccessToken(savedUser);
+    String refreshToken = jwtService.generateRefreshToken(savedUser);
+    LoginResponse tokens = new LoginResponse(accessToken, refreshToken, "Bearer");
+    return new RegisterResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getStatus(),
+        tokens);
   }
 
   @Transactional
   public LoginResponse login(LoginRequest request) {
-    String normalizedEmail = request.email()
-        .trim()
-        .toLowerCase(Locale.ROOT);
+    String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
 
     User user = userService.findByEmailForUpdate(normalizedEmail)
         .orElseThrow(InvalidCredentialsException::new);
@@ -103,7 +101,7 @@ public class AuthService {
       throw new InvalidCredentialsException();
     }
 
-    if (user.getStatus() != UserStatus.ACTIVE) {
+    if (user.getStatus() != UserStatus.ACTIVE && user.getStatus() != UserStatus.PENDING_APPROVAL) {
       throw new UserAccountNotActiveException();
     }
 
@@ -125,7 +123,7 @@ public class AuthService {
     User user = userService.findByIdForUpdate(userId)
         .orElseThrow(InvalidRefreshTokenException::new);
 
-    if (user.getStatus() != UserStatus.ACTIVE) {
+    if (user.getStatus() != UserStatus.ACTIVE && user.getStatus() != UserStatus.PENDING_APPROVAL) {
       throw new UserAccountNotActiveException();
     }
 
@@ -159,10 +157,7 @@ public class AuthService {
   }
 
   @Transactional
-  public void changePassword(
-      Long userId,
-      ChangePasswordRequest request
-  ) {
+  public void changePassword(Long userId, ChangePasswordRequest request) {
     User user = userService.findByIdForUpdate(userId)
         .orElseThrow(UserAccountNotActiveException::new);
 
@@ -170,28 +165,31 @@ public class AuthService {
       throw new UserAccountNotActiveException();
     }
 
-    if (!passwordEncoder.matches(
-        request.currentPassword(),
-        user.getPasswordHash()
-    )) {
-      throw new InvalidPasswordChangeException(
-          "Current password is incorrect"
-      );
+    if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+      throw new InvalidPasswordChangeException("Current password is incorrect");
     }
 
-    if (passwordEncoder.matches(
-        request.newPassword(),
-        user.getPasswordHash()
-    )) {
+    if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
       throw new InvalidPasswordChangeException(
-          "New password must be different from the current password"
-      );
+          "New password must be different from the current password");
     }
 
-    String newPasswordHash =
-        passwordEncoder.encode(request.newPassword());
+    String newPasswordHash = passwordEncoder.encode(request.newPassword());
 
     user.changePasswordHash(newPasswordHash, Instant.now());
+  }
+
+  @Transactional(readOnly = true)
+  public RegistrationStatusResponse getRegistrationStatus(Long userId) {
+    User user = userService.findById(userId)
+        .orElseThrow(UserNotFoundException::new);
+
+    return new RegistrationStatusResponse(
+        user.getId(),
+        user.getStatus(),
+        user.getRejectionReason()
+    );
+
   }
 
   private long requiredLongClaim(Jwt jwt, String claimName) {
@@ -211,4 +209,6 @@ public class AuthService {
       throw new InvalidRefreshTokenException();
     }
   }
+
+
 }

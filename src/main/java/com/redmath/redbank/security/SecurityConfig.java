@@ -43,8 +43,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth -> auth.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                     "/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
-                .permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN").anyRequest().authenticated())
+                .permitAll().requestMatchers("/api/auth/registration-status")
+                .hasAnyRole("PENDING_USER", "ACCOUNT_HOLDER").requestMatchers("/api/admin/**")
+                .hasRole("ADMIN").anyRequest().hasAnyRole("ADMIN", "ACCOUNT_HOLDER"))
         .exceptionHandling(
             exceptions -> exceptions.authenticationEntryPoint(securityErrorResponseHandler)
                 .accessDeniedHandler(securityErrorResponseHandler)).oauth2ResourceServer(
