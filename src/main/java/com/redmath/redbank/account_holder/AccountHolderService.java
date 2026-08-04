@@ -51,7 +51,8 @@ public class AccountHolderService {
   }
 
   @Transactional(readOnly = true)
-  public Page<AccountHolder> getAllAccountHolders(int page, int size, String sortBy, String sortDir) {
+  public Page<AccountHolder> getAllAccountHolders(int page, int size, String sortBy,
+      String sortDir) {
     if (page < 0) {
       throw new IllegalArgumentException("Page index cannot be negative");
     }
@@ -59,7 +60,8 @@ public class AccountHolderService {
       throw new IllegalArgumentException("Page size must be positive");
     }
     String safeSortBy = ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "id";
-    Sort.Direction direction = "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
+    Sort.Direction direction =
+        "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
     Pageable pageable = PageRequest.of(page, size, Sort.by(direction, safeSortBy));
     return accountHolderRepository.findAll(pageable);
   }
