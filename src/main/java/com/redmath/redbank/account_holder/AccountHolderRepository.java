@@ -17,4 +17,5 @@ public interface AccountHolderRepository extends JpaRepository<AccountHolder, Lo
   AccountHolder getAccountHoldersByAccountNumber(String accountNumber);
 
   boolean existsByAccountNumber(String accountNumber);
+
 }

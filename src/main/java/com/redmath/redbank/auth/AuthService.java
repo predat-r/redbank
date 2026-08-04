@@ -13,7 +13,7 @@ import com.redmath.redbank.common.exception.InvalidRefreshTokenException;
 import com.redmath.redbank.common.exception.UserAccountNotActiveException;
 import com.redmath.redbank.security.jwt.JwtService;
 import com.redmath.redbank.user.User;
-import com.redmath.redbank.user.UserRepository;
+import com.redmath.redbank.user.UserService;
 import com.redmath.redbank.user.UserStatus;
 import java.time.Instant;
 import java.util.Locale;
@@ -28,48 +28,67 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
 
-  private final UserRepository userRepository;
+  private final UserService userService;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final JwtDecoder refreshJwtDecoder;
 
-  public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-      JwtService jwtService, @Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder) {
-    this.userRepository = userRepository;
+  public AuthService(
+      UserService userService,
+      PasswordEncoder passwordEncoder,
+      JwtService jwtService,
+      @Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder
+  ) {
+    this.userService = userService;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.refreshJwtDecoder = refreshJwtDecoder;
   }
 
   public RegisterResponse register(RegisterRequest request) {
-    String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
+    String normalizedEmail = request.email()
+        .trim()
+        .toLowerCase(Locale.ROOT);
+
     String normalizedPhoneNumber = request.phoneNumber().trim();
 
-    if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+    if (userService.existsByEmail(normalizedEmail)) {
       throw new DuplicateUserException("Email is already registered");
     }
 
-    if (userRepository.existsByPhoneNumber(normalizedPhoneNumber)) {
+    if (userService.existsByPhoneNumber(normalizedPhoneNumber)) {
       throw new DuplicateUserException("Phone number is already registered");
     }
 
     Instant now = Instant.now();
 
-    User user = User.builder().email(normalizedEmail).phoneNumber(normalizedPhoneNumber)
-        .passwordHash(passwordEncoder.encode(request.password())).name(request.name().trim())
-        .address(request.address().trim()).status(UserStatus.PENDING_APPROVAL).createdAt(now)
-        .updatedAt(now).build();
+    User user = User.builder()
+        .email(normalizedEmail)
+        .phoneNumber(normalizedPhoneNumber)
+        .passwordHash(passwordEncoder.encode(request.password()))
+        .name(request.name().trim())
+        .address(request.address().trim())
+        .status(UserStatus.PENDING_APPROVAL)
+        .createdAt(now)
+        .updatedAt(now)
+        .build();
 
-    User savedUser = userRepository.save(user);
+    User savedUser = userService.save(user);
 
-    return new RegisterResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getStatus());
+    return new RegisterResponse(
+        savedUser.getId(),
+        savedUser.getEmail(),
+        savedUser.getStatus()
+    );
   }
 
   @Transactional
   public LoginResponse login(LoginRequest request) {
-    String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
+    String normalizedEmail = request.email()
+        .trim()
+        .toLowerCase(Locale.ROOT);
 
-    User user = userRepository.findByEmailForUpdate(normalizedEmail)
+    User user = userService.findByEmailForUpdate(normalizedEmail)
         .orElseThrow(InvalidCredentialsException::new);
 
     if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
@@ -90,14 +109,12 @@ public class AuthService {
 
   @Transactional
   public LoginResponse refresh(RefreshTokenRequest request) {
-    Jwt jwt;
-
-    jwt = decodeRefreshToken(request.refreshToken());
+    Jwt jwt = decodeRefreshToken(request.refreshToken());
 
     long userId = requiredLongClaim(jwt, "userId");
     long tokenVersion = requiredLongClaim(jwt, "refreshTokenVersion");
 
-    User user = userRepository.findByIdForUpdate(userId)
+    User user = userService.findByIdForUpdate(userId)
         .orElseThrow(InvalidRefreshTokenException::new);
 
     if (user.getStatus() != UserStatus.ACTIVE) {
@@ -116,7 +133,6 @@ public class AuthService {
     return new LoginResponse(accessToken, refreshToken, "Bearer");
   }
 
-
   @Transactional
   public void logout(RefreshTokenRequest request) {
     Jwt jwt = decodeRefreshToken(request.refreshToken());
@@ -124,7 +140,7 @@ public class AuthService {
     long userId = requiredLongClaim(jwt, "userId");
     long tokenVersion = requiredLongClaim(jwt, "refreshTokenVersion");
 
-    User user = userRepository.findByIdForUpdate(userId)
+    User user = userService.findByIdForUpdate(userId)
         .orElseThrow(InvalidRefreshTokenException::new);
 
     if (tokenVersion != user.getRefreshTokenVersion()) {
@@ -135,25 +151,37 @@ public class AuthService {
   }
 
   @Transactional
-  public void changePassword(Long userId, ChangePasswordRequest request) {
-    User user = userRepository.findByIdForUpdate(userId)
+  public void changePassword(
+      Long userId,
+      ChangePasswordRequest request
+  ) {
+    User user = userService.findByIdForUpdate(userId)
         .orElseThrow(UserAccountNotActiveException::new);
 
     if (user.getStatus() != UserStatus.ACTIVE) {
       throw new UserAccountNotActiveException();
     }
 
-    if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
-      throw new InvalidPasswordChangeException("Current password is incorrect");
+    if (!passwordEncoder.matches(
+        request.currentPassword(),
+        user.getPasswordHash()
+    )) {
+      throw new InvalidPasswordChangeException(
+          "Current password is incorrect"
+      );
     }
 
-    if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+    if (passwordEncoder.matches(
+        request.newPassword(),
+        user.getPasswordHash()
+    )) {
       throw new InvalidPasswordChangeException(
           "New password must be different from the current password"
       );
     }
 
-    String newPasswordHash = passwordEncoder.encode(request.newPassword());
+    String newPasswordHash =
+        passwordEncoder.encode(request.newPassword());
 
     user.changePasswordHash(newPasswordHash, Instant.now());
   }
@@ -175,6 +203,4 @@ public class AuthService {
       throw new InvalidRefreshTokenException();
     }
   }
-
-
 }
