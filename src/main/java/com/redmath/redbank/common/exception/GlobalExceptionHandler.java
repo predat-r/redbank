@@ -57,6 +57,12 @@ public class GlobalExceptionHandler {
     return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
   }
 
+  @ExceptionHandler(ConflictException.class)
+  public ResponseEntity<ApiError> handleConflict(
+      ConflictException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiError> handleValidationException(
       MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -85,6 +91,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(InvalidPasswordChangeException.class)
   public ResponseEntity<ApiError> handleInvalidPasswordChange(
       InvalidPasswordChangeException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+  }
+
+  @ExceptionHandler(InsufficientFundsException.class)
+  public ResponseEntity<ApiError> handleInsufficientFunds(
+      InsufficientFundsException ex, HttpServletRequest request) {
     return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
   }
 
