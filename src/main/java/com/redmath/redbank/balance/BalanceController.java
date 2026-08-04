@@ -1,17 +1,15 @@
 package com.redmath.redbank.balance;
 
-import com.redmath.redbank.user.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/account")
+@RequestMapping("/api/balance")
 public class BalanceController {
 
   private final BalanceService balanceService;
@@ -21,7 +19,7 @@ public class BalanceController {
   }
 
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
-  @GetMapping("/me/balance")
+  @GetMapping("/me/latest")
   public ResponseEntity<BalanceDto> getMyBalance(
       @AuthenticationPrincipal Jwt jwt
   ) {
@@ -31,12 +29,5 @@ public class BalanceController {
     }
     return ResponseEntity.ok(
         BalanceDto.from(balanceService.getLatestBalanceByUserId(userId)));
-  }
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/{accountId}/balance")
-  public ResponseEntity<BalanceDto> getBalanceByAccountHolderId(@PathVariable Long accountId) {
-    return ResponseEntity.ok(
-        BalanceDto.from(balanceService.getLatestBalanceByAccountHolderId(accountId)));
   }
 }
