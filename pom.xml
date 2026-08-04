@@ -44,6 +44,7 @@
     <pitest.version>1.25.3</pitest.version>
     <spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
     <springdoc-openapi-starter-webmvc-ui.version>3.0.2</springdoc-openapi-starter-webmvc-ui.version>
+    <opentelemetry-instrumentation.version>2.28.1-alpha</opentelemetry-instrumentation.version>
   </properties>
 
   <dependencies>
@@ -140,6 +141,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.instrumentation</groupId>
+      <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+      <version>${opentelemetry-instrumentation.version}</version>
     </dependency>
   </dependencies>
 
