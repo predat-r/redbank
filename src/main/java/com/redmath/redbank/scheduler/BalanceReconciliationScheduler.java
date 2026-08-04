@@ -1,14 +1,15 @@
 package com.redmath.redbank.scheduler;
 
-import com.redmath.redbank.account_holder.AccountHolder;
 import com.redmath.redbank.balance.Balance;
 import com.redmath.redbank.balance.BalanceIndicator;
 import com.redmath.redbank.balance.BalanceRepository;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,19 +28,15 @@ public class BalanceReconciliationScheduler {
 
     List<Balance> allEntries = balanceRepository.findAll();
 
-    allEntries.stream()
-        .map(Balance::getAccountHolder)
-        .distinct()
-        .forEach(this::reconcileAccount);
+    Map<Long, List<Balance>> entriesByAccount = allEntries.stream()
+        .collect(Collectors.groupingBy(b -> b.getAccountHolder().getId()));
 
-    log.info("Balance reconciliation job completed");
+    entriesByAccount.forEach(this::reconcileAccount);
+
+    log.info("Balance reconciliation job completed for {} accounts", entriesByAccount.size());
   }
 
-  private void reconcileAccount(AccountHolder accountHolder) {
-    Long accountHolderId = accountHolder.getId();
-
-    List<Balance> entries = balanceRepository.findAllByAccountHolderId(accountHolderId);
-
+  private void reconcileAccount(Long accountHolderId, List<Balance> entries) {
     BigDecimal expectedBalance = entries.stream()
         .map(entry -> entry.getIndicator() == BalanceIndicator.CREDIT
             ? entry.getAmount()
@@ -47,7 +44,7 @@ public class BalanceReconciliationScheduler {
         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
     BigDecimal latestRunningBalance = entries.stream()
-        .reduce((first, second) -> second)
+        .max(Comparator.comparingLong(Balance::getId))
         .map(Balance::getRunningBalance)
         .orElse(BigDecimal.ZERO);
 
