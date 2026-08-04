@@ -6,12 +6,14 @@ import com.redmath.redbank.auth.dto.LoginResponse;
 import com.redmath.redbank.auth.dto.RefreshTokenRequest;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.auth.dto.RegisterResponse;
+import com.redmath.redbank.auth.dto.RegistrationStatusResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -70,4 +72,15 @@ public class AuthController {
 
     authService.changePassword(userIdClaim.longValue(), request);
   }
+
+
+  @SecurityRequirement(name = "bearerAuth")
+  @GetMapping("/registration-status")
+  public RegistrationStatusResponse getRegistrationStatus(@AuthenticationPrincipal Jwt jwt) {
+    Number userIdClaim = jwt.getClaim("userId");
+
+    return authService.getRegistrationStatus(userIdClaim.longValue());
+
+  }
+
 }

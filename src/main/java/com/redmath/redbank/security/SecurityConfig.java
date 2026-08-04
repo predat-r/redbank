@@ -2,13 +2,13 @@ package com.redmath.redbank.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -43,8 +43,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth -> auth.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                     "/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
-                .permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN").anyRequest().authenticated())
+                .permitAll().requestMatchers("/api/auth/registration-status")
+                .hasAnyRole("PENDING_USER", "ACCOUNT_HOLDER").requestMatchers("/api/admin/**")
+                .hasRole("ADMIN").anyRequest().hasAnyRole("ADMIN", "ACCOUNT_HOLDER"))
         .exceptionHandling(
             exceptions -> exceptions.authenticationEntryPoint(securityErrorResponseHandler)
                 .accessDeniedHandler(securityErrorResponseHandler)).oauth2ResourceServer(

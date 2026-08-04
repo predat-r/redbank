@@ -37,7 +37,8 @@ databaseChangeLog:
               CHECK (
                   name IN (
                       'ADMIN',
-                      'ACCOUNT_HOLDER'
+                      'ACCOUNT_HOLDER',
+                      'PENDING_USER'
                   )
               );
 

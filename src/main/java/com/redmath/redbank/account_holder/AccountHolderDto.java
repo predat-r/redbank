@@ -4,6 +4,7 @@ import com.redmath.redbank.user.User;
 import java.time.OffsetDateTime;
 
 public class AccountHolderDto {
+
   Long id;
   User user;
   String accountNumber;

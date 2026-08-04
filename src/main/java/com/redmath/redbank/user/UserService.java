@@ -1,5 +1,8 @@
 package com.redmath.redbank.user;
 
+import com.redmath.redbank.common.exception.InvalidUserStatusTransitionException;
+import com.redmath.redbank.common.exception.UserNotFoundException;
+import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -57,5 +60,25 @@ public class UserService {
   @Transactional(readOnly = true)
   public Page<User> findAllByStatus(UserStatus status, Pageable pageable) {
     return userRepository.findAllByStatus(status, pageable);
+  }
+
+
+  @Transactional(propagation = Propagation.MANDATORY)
+  public boolean deactivateUser(Long userId) {
+    User user = userRepository.findByIdForUpdate(userId)
+        .orElseThrow(UserNotFoundException::new);
+
+    if (user.getStatus() == UserStatus.DEACTIVATED) {
+      return false;
+    }
+
+    if (user.getStatus() != UserStatus.ACTIVE) {
+      throw new InvalidUserStatusTransitionException(
+          "Only active users can be deactivated"
+      );
+    }
+
+    user.deactivate(Instant.now());
+    return true;
   }
 }

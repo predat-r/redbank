@@ -11,9 +11,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApiError {
-    private OffsetDateTime timestamp;
-    private int status;
-    private String error;
-    private String message;
-    private String path;
+
+  private OffsetDateTime timestamp;
+  private int status;
+  private String error;
+  private String message;
+  private String path;
 }
