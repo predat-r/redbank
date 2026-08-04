@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface BankTransactionRepository extends JpaRepository<BankTransaction, Long> {
 
@@ -15,4 +17,10 @@ public interface BankTransactionRepository extends JpaRepository<BankTransaction
 
   @EntityGraph(attributePaths = {"sourceAccountHolder", "destinationAccountHolder"})
   Page<BankTransaction> findAll(Pageable pageable);
+
+  @EntityGraph(attributePaths = {"sourceAccountHolder.user", "destinationAccountHolder.user"})
+  Optional<BankTransaction> findById(Long id);
+
+  @EntityGraph(attributePaths = {"sourceAccountHolder.user", "destinationAccountHolder.user"})
+  Optional<BankTransaction> findByTransactionReference(String transactionReference);
 }

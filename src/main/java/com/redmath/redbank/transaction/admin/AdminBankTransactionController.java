@@ -2,6 +2,7 @@ package com.redmath.redbank.transaction.admin;
 
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionService;
+import com.redmath.redbank.transaction.dto.AdminBankTransactionDetailDto;
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.data.domain.Page;
@@ -42,5 +43,19 @@ public class AdminBankTransactionController {
     Page<BankTransaction> transactions = bankTransactionService.getTransactionsByAccountNumber(
         accountNumber, pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
+  }
+
+  @GetMapping("/transactions/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<AdminBankTransactionDetailDto> getTransactionById(@PathVariable Long id) {
+    BankTransaction transaction = bankTransactionService.getTransactionById(id);
+    return ResponseEntity.ok(AdminBankTransactionDetailDto.from(transaction));
+  }
+
+  @GetMapping("/transactions/reference/{reference}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<AdminBankTransactionDetailDto> getTransactionByReference(@PathVariable String reference) {
+    BankTransaction transaction = bankTransactionService.getTransactionByReference(reference);
+    return ResponseEntity.ok(AdminBankTransactionDetailDto.from(transaction));
   }
 }

@@ -21,10 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class BankTransactionService {
-
-  private static final int MAX_PAGE_SIZE = 20;
-  private static final int DEFAULT_PAGE_SIZE = 10;
-
+  
   private final BankTransactionRepository bankTransactionRepository;
   private final UserRepository userRepository;
   private final AccountHolderService accountHolderService;
@@ -53,11 +50,23 @@ public class BankTransactionService {
     return bankTransactionRepository.findAll(pageable);
   }
 
-  public Page<BankTransaction> getTransactionsByAccountNumber(String accountNumber, Pageable pageable) {
+  public Page<BankTransaction> getTransactionsByAccountNumber(String accountNumber,
+      Pageable pageable) {
     AccountHolder accountHolder = accountHolderService.findByAccountNumber(accountNumber)
         .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
     return bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(
         accountHolder.getId(), accountHolder.getId(), pageable);
+  }
+
+  public BankTransaction getTransactionById(Long id) {
+    return bankTransactionRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with ID: " + id));
+  }
+
+  public BankTransaction getTransactionByReference(String reference) {
+    return bankTransactionRepository.findByTransactionReference(reference)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Transaction not found with reference: " + reference));
   }
 
   @Transactional
