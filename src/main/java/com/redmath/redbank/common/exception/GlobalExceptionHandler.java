@@ -24,59 +24,50 @@ public class GlobalExceptionHandler {
       UserNotFoundException.class
   })
   public ResponseEntity<ApiError> handleNotFound(
-      RuntimeException exception,
+      RuntimeException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request);
+    return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
   }
 
   @ExceptionHandler(NoResourceFoundException.class)
   public ResponseEntity<ApiError> handleNoResourceFound(
-      NoResourceFoundException exception,
+      NoResourceFoundException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(
-        HttpStatus.NOT_FOUND,
-        "Endpoint not found: " + request.getRequestURI(),
-        request
-    );
+    return buildResponse(HttpStatus.NOT_FOUND, "Endpoint not found: " + request.getRequestURI(), request);
   }
 
-  @ExceptionHandler(InvalidCredentialsException.class)
-  public ResponseEntity<ApiError> handleInvalidCredentials(
-      InvalidCredentialsException exception,
+  @ExceptionHandler({
+      InvalidCredentialsException.class,
+      InvalidRefreshTokenException.class
+  })
+  public ResponseEntity<ApiError> handleUnauthorized(
+      RuntimeException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.UNAUTHORIZED, exception.getMessage(), request);
-  }
-
-  @ExceptionHandler(InvalidRefreshTokenException.class)
-  public ResponseEntity<ApiError> handleInvalidRefreshToken(
-      InvalidRefreshTokenException exception,
-      HttpServletRequest request
-  ) {
-    return buildResponse(HttpStatus.UNAUTHORIZED, exception.getMessage(), request);
+    return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
   }
 
   @ExceptionHandler(UserAccountNotActiveException.class)
   public ResponseEntity<ApiError> handleInactiveAccount(
-      UserAccountNotActiveException exception,
+      UserAccountNotActiveException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
   }
 
- @ExceptionHandler({
+  @ExceptionHandler({
       DuplicateUserException.class,
       RegistrationAlreadyReviewedException.class,
       ConflictException.class,
       InvalidUserStatusTransitionException.class
   })
   public ResponseEntity<ApiError> handleConflict(
-      RuntimeException exception,
+      RuntimeException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), request);
+    return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
   }
 
   @ExceptionHandler({
@@ -86,18 +77,18 @@ public class GlobalExceptionHandler {
       InsufficientFundsException.class
   })
   public ResponseEntity<ApiError> handleBadRequest(
-      RuntimeException exception,
+      RuntimeException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiError> handleValidationException(
-      MethodArgumentNotValidException exception,
+      MethodArgumentNotValidException ex,
       HttpServletRequest request
   ) {
-    String message = exception.getBindingResult()
+    String message = ex.getBindingResult()
         .getFieldErrors()
         .stream()
         .map(error -> error.getField() + ": " + error.getDefaultMessage())
@@ -113,44 +104,28 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseEntity<ApiError> handleUnreadableRequest(
-      HttpMessageNotReadableException exception,
+      HttpMessageNotReadableException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(
-        HttpStatus.BAD_REQUEST,
-        "The request body is missing or contains malformed JSON",
-        request
-    );
+    return buildResponse(HttpStatus.BAD_REQUEST,
+        "The request body is missing or contains malformed JSON", request);
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   public ResponseEntity<ApiError> handleMethodNotSupported(
-      HttpRequestMethodNotSupportedException exception,
+      HttpRequestMethodNotSupportedException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(
-        HttpStatus.METHOD_NOT_ALLOWED,
-        exception.getMessage(),
-        request
-    );
+    return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request);
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiError> handleUnexpectedException(
-      Exception exception,
+  public ResponseEntity<ApiError> handleGeneric(
+      Exception ex,
       HttpServletRequest request
   ) {
-    log.error(
-        "Unhandled exception while processing {}",
-        request.getRequestURI(),
-        exception
-    );
-
-    return buildResponse(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "An unexpected error occurred",
-        request
-    );
+    log.error("Unhandled exception occurred", ex);
+    return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
   }
 
   private ResponseEntity<ApiError> buildResponse(

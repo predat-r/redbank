@@ -5,6 +5,7 @@ import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserRepository;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,14 @@ public class AccountHolderService {
     return accountHolderRepository.findByAccountNumber(accountNumber)
         .orElseThrow(() -> new ResourceNotFoundException(
             "Account holder not found for account number: " + accountNumber));
+  }
+
+  public Optional<AccountHolder> findByUser(User user) {
+    return accountHolderRepository.findByUser(user);
+  }
+
+  public Optional<AccountHolder> findByAccountNumber(String accountNumber) {
+    return accountHolderRepository.findByAccountNumber(accountNumber);
   }
 
   @Transactional(readOnly = true)
