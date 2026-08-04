@@ -28,3 +28,13 @@ spring:
       refresh-token-ttl: 7d
       private-key: ${JWT_PRIVATE_KEY}
       public-key: ${JWT_PUBLIC_KEY}
+
+scheduler:
+  reconciliation:
+    cron: "0 0 0 * * *"
+  registration-cleanup:
+    cron: "0 0 3 * * *"
+  stale-transaction:
+    cron: "0 */15 * * * *"
+  token-revocation:
+    cron: "0 0 2 * * *"
