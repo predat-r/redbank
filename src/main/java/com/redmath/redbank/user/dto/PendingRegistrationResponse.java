@@ -12,4 +12,5 @@ public record PendingRegistrationResponse(
     UserStatus status,
     Instant createdAt
 ) {
+
 }

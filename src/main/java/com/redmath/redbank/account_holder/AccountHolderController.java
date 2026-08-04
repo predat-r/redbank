@@ -4,14 +4,12 @@ import com.redmath.redbank.user.User;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,12 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/account")
 public class AccountHolderController {
+
   private final AccountHolderService accountHolderService;
 
   public AccountHolderController(AccountHolderService accountHolderService) {
     this.accountHolderService = accountHolderService;
   }
 
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   @GetMapping("/me")
   ResponseEntity<AccountHolderDto> getMyAccountHolder(
       @AuthenticationPrincipal User user
@@ -36,6 +36,7 @@ public class AccountHolderController {
     return ResponseEntity.ok(AccountHolderDto.from(accountHolder));
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/{accountId}")
   ResponseEntity<AccountHolderDto> getAccountHolder(
       @PathVariable Long accountId
@@ -44,18 +45,20 @@ public class AccountHolderController {
     return ResponseEntity.ok(AccountHolderDto.from(accountHolder));
   }
 
-  //Anyone can call this endpoint
+  @PreAuthorize("hasAnyRole('ADMIN','ACCOUNT_HOLDER')")
   @GetMapping("/account-number/{accountNumber}")
   ResponseEntity<Map<String, Object>> getAccountHolderByAccountNumber(
       @PathVariable String accountNumber
   ) {
-    AccountHolder accountHolder = accountHolderService.getAccountHolderByAccountNumber(accountNumber);
+    AccountHolder accountHolder = accountHolderService.getAccountHolderByAccountNumber(
+        accountNumber);
     Map<String, Object> response = new HashMap<>();
     response.put("name", accountHolder.getUser().getName());
     response.put("accountNumber", accountHolder.getAccountNumber());
     return ResponseEntity.ok(response);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
   ResponseEntity<Map<String, Object>> getAllAccountHolders(
       @RequestParam(defaultValue = "0") int page,
@@ -63,7 +66,8 @@ public class AccountHolderController {
       @RequestParam(defaultValue = "id") String sortBy,
       @RequestParam(defaultValue = "desc") String sortDir
   ) {
-    Page<AccountHolder> accountHoldersPage = accountHolderService.getAllAccountHolders(page, size, sortBy, sortDir);
+    Page<AccountHolder> accountHoldersPage = accountHolderService.getAllAccountHolders(page, size,
+        sortBy, sortDir);
     Map<String, Object> response = new HashMap<>();
     response.put("accountHolders", accountHoldersPage.getContent().stream()
         .map(AccountHolderDto::from)
@@ -77,14 +81,7 @@ public class AccountHolderController {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping
-  ResponseEntity<AccountHolderDto> createAccountHolder(
-      @RequestBody Long userId
-  ) {
-    AccountHolder accountHolder = accountHolderService.createAccountHolder(userId);
-    return ResponseEntity.status(HttpStatus.CREATED).body(AccountHolderDto.from(accountHolder));
-  }
-
+  @PreAuthorize("hasRole('ADMIN')")
   @PatchMapping("/freeze/{accountId}")
   ResponseEntity<Void> freezeAccountHolder(
       @PathVariable Long accountId
@@ -93,6 +90,7 @@ public class AccountHolderController {
     return ResponseEntity.noContent().build();
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PatchMapping("/deactivate/{accountId}")
   ResponseEntity<Void> deactivateAccountHolder(
       @PathVariable Long accountId
@@ -100,4 +98,23 @@ public class AccountHolderController {
     accountHolderService.deactivateAccountHolder(accountId);
     return ResponseEntity.noContent().build();
   }
+
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
+  @PatchMapping("/freeze/me")
+  ResponseEntity<Void> freezeMyAccountHolder(
+      @AuthenticationPrincipal User user
+  ) {
+    accountHolderService.freezeMyAccountHolder(user.getId());
+    return ResponseEntity.noContent().build();
+  }
+
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
+  @PatchMapping("/deactivate/me")
+  ResponseEntity<Void> deactivateMyAccountHolder(
+      @AuthenticationPrincipal User user
+  ) {
+    accountHolderService.deactivateMyAccountHolder(user.getId());
+    return ResponseEntity.noContent().build();
+  }
+
 }

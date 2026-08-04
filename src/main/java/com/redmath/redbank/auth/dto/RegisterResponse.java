@@ -7,4 +7,5 @@ public record RegisterResponse(
     String email,
     UserStatus status
 ) {
+
 }

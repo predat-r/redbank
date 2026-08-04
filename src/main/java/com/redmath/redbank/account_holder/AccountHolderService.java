@@ -20,12 +20,8 @@ public class AccountHolderService {
   private static final Set<String> ALLOWED_SORT_FIELDS =
       Set.of("id", "accountNumber", "accountStatus", "createdAt", "updatedAt");
   private final AccountHolderRepository accountHolderRepository;
-  private final UserRepository userRepository;
-
-  public AccountHolderService(AccountHolderRepository accountHolderRepository,
-      UserRepository userRepository) {
+  public AccountHolderService(AccountHolderRepository accountHolderRepository) {
     this.accountHolderRepository = accountHolderRepository;
-    this.userRepository = userRepository;
   }
 
   public AccountHolder getAccountHolderByUserId(Long userId) {
@@ -67,14 +63,15 @@ public class AccountHolderService {
   }
 
   @Transactional
-  public AccountHolder createAccountHolder(Long userId) {
-    if (userId == null) {
+  public AccountHolder createAccountHolder(User user) {
+    if (user == null) {
+      throw new IllegalArgumentException("User is required");
+    }
+    if (user.getId() == null) {
       throw new IllegalArgumentException("User id is required");
     }
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
-    if (accountHolderRepository.findByUserId(userId).isPresent()) {
+    if (accountHolderRepository.findByUserId(user.getId()).isPresent()) {
       throw new ConflictException("User already has an account holder record");
     }
 
@@ -82,15 +79,25 @@ public class AccountHolderService {
     AccountHolder accountHolder = new AccountHolder();
     accountHolder.setUser(user);
     accountHolder.setAccountNumber(generateUniqueAccountNumber());
-    accountHolder.setCurrency("PKR");
+    accountHolder.setCurrency("USD");
     accountHolder.setAccountStatus(AccountStatus.ACTIVE);
     accountHolder.setApprovedAt(now);
     accountHolder.setCreatedAt(now);
     accountHolder.setUpdatedAt(now);
-    AccountHolder saved = accountHolderRepository.save(accountHolder);
+    accountHolderRepository.save(accountHolder);
+    return accountHolder;
+  }
 
-    //TODO: call transaction service
-    return saved;
+  @Transactional
+  public void freezeMyAccountHolder(Long userId){
+    AccountHolder accountHolder = getAccountHolderByUserId(userId);
+    freezeAccountHolder(accountHolder.getId());
+  }
+
+  @Transactional
+  public void deactivateMyAccountHolder(Long userId){
+    AccountHolder accountHolder = getAccountHolderByUserId(userId);
+    deactivateAccountHolder(accountHolder.getId());
   }
 
 
@@ -102,7 +109,7 @@ public class AccountHolderService {
       throw new ConflictException("Closed accounts cannot be frozen");
     }
     if (accountHolder.getAccountStatus() == AccountStatus.FROZEN) {
-      return; // idempotent
+      return;
     }
 
     accountHolder.setAccountStatus(AccountStatus.FROZEN);
@@ -114,7 +121,7 @@ public class AccountHolderService {
     AccountHolder accountHolder = getOrThrow(accountId);
 
     if (accountHolder.getAccountStatus() == AccountStatus.CLOSED) {
-      return; // idempotent
+      return;
     }
 
     accountHolder.setAccountStatus(AccountStatus.CLOSED);
