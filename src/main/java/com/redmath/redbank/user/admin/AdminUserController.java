@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,14 +26,8 @@ public class AdminUserController {
   private final AdminUserService adminUserService;
 
   @GetMapping
-  public Page<AdminUserResponse> findUsers(
-      @PageableDefault(
-          size = 20,
-          sort = {"createdAt", "id"},
-          direction = Sort.Direction.ASC
-      )
-      Pageable pageable
-  ) {
+  public Page<AdminUserResponse> findUsers(@PageableDefault(size = 20, sort = {"createdAt",
+      "id"}, direction = Sort.Direction.ASC) Pageable pageable) {
     return adminUserService.findUsers(pageable);
   }
 
@@ -42,13 +38,16 @@ public class AdminUserController {
 
   @PostMapping("/{userId}/activate")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void activateUser(@PathVariable Long userId) {
-    adminUserService.activateUser(userId);
+  public void activateUser(@PathVariable Long userId, @AuthenticationPrincipal Jwt jwt) {
+    Number adminUserIdClaim = jwt.getClaim("userId");
+
+    adminUserService.activateUser(userId, adminUserIdClaim.longValue());
   }
 
   @PostMapping("/{userId}/deactivate")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deactivateUser(@PathVariable Long userId) {
-    adminUserService.deactivateUser(userId);
+  public void deactivateUser(@PathVariable Long userId, @AuthenticationPrincipal Jwt jwt) {
+    Number adminUserIdClaim = jwt.getClaim("userId");
+    adminUserService.deactivateUser(userId, adminUserIdClaim.longValue());
   }
 }

@@ -58,9 +58,16 @@ public class RegistrationReviewController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void rejectRegistration(
       @PathVariable Long userId,
+      @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody RejectRegistrationRequest request
   ) {
-    registrationReviewService.rejectRegistration(userId, request);
+    Number adminUserIdClaim = jwt.getClaim("userId");
+
+    registrationReviewService.rejectRegistration(
+        userId,
+        adminUserIdClaim.longValue(),
+        request
+    );
   }
 
   @GetMapping("/{userId}")

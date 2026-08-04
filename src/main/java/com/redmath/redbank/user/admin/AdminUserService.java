@@ -1,5 +1,8 @@
 package com.redmath.redbank.user.admin;
 
+import com.redmath.redbank.audit.AuditAction;
+import com.redmath.redbank.audit.AuditService;
+import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.common.exception.InvalidSortException;
 import com.redmath.redbank.common.exception.InvalidUserStatusTransitionException;
 import com.redmath.redbank.common.exception.UserNotFoundException;
@@ -22,9 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminUserService {
 
-  private static final Set<String> ALLOWED_SORT_FIELDS =
-      Set.of("createdAt", "id");
-
+  private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "id");
+  private final AuditService auditService;
   private final UserRoleRepository userRoleRepository;
   private final UserService userService;
 
@@ -32,76 +34,62 @@ public class AdminUserService {
   public Page<AdminUserResponse> findUsers(Pageable pageable) {
     validateSort(pageable);
 
-    return userService.findAll(pageable)
-        .map(this::toResponse);
+    return userService.findAll(pageable).map(this::toResponse);
   }
 
   @Transactional(readOnly = true)
   public AdminUserResponse findUser(Long userId) {
-    User user = userService.findById(userId)
-        .orElseThrow(UserNotFoundException::new);
+    User user = userService.findById(userId).orElseThrow(UserNotFoundException::new);
 
     return toResponse(user);
   }
 
   @Transactional
-  public void activateUser(Long userId) {
-    User user = userService.findByIdForUpdate(userId)
-        .orElseThrow(UserNotFoundException::new);
+  public void activateUser(Long userId, Long adminUserId) {
+    User user = userService.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
 
     if (user.getStatus() == UserStatus.ACTIVE) {
       return;
     }
 
     if (user.getStatus() != UserStatus.DEACTIVATED) {
-      throw new InvalidUserStatusTransitionException(
-          "Only deactivated users can be activated"
-      );
+      throw new InvalidUserStatusTransitionException("Only deactivated users can be activated");
     }
 
     user.activate(Instant.now());
+    auditService.record(adminUserId, AuditAction.USER_ACTIVATED, AuditTargetType.USER,
+        userId.toString(), null);
   }
 
   @Transactional
-  public void deactivateUser(Long userId) {
-    User user = userService.findByIdForUpdate(userId)
-        .orElseThrow(UserNotFoundException::new);
+  public void deactivateUser(Long userId, Long adminUserId) {
+    User user = userService.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
 
     if (user.getStatus() == UserStatus.DEACTIVATED) {
       return;
     }
 
     if (user.getStatus() != UserStatus.ACTIVE) {
-      throw new InvalidUserStatusTransitionException(
-          "Only active users can be deactivated"
-      );
+      throw new InvalidUserStatusTransitionException("Only active users can be deactivated");
     }
 
-    boolean isAdmin = userRoleRepository.existsByUser_IdAndRole_Name(
-        userId,
-        RoleName.ADMIN
-    );
+    boolean isAdmin = userRoleRepository.existsByUser_IdAndRole_Name(userId, RoleName.ADMIN);
 
     if (isAdmin) {
       throw new InvalidUserStatusTransitionException(
-          "Administrators cannot be deactivated through user management"
-      );
+          "Administrators cannot be deactivated through user management");
     }
 
     user.deactivate(Instant.now());
+
+    auditService.record(adminUserId, AuditAction.USER_DEACTIVATED, AuditTargetType.USER,
+        userId.toString(), null);
   }
 
   private AdminUserResponse toResponse(User user) {
-    return new AdminUserResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getPhoneNumber(),
-        user.getName(),
-        user.getAddress(),
-        user.getStatus(),
-        user.getCreatedAt(),
-        user.getUpdatedAt()
-    );
+    return new AdminUserResponse(user.getId(), user.getEmail(), user.getPhoneNumber(),
+        user.getName(), user.getAddress(), user.getStatus(), user.getCreatedAt(),
+        user.getUpdatedAt());
   }
 
   private void validateSort(Pageable pageable) {

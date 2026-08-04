@@ -1,6 +1,9 @@
 package com.redmath.redbank.user.admin;
 
 import com.redmath.redbank.account_holder.AccountHolderService;
+import com.redmath.redbank.audit.AuditAction;
+import com.redmath.redbank.audit.AuditService;
+import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.common.exception.InvalidSortException;
 import com.redmath.redbank.common.exception.RegistrationAlreadyReviewedException;
 import com.redmath.redbank.common.exception.RegistrationNotFoundException;
@@ -29,9 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RegistrationReviewService {
 
-  private static final Set<String> ALLOWED_SORT_FIELDS =
-      Set.of("createdAt", "id");
 
+  private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "id");
+  private final AuditService auditService;
   private final UserService userService;
   private final RoleRepository roleRepository;
   private final UserRoleRepository userRoleRepository;
@@ -51,46 +54,37 @@ public class RegistrationReviewService {
         .orElseThrow(UserAccountNotActiveException::new);
 
     Role accountHolderRole = roleRepository.findByName(RoleName.ACCOUNT_HOLDER)
-        .orElseThrow(() ->
-            new IllegalStateException("ACCOUNT_HOLDER role is not configured")
-        );
+        .orElseThrow(() -> new IllegalStateException("ACCOUNT_HOLDER role is not configured"));
 
     Instant now = Instant.now();
 
     user.approveRegistration(admin, now);
 
-    UserRoleId userRoleId = new UserRoleId(
-        user.getId(),
-        accountHolderRole.getId()
-    );
+    UserRoleId userRoleId = new UserRoleId(user.getId(), accountHolderRole.getId());
 
     if (!userRoleRepository.existsById(userRoleId)) {
-      UserRole userRole = UserRole.builder()
-          .id(userRoleId)
-          .user(user)
-          .role(accountHolderRole)
-          .assignedAt(now)
-          .build();
+      UserRole userRole = UserRole.builder().id(userRoleId).user(user).role(accountHolderRole)
+          .assignedAt(now).build();
 
       userRoleRepository.save(userRole);
     }
 
     accountHolderService.createAccountHolder(userId);
+
+    auditService.record(adminUserId, AuditAction.REGISTRATION_APPROVED, AuditTargetType.USER,
+        userId.toString(), null);
   }
 
   @Transactional(readOnly = true)
   public Page<PendingRegistrationResponse> findPendingRegistrations(Pageable pageable) {
     validateSort(pageable);
 
-    return userService
-        .findAllByStatus(UserStatus.PENDING_APPROVAL, pageable)
-        .map(this::toResponse);
+    return userService.findAllByStatus(UserStatus.PENDING_APPROVAL, pageable).map(this::toResponse);
   }
 
   @Transactional(readOnly = true)
   public PendingRegistrationResponse findPendingRegistration(Long userId) {
-    User user = userService.findById(userId)
-        .orElseThrow(RegistrationNotFoundException::new);
+    User user = userService.findById(userId).orElseThrow(RegistrationNotFoundException::new);
 
     if (user.getStatus() != UserStatus.PENDING_APPROVAL) {
       throw new RegistrationAlreadyReviewedException();
@@ -100,10 +94,12 @@ public class RegistrationReviewService {
   }
 
   @Transactional
-  public void rejectRegistration(
-      Long userId,
-      RejectRegistrationRequest request
-  ) {
+  public void rejectRegistration(Long userId, Long adminUserId, RejectRegistrationRequest request) {
+
+    userService.findById(adminUserId)
+        .filter(candidate -> candidate.getStatus() == UserStatus.ACTIVE)
+        .orElseThrow(UserAccountNotActiveException::new);
+
     User user = userService.findByIdForUpdate(userId)
         .orElseThrow(RegistrationNotFoundException::new);
 
@@ -122,18 +118,13 @@ public class RegistrationReviewService {
     }
 
     user.rejectRegistration(rejectionReason, Instant.now());
+    auditService.record(adminUserId, AuditAction.REGISTRATION_REJECTED, AuditTargetType.USER,
+        userId.toString(), rejectionReason);
   }
 
   private PendingRegistrationResponse toResponse(User user) {
-    return new PendingRegistrationResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getPhoneNumber(),
-        user.getName(),
-        user.getAddress(),
-        user.getStatus(),
-        user.getCreatedAt()
-    );
+    return new PendingRegistrationResponse(user.getId(), user.getEmail(), user.getPhoneNumber(),
+        user.getName(), user.getAddress(), user.getStatus(), user.getCreatedAt());
   }
 
   private void validateSort(Pageable pageable) {
