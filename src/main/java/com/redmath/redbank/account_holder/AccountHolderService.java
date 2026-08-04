@@ -3,6 +3,7 @@ package com.redmath.redbank.account_holder;
 import com.redmath.redbank.common.exception.ConflictException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.User;
+import com.redmath.redbank.user.UserRepository;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -20,21 +21,34 @@ public class AccountHolderService {
   private static final Set<String> ALLOWED_SORT_FIELDS =
       Set.of("id", "accountNumber", "accountStatus", "createdAt", "updatedAt");
   private final AccountHolderRepository accountHolderRepository;
+  private final UserRepository userRepository;
 
-  public AccountHolderService(AccountHolderRepository accountHolderRepository) {
+  public AccountHolderService(AccountHolderRepository accountHolderRepository,
+      UserRepository userRepository) {
     this.accountHolderRepository = accountHolderRepository;
+    this.userRepository = userRepository;
   }
 
   public AccountHolder getAccountHolderByUserId(Long userId) {
-    return accountHolderRepository.findByUserId(userId);
+    if (userId == null) {
+      throw new IllegalArgumentException("User id is required");
+    }
+    return accountHolderRepository.findByUserId(userId)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Account holder not found for user id: " + userId));
   }
 
-  public AccountHolder getAccountHolderById(Long accountId){
-    return  accountHolderRepository.getAccountHoldersById(accountId);
+  public AccountHolder getAccountHolderById(Long accountId) {
+    return getOrThrow(accountId);
   }
 
-  public AccountHolder getAccountHolderByAccountNumber(String accountNumber){
-    return accountHolderRepository.getAccountHoldersByAccountNumber(accountNumber);
+  public AccountHolder getAccountHolderByAccountNumber(String accountNumber) {
+    if (accountNumber == null || accountNumber.isBlank()) {
+      throw new IllegalArgumentException("Account number is required");
+    }
+    return accountHolderRepository.findByAccountNumber(accountNumber)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Account holder not found for account number: " + accountNumber));
   }
 
   public Optional<AccountHolder> findByUser(User user) {
@@ -61,18 +75,25 @@ public class AccountHolderService {
 
   @Transactional
   public AccountHolder createAccountHolder(Long userId) {
-    //TODO: User user = userService.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+    if (userId == null) {
+      throw new IllegalArgumentException("User id is required");
+    }
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
-    if(accountHolderRepository.findByUserId(userId) != null) {
-      //TODO: throw new ConflictException("User already has an account holder record");
+    if (accountHolderRepository.findByUserId(userId).isPresent()) {
+      throw new ConflictException("User already has an account holder record");
     }
 
+    OffsetDateTime now = OffsetDateTime.now();
     AccountHolder accountHolder = new AccountHolder();
-    //TODO: accountHolder.setUser(user);
+    accountHolder.setUser(user);
     accountHolder.setAccountNumber(generateUniqueAccountNumber());
     accountHolder.setCurrency("PKR");
     accountHolder.setAccountStatus(AccountStatus.ACTIVE);
-    accountHolder.setApprovedAt(OffsetDateTime.now());
+    accountHolder.setApprovedAt(now);
+    accountHolder.setCreatedAt(now);
+    accountHolder.setUpdatedAt(now);
     AccountHolder saved = accountHolderRepository.save(accountHolder);
 
     //TODO: call transaction service
@@ -108,6 +129,9 @@ public class AccountHolderService {
   }
 
   private AccountHolder getOrThrow(Long accountId) {
+    if (accountId == null) {
+      throw new IllegalArgumentException("Account id is required");
+    }
     return accountHolderRepository.findById(accountId)
         .orElseThrow(() -> new ResourceNotFoundException("Account holder not found: " + accountId));
   }

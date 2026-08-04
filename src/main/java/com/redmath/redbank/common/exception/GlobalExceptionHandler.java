@@ -94,6 +94,12 @@ public class GlobalExceptionHandler {
     return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
   }
 
+  @ExceptionHandler(InsufficientFundsException.class)
+  public ResponseEntity<ApiError> handleInsufficientFunds(
+      InsufficientFundsException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiError> handleGeneric(
       Exception ex, HttpServletRequest request) {

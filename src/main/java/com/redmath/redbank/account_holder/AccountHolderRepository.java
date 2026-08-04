@@ -6,7 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AccountHolderRepository extends JpaRepository<AccountHolder, Long> {
 
-  AccountHolder findByUserId(Long userId);
+  Optional<AccountHolder> findByUserId(Long userId);
+
+  Optional<AccountHolder> findByUser(User user);
+
+  Optional<AccountHolder> findByAccountNumber(String accountNumber);
 
   AccountHolder getAccountHoldersById(Long id);
 
