@@ -2,19 +2,18 @@ package com.redmath.redbank.account_holder.admin;
 
 import com.redmath.redbank.account_holder.AccountHolder;
 import com.redmath.redbank.account_holder.AccountHolderDto;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -50,18 +49,28 @@ public class AdminAccountHolderController {
   @PreAuthorize("hasRole('ADMIN')")
   @PatchMapping("/freeze/{accountId}")
   ResponseEntity<Void> freezeAccountHolder(
-      @PathVariable Long accountId
+      @PathVariable Long accountId,
+      @AuthenticationPrincipal Jwt jwt
   ) {
-    adminAccountHolderService.freezeAccountHolder(accountId);
+    adminAccountHolderService.freezeAccountHolder(accountId, extractUserId(jwt));
     return ResponseEntity.noContent().build();
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PatchMapping("/deactivate/{accountId}")
   ResponseEntity<Void> deactivateAccountHolder(
-      @PathVariable Long accountId
+      @PathVariable Long accountId,
+      @AuthenticationPrincipal Jwt jwt
   ) {
-    adminAccountHolderService.deactivateAccountHolder(accountId);
+    adminAccountHolderService.deactivateAccountHolder(accountId, extractUserId(jwt));
     return ResponseEntity.noContent().build();
+  }
+
+  private Long extractUserId(Jwt jwt) {
+    Number userId = jwt.getClaim("userId");
+    if (userId == null) {
+      throw new IllegalArgumentException("User ID missing from authentication token");
+    }
+    return userId.longValue();
   }
 }

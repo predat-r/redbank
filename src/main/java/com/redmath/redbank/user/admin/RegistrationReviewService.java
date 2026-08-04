@@ -1,5 +1,6 @@
 package com.redmath.redbank.user.admin;
 
+import com.redmath.redbank.account_holder.AccountHolder;
 import com.redmath.redbank.account_holder.AccountHolderService;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
@@ -78,10 +79,12 @@ public class RegistrationReviewService {
       userRoleRepository.save(userRole);
     }
 
-    accountHolderService.createAccountHolder(user);
-
     auditService.record(adminUserId, AuditAction.REGISTRATION_APPROVED, AuditTargetType.USER,
         userId.toString(), null);
+    AccountHolder createdAccount = accountHolderService.createAccountHolder(user);
+
+    auditService.record(adminUserId, AuditAction.ACCOUNT_CREATED, AuditTargetType.ACCOUNT,
+        createdAccount.getId().toString(), null);
   }
 
   @Transactional(readOnly = true)
