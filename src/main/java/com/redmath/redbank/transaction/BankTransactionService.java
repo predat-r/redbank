@@ -3,6 +3,8 @@ package com.redmath.redbank.transaction;
 import com.redmath.redbank.account_holder.AccountHolder;
 import com.redmath.redbank.account_holder.AccountHolderService;
 import com.redmath.redbank.account_holder.AccountStatus;
+import com.redmath.redbank.balance.BalanceIndicator;
+import com.redmath.redbank.balance.BalanceService;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.request.DepositRequest;
 import com.redmath.redbank.transaction.request.TransferRequest;
@@ -26,13 +28,16 @@ public class BankTransactionService {
   private final BankTransactionRepository bankTransactionRepository;
   private final UserRepository userRepository;
   private final AccountHolderService accountHolderService;
+  private final BalanceService balanceService;
 
   public BankTransactionService(BankTransactionRepository bankTransactionRepository,
       UserRepository userRepository,
-      AccountHolderService accountHolderService) {
+      AccountHolderService accountHolderService,
+      BalanceService balanceService) {
     this.bankTransactionRepository = bankTransactionRepository;
     this.userRepository = userRepository;
     this.accountHolderService = accountHolderService;
+    this.balanceService = balanceService;
   }
 
   public Page<BankTransaction> getTransactionsForUser(String email, int page, int size) {
@@ -52,7 +57,15 @@ public class BankTransactionService {
     BankTransaction transaction = buildBaseTransaction(TransactionType.TRANSFER,
         request.getAmount(), request.getDescription());
     processTransferRules(transaction, myAccount, request.getDestinationAccountNumber());
-    return bankTransactionRepository.save(transaction);
+
+    transaction = bankTransactionRepository.save(transaction);
+
+    balanceService.recordLedgerEntry(transaction.getSourceAccountHolder(), transaction,
+        BalanceIndicator.DEBIT);
+    balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction,
+        BalanceIndicator.CREDIT);
+
+    return transaction;
   }
 
   @Transactional
@@ -68,7 +81,12 @@ public class BankTransactionService {
     BankTransaction transaction = buildBaseTransaction(TransactionType.DEPOSIT, request.getAmount(),
         request.getDescription());
     transaction.setDestinationAccountHolder(targetAccount);
-    return bankTransactionRepository.save(transaction);
+
+    transaction = bankTransactionRepository.save(transaction);
+
+    balanceService.recordLedgerEntry(targetAccount, transaction, BalanceIndicator.CREDIT);
+
+    return transaction;
   }
 
   @Transactional
@@ -84,7 +102,12 @@ public class BankTransactionService {
     BankTransaction transaction = buildBaseTransaction(TransactionType.WITHDRAWAL,
         request.getAmount(), request.getDescription());
     transaction.setSourceAccountHolder(sourceAccount);
-    return bankTransactionRepository.save(transaction);
+
+    transaction = bankTransactionRepository.save(transaction);
+
+    balanceService.recordLedgerEntry(sourceAccount, transaction, BalanceIndicator.DEBIT);
+
+    return transaction;
   }
 
 
