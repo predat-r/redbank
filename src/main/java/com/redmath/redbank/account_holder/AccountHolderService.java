@@ -3,47 +3,45 @@ package com.redmath.redbank.account_holder;
 import com.redmath.redbank.common.exception.ConflictException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.User;
+import com.redmath.redbank.user.UserService;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountHolderService {
 
-  private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "accountNumber",
-      "accountStatus", "createdAt", "updatedAt");
   private final AccountHolderRepository accountHolderRepository;
+  private final UserService userService;
 
-  public AccountHolderService(AccountHolderRepository accountHolderRepository) {
+  public AccountHolderService(AccountHolderRepository accountHolderRepository, UserService userService) {
     this.accountHolderRepository = accountHolderRepository;
+    this.userService = userService;
   }
 
   public AccountHolder getAccountHolderByUserId(Long userId) {
     if (userId == null) {
       throw new IllegalArgumentException("User id is required");
     }
-    return accountHolderRepository.findByUserId(userId).orElseThrow(
-        () -> new ResourceNotFoundException("Account holder not found for user id: " + userId));
+    Optional<AccountHolder> accountHolder = accountHolderRepository.findByUserId(userId);
+    if(accountHolder.isEmpty()){
+      throw new ResourceNotFoundException("Account holder not found for user id: " + userId);
+    }
+    return accountHolder.get();
   }
 
-  public AccountHolder getAccountHolderById(Long accountId) {
-    return getOrThrow(accountId);
-  }
-
-  public AccountHolder getAccountHolderByAccountNumber(String accountNumber) {
+  @Transactional(readOnly = true)
+  public String getAccountHolderNameByAccountNumber(String accountNumber) {
     if (accountNumber == null || accountNumber.isBlank()) {
       throw new IllegalArgumentException("Account number is required");
     }
-    return accountHolderRepository.findByAccountNumber(accountNumber).orElseThrow(
-        () -> new ResourceNotFoundException(
-            "Account holder not found for account number: " + accountNumber));
+    AccountHolder accountHolder = accountHolderRepository.getAccountHoldersByAccountNumber(accountNumber);
+    if (accountHolder == null) {
+      throw new ResourceNotFoundException("Account holder not found for account number: " + accountNumber);
+    }
+    return accountHolder.getUser().getName();
   }
 
   public Optional<AccountHolder> findByUser(User user) {
@@ -54,24 +52,8 @@ public class AccountHolderService {
     return accountHolderRepository.findByAccountNumber(accountNumber);
   }
 
-  @Transactional(readOnly = true)
-  public Page<AccountHolder> getAllAccountHolders(int page, int size, String sortBy,
-      String sortDir) {
-    if (page < 0) {
-      throw new IllegalArgumentException("Page index cannot be negative");
-    }
-    if (size <= 0) {
-      throw new IllegalArgumentException("Page size must be positive");
-    }
-    String safeSortBy = ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "id";
-    Sort.Direction direction =
-        "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
-    Pageable pageable = PageRequest.of(page, size, Sort.by(direction, safeSortBy));
-    return accountHolderRepository.findAll(pageable);
-  }
-
   @Transactional
-  public AccountHolder createAccountHolder(User user) {
+  public void createAccountHolder(User user) {
     if (user == null) {
       throw new IllegalArgumentException("User is required");
     }
@@ -93,26 +75,21 @@ public class AccountHolderService {
     accountHolder.setCreatedAt(now);
     accountHolder.setUpdatedAt(now);
     accountHolderRepository.save(accountHolder);
-    return accountHolder;
   }
 
   @Transactional
   public void freezeMyAccountHolder(Long userId) {
-    AccountHolder accountHolder = getAccountHolderByUserId(userId);
-    freezeAccountHolder(accountHolder.getId());
+    AccountHolder accountHolder = getOrThrowByUserId(userId);
+    freezeMyAccountHolderInternal(accountHolder);
   }
 
   @Transactional
   public void deactivateMyAccountHolder(Long userId) {
-    AccountHolder accountHolder = getAccountHolderByUserId(userId);
-    deactivateAccountHolder(accountHolder.getId());
+    AccountHolder accountHolder = getOrThrowByUserId(userId);
+    deactivateMyAccountHolderInternal(accountHolder);
   }
 
-
-  @Transactional
-  public void freezeAccountHolder(Long accountId) {
-    AccountHolder accountHolder = getOrThrow(accountId);
-
+  private void freezeMyAccountHolderInternal(AccountHolder accountHolder) {
     if (accountHolder.getAccountStatus() == AccountStatus.CLOSED) {
       throw new ConflictException("Closed accounts cannot be frozen");
     }
@@ -124,24 +101,22 @@ public class AccountHolderService {
     accountHolderRepository.save(accountHolder);
   }
 
-  @Transactional
-  public void deactivateAccountHolder(Long accountId) {
-    AccountHolder accountHolder = getOrThrow(accountId);
-
+  private void deactivateMyAccountHolderInternal(AccountHolder accountHolder) {
     if (accountHolder.getAccountStatus() == AccountStatus.CLOSED) {
       return;
     }
 
     accountHolder.setAccountStatus(AccountStatus.CLOSED);
     accountHolderRepository.save(accountHolder);
+    userService.deactivateUser(accountHolder.getUser().getId());
   }
 
-  private AccountHolder getOrThrow(Long accountId) {
-    if (accountId == null) {
-      throw new IllegalArgumentException("Account id is required");
+  private AccountHolder getOrThrowByUserId(Long userId) {
+    if (userId == null) {
+      throw new IllegalArgumentException("User id is required");
     }
-    return accountHolderRepository.findById(accountId)
-        .orElseThrow(() -> new ResourceNotFoundException("Account holder not found: " + accountId));
+    return accountHolderRepository.findByUserId(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("Account holder not found for user: " + userId));
   }
 
   private String generateUniqueAccountNumber() {
