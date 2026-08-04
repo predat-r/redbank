@@ -84,4 +84,31 @@ public class User {
     this.updatedAt = now;
     this.refreshTokenVersion++;
   }
+
+  public void rejectRegistration(String rejectionReason, Instant now) {
+    this.status = UserStatus.REJECTED;
+    this.rejectionReason = rejectionReason;
+    this.approvedBy = null;
+    this.approvedAt = null;
+    this.updatedAt = now;
+  }
+
+  public void approveRegistration(User admin, Instant now) {
+    this.status = UserStatus.ACTIVE;
+    this.rejectionReason = null;
+    this.approvedBy = admin;
+    this.approvedAt = now;
+    this.updatedAt = now;
+  }
+
+  public void activate(Instant now) {
+    this.status = UserStatus.ACTIVE;
+    this.updatedAt = now;
+  }
+
+  public void deactivate(Instant now) {
+    this.status = UserStatus.DEACTIVATED;
+    this.refreshTokenVersion++;
+    this.updatedAt = now;
+  }
 }

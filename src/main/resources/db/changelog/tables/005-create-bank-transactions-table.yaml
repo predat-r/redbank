@@ -1,7 +1,7 @@
 databaseChangeLog:
 
   - changeSet:
-      id: 0003-create-bank-transactions-table
+      id: 005-create-bank-transactions-table
       author: Zohaib
       changes:
 

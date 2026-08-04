@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 007-assign-admin-role
+      id: 010-assign-admin-role
       author: haris
       changes:
         - sql:
