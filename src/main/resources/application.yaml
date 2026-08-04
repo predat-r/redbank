@@ -1,15 +1,6 @@
 spring:
   application:
     name: redbank
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/redbank
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-
-  docker:
-    compose:
-      enabled: true
   jpa:
     open-in-view: false
     hibernate:
@@ -17,17 +8,6 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
-    parameters:
-      admin.password-hash: ${ADMIN_PASSWORD_HASH}
-
-
-  security:
-
-    jwt:
-      access-token-ttl: 15m
-      refresh-token-ttl: 7d
-      private-key: ${JWT_PRIVATE_KEY}
-      public-key: ${JWT_PUBLIC_KEY}
 
 scheduler:
   reconciliation:
