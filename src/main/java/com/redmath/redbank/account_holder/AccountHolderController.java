@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,12 +28,13 @@ public class AccountHolderController {
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   @GetMapping("/me")
   ResponseEntity<AccountHolderDto> getMyAccountHolder(
-      @AuthenticationPrincipal User user
+      @AuthenticationPrincipal Jwt jwt
   ) {
-    if (user == null || user.getId() == null) {
+    Long userId = jwt.getClaim("userId");
+    if (userId == null) {
       throw new IllegalArgumentException("Authenticated user is required");
     }
-    AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(user.getId());
+    AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(userId);
     return ResponseEntity.ok(AccountHolderDto.from(accountHolder));
   }
 
@@ -50,11 +52,11 @@ public class AccountHolderController {
   ResponseEntity<Map<String, Object>> getAccountHolderByAccountNumber(
       @PathVariable String accountNumber
   ) {
-    AccountHolder accountHolder = accountHolderService.getAccountHolderByAccountNumber(
+    String name = accountHolderService.getAccountHolderNameByAccountNumber(
         accountNumber);
     Map<String, Object> response = new HashMap<>();
-    response.put("name", accountHolder.getUser().getName());
-    response.put("accountNumber", accountHolder.getAccountNumber());
+    response.put("name", name);
+    response.put("accountNumber", accountNumber);
     return ResponseEntity.ok(response);
   }
 
@@ -102,18 +104,26 @@ public class AccountHolderController {
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   @PatchMapping("/freeze/me")
   ResponseEntity<Void> freezeMyAccountHolder(
-      @AuthenticationPrincipal User user
+      @AuthenticationPrincipal Jwt jwt
   ) {
-    accountHolderService.freezeMyAccountHolder(user.getId());
+    Long userId = jwt.getClaim("userId");
+    if (userId == null) {
+      throw new IllegalArgumentException("Authenticated user is required");
+    }
+    accountHolderService.freezeMyAccountHolder(userId);
     return ResponseEntity.noContent().build();
   }
 
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   @PatchMapping("/deactivate/me")
   ResponseEntity<Void> deactivateMyAccountHolder(
-      @AuthenticationPrincipal User user
+      @AuthenticationPrincipal Jwt jwt
   ) {
-    accountHolderService.deactivateMyAccountHolder(user.getId());
+    Long userId = jwt.getClaim("userId");
+    if (userId == null) {
+      throw new IllegalArgumentException("Authenticated user is required");
+    }
+    accountHolderService.deactivateMyAccountHolder(userId);
     return ResponseEntity.noContent().build();
   }
 

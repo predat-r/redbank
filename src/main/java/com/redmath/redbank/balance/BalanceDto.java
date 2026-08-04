@@ -2,7 +2,9 @@ package com.redmath.redbank.balance;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import lombok.Getter;
 
+@Getter
 public class BalanceDto {
 
   Long id;

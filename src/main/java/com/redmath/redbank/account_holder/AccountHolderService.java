@@ -29,27 +29,33 @@ public class AccountHolderService {
     if (userId == null) {
       throw new IllegalArgumentException("User id is required");
     }
-    return accountHolderRepository.findByUserId(userId).orElseThrow(
-        () -> new ResourceNotFoundException("Account holder not found for user id: " + userId));
+    Optional<AccountHolder> accountHolder = accountHolderRepository.findByUserId(userId);
+    if(accountHolder.isEmpty()){
+      throw new ResourceNotFoundException("Account holder not found for user id: " + userId);
+    }
+    return accountHolder.get();
   }
 
   public AccountHolder getAccountHolderById(Long accountId) {
     return getOrThrow(accountId);
   }
 
-  public AccountHolder getAccountHolderByAccountNumber(String accountNumber) {
+  @Transactional(readOnly = true)
+  public String getAccountHolderNameByAccountNumber(String accountNumber) {
     if (accountNumber == null || accountNumber.isBlank()) {
       throw new IllegalArgumentException("Account number is required");
     }
-    return accountHolderRepository.findByAccountNumber(accountNumber).orElseThrow(
-        () -> new ResourceNotFoundException(
-            "Account holder not found for account number: " + accountNumber));
+    AccountHolder accountHolder = accountHolderRepository.getAccountHoldersByAccountNumber(accountNumber);
+    if (accountHolder == null) {
+      throw new ResourceNotFoundException("Account holder not found for account number: " + accountNumber);
+    }
+    return accountHolder.getUser().getName();
   }
 
   public Optional<AccountHolder> findByUser(User user) {
     return accountHolderRepository.findByUser(user);
   }
-
+x
   public Optional<AccountHolder> findByAccountNumber(String accountNumber) {
     return accountHolderRepository.findByAccountNumber(accountNumber);
   }
