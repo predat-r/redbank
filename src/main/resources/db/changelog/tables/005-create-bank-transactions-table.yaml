@@ -51,7 +51,7 @@ databaseChangeLog:
 
               - column:
                   name: amount
-                  type: NUMERIC(19, 4)
+                  type: NUMERIC(19, 2)
                   constraints:
                     nullable: false
 

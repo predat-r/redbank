@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class BankTransactionService {
-  
+
   private final BankTransactionRepository bankTransactionRepository;
   private final UserRepository userRepository;
   private final AccountHolderService accountHolderService;
@@ -92,8 +92,9 @@ public class BankTransactionService {
             request.getAccountNumber())
         .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
 
-    if (targetAccount.getAccountStatus() == AccountStatus.CLOSED) {
-      throw new IllegalArgumentException("Destination account is closed");
+    if (targetAccount.getAccountStatus() != AccountStatus.ACTIVE) {
+      throw new IllegalArgumentException(
+          "Destination account is not active (status: " + targetAccount.getAccountStatus() + ")");
     }
 
     BankTransaction transaction = buildBaseTransaction(TransactionType.DEPOSIT, request.getAmount(),
@@ -108,14 +109,8 @@ public class BankTransactionService {
   }
 
   @Transactional
-  public BankTransaction withdraw(WithdrawalRequest request) {
-    AccountHolder sourceAccount = accountHolderService.findByAccountNumber(
-            request.getAccountNumber())
-        .orElseThrow(() -> new ResourceNotFoundException("Source account not found"));
-
-    if (sourceAccount.getAccountStatus() == AccountStatus.CLOSED) {
-      throw new IllegalArgumentException("Source account is closed");
-    }
+  public BankTransaction withdraw(String email, WithdrawalRequest request) {
+    AccountHolder sourceAccount = getAndValidateInitiatorAccount(email);
 
     BankTransaction transaction = buildBaseTransaction(TransactionType.WITHDRAWAL,
         request.getAmount(), request.getDescription());
@@ -173,8 +168,9 @@ public class BankTransactionService {
             destinationAccountNumber)
         .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
 
-    if (destAccount.getAccountStatus() == AccountStatus.CLOSED) {
-      throw new IllegalArgumentException("Destination account is closed");
+    if (destAccount.getAccountStatus() != AccountStatus.ACTIVE) {
+      throw new IllegalArgumentException(
+          "Destination account is not active (status: " + destAccount.getAccountStatus() + ")");
     }
 
     transaction.setSourceAccountHolder(sourceAccount);
