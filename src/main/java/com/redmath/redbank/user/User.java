@@ -102,10 +102,6 @@ public class User {
     this.updatedAt = now;
   }
 
-  public void activate(Instant now) {
-    this.status = UserStatus.ACTIVE;
-    this.updatedAt = now;
-  }
 
   public void deactivate(Instant now) {
     this.status = UserStatus.DEACTIVATED;
