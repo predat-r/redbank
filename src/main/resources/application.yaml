@@ -38,3 +38,8 @@ scheduler:
     cron: "0 */15 * * * *"
   token-revocation:
     cron: "0 0 2 * * *"
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
