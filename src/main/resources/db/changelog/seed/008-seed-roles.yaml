@@ -16,8 +16,18 @@ databaseChangeLog:
               - column:
                   name: name
                   value: ACCOUNT_HOLDER
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: name
+                  value: PENDING_USER
 
       rollback:
+        - delete:
+            tableName: roles
+            where: name = 'PENDING_USER'
+
         - delete:
             tableName: roles
             where: name = 'ACCOUNT_HOLDER'
