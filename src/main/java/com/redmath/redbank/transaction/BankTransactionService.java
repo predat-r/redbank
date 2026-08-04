@@ -14,7 +14,7 @@ import com.redmath.redbank.user.UserRepository;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,21 +40,24 @@ public class BankTransactionService {
     this.balanceService = balanceService;
   }
 
-  public Page<BankTransaction> getTransactionsForUser(String email, int page, int size) {
-    int safePage = Math.max(page, 0);
-    int safeSize = (size <= 0 || size > MAX_PAGE_SIZE) ? DEFAULT_PAGE_SIZE : size;
+  public Page<BankTransaction> getTransactionsForUser(String email, Pageable pageable) {
     User user = userRepository.findByEmailIgnoreCase(email)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     AccountHolder accountHolder = accountHolderService.findByUser(user)
         .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
     return bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(
-        accountHolder.getId(), accountHolder.getId(), PageRequest.of(safePage, safeSize));
+        accountHolder.getId(), accountHolder.getId(), pageable);
   }
 
-  public Page<BankTransaction> getAllTransactions(int page, int size) {
-    int safePage = Math.max(page, 0);
-    int safeSize = (size <= 0 || size > MAX_PAGE_SIZE) ? DEFAULT_PAGE_SIZE : size;
-    return bankTransactionRepository.findAll(PageRequest.of(safePage, safeSize));
+  public Page<BankTransaction> getAllTransactions(Pageable pageable) {
+    return bankTransactionRepository.findAll(pageable);
+  }
+
+  public Page<BankTransaction> getTransactionsByAccountNumber(String accountNumber, Pageable pageable) {
+    AccountHolder accountHolder = accountHolderService.findByAccountNumber(accountNumber)
+        .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
+    return bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(
+        accountHolder.getId(), accountHolder.getId(), pageable);
   }
 
   @Transactional
