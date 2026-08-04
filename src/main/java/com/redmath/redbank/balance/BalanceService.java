@@ -27,14 +27,6 @@ public class BalanceService {
         .orElseGet(this::newZeroBalanceEntry);
   }
 
-  public Balance getLatestBalanceByAccountHolderId(Long accountId) {
-    if (accountId == null) {
-      throw new IllegalArgumentException("Account holder id is required");
-    }
-    return balanceRepository.getLatestBalanceByAccountHolderId(accountId)
-        .orElseGet(this::newZeroBalanceEntry);
-  }
-
   public Balance getBalanceByTransactionId(Long transactionId) {
     if (transactionId == null) {
       throw new IllegalArgumentException("Transaction id is required");

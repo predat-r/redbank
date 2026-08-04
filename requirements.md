@@ -9,7 +9,6 @@ The backend will provide:
 - Public user registration
 - Admin approval or rejection of registrations
 - Email/password authentication
-- Google OAuth2 login
 - Role-based authorization
 - Account-holder profile management
 - Deposits, withdrawals, and transfers
@@ -29,7 +28,6 @@ The frontend will be developed as a separate application in a separate repositor
 - Maven
 - Spring Web
 - Spring Security
-- Spring OAuth2 Client
 - Spring OAuth2 Resource Server
 - Spring Data JPA
 - Jakarta Validation
@@ -175,7 +173,6 @@ Rejection must:
 The backend must support:
 
 - Email/password login
-- Google OAuth2 login
 - JWT-protected REST endpoints
 - Role-based authorization
 - BCrypt password hashing
@@ -183,8 +180,6 @@ The backend must support:
 - Logout with refresh-token invalidation
 - Authenticated password changes
 - Stateless bearer-token authentication
-
-OAuth provider information may be stored directly on the user record for this assignment. A separate OAuth identity table is not required.
 
 Passwords must never be stored or returned in plain text.
 
@@ -329,7 +324,7 @@ An account holder must never access another holder's private profile, balance, o
 
 ### Module 1: Authentication and Account Management
 
-Includes registration, login, Google OAuth2 login, JWT security, admin approval and rejection, user profile management, account-holder creation, account activation/freezing/closure, tests, Swagger documentation, and system tests.
+Includes registration, login, JWT security, admin approval and rejection, user profile management, account-holder creation, account activation/freezing/closure, tests, Swagger documentation, and system tests.
 
 ### Module 2: Transaction Management
 
@@ -374,8 +369,6 @@ refresh_token_version
 name
 address
 status
-oauth_provider
-oauth_provider_id
 rejection_reason
 approved_by_user_id
 approved_at
@@ -614,13 +607,6 @@ POST /api/auth/login
 POST /api/auth/refresh
 POST /api/auth/logout
 PUT  /api/auth/password
-```
-
-OAuth2:
-
-```http
-GET /oauth2/authorization/google
-GET /login/oauth2/code/google
 ```
 
 ### Current user profile
@@ -869,7 +855,6 @@ Recommended command:
 - Admin approval and rejection
 - Predefined administrator
 - Email/password login
-- Google OAuth2 login
 - JWT-protected APIs
 - Account-holder profile
 - Account status management
@@ -895,8 +880,6 @@ Recommended command:
 - Loans
 - Cards
 - Multiple accounts per user unless later required
-- Separate OAuth identity table
-- GitHub OAuth unless the project scope is expanded
 - Reversal-request workflow
 - Physical deletion of completed financial history
 - Frontend implementation in this repository
