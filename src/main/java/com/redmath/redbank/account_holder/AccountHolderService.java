@@ -1,6 +1,10 @@
 package com.redmath.redbank.account_holder;
 
+import com.redmath.redbank.common.exception.ConflictException;
+import com.redmath.redbank.common.exception.ResourceNotFoundException;
+import com.redmath.redbank.user.User;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -31,6 +35,14 @@ public class AccountHolderService {
 
   public AccountHolder getAccountHolderByAccountNumber(String accountNumber){
     return accountHolderRepository.getAccountHoldersByAccountNumber(accountNumber);
+  }
+
+  public Optional<AccountHolder> findByUser(User user) {
+    return accountHolderRepository.findByUser(user);
+  }
+
+  public Optional<AccountHolder> findByAccountNumber(String accountNumber) {
+    return accountHolderRepository.findByAccountNumber(accountNumber);
   }
 
   @Transactional(readOnly = true)

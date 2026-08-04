@@ -1,7 +1,7 @@
 package com.redmath.redbank.transaction;
 
 import com.redmath.redbank.account_holder.AccountHolder;
-import com.redmath.redbank.account_holder.AccountHolderRepository;
+import com.redmath.redbank.account_holder.AccountHolderService;
 import com.redmath.redbank.account_holder.AccountStatus;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.request.DepositRequest;
@@ -25,14 +25,14 @@ public class BankTransactionService {
 
   private final BankTransactionRepository bankTransactionRepository;
   private final UserRepository userRepository;
-  private final AccountHolderRepository accountHolderRepository;
+  private final AccountHolderService accountHolderService;
 
   public BankTransactionService(BankTransactionRepository bankTransactionRepository,
       UserRepository userRepository,
-      AccountHolderRepository accountHolderRepository) {
+      AccountHolderService accountHolderService) {
     this.bankTransactionRepository = bankTransactionRepository;
     this.userRepository = userRepository;
-    this.accountHolderRepository = accountHolderRepository;
+    this.accountHolderService = accountHolderService;
   }
 
   public Page<BankTransaction> getTransactionsForUser(String email, int page, int size) {
@@ -40,7 +40,7 @@ public class BankTransactionService {
     int safeSize = (size <= 0 || size > MAX_PAGE_SIZE) ? DEFAULT_PAGE_SIZE : size;
     User user = userRepository.findByEmailIgnoreCase(email)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    AccountHolder accountHolder = accountHolderRepository.findByUser(user)
+    AccountHolder accountHolder = accountHolderService.findByUser(user)
         .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
     return bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(
         accountHolder.getId(), accountHolder.getId(), PageRequest.of(safePage, safeSize));
@@ -57,7 +57,7 @@ public class BankTransactionService {
 
   @Transactional
   public BankTransaction deposit(DepositRequest request) {
-    AccountHolder targetAccount = accountHolderRepository.findByAccountNumber(
+    AccountHolder targetAccount = accountHolderService.findByAccountNumber(
             request.getAccountNumber())
         .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
 
@@ -73,7 +73,7 @@ public class BankTransactionService {
 
   @Transactional
   public BankTransaction withdraw(WithdrawalRequest request) {
-    AccountHolder sourceAccount = accountHolderRepository.findByAccountNumber(
+    AccountHolder sourceAccount = accountHolderService.findByAccountNumber(
             request.getAccountNumber())
         .orElseThrow(() -> new ResourceNotFoundException("Source account not found"));
 
@@ -91,7 +91,7 @@ public class BankTransactionService {
   private AccountHolder getAndValidateInitiatorAccount(String email) {
     User user = userRepository.findByEmailIgnoreCase(email)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    AccountHolder myAccount = accountHolderRepository.findByUser(user)
+    AccountHolder myAccount = accountHolderService.findByUser(user)
         .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
 
     if (myAccount.getAccountStatus() != AccountStatus.ACTIVE) {
@@ -128,7 +128,7 @@ public class BankTransactionService {
     if (sourceAccount.getAccountNumber().equals(destinationAccountNumber)) {
       throw new IllegalArgumentException("Source and destination accounts must differ");
     }
-    AccountHolder destAccount = accountHolderRepository.findByAccountNumber(
+    AccountHolder destAccount = accountHolderService.findByAccountNumber(
             destinationAccountNumber)
         .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
 
