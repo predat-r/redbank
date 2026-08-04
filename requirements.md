@@ -105,11 +105,12 @@ com.redmath.redbank
 
 ## 4. Roles
 
-The system has two roles:
+The system has three roles:
 
 ```text
 ADMIN
 ACCOUNT_HOLDER
+PENDING_USER
 ```
 
 Common authentication fields are stored in the `user` entity.
@@ -121,7 +122,9 @@ USERS N : M ROLES through USER_ROLES
 USERS 1 : 0..1 ACCOUNT_HOLDERS
 ```
 
-An administrator is a user assigned the `ADMIN` role. An approved customer is assigned the `ACCOUNT_HOLDER` role and linked to an account-holder record.
+An administrator is a user assigned the `ADMIN` role. A newly registered customer is assigned the
+transitional `PENDING_USER` role. An approved customer has `PENDING_USER` replaced with
+`ACCOUNT_HOLDER` and is linked to an account-holder record.
 
 ## 5. Registration and Approval
 
@@ -136,9 +139,13 @@ New registrations must have:
 
 ```text
 status = PENDING_APPROVAL
+role = PENDING_USER
 ```
 
-A pending user cannot perform banking operations.
+A successful registration issues an access and refresh token pair so the client can establish a
+restricted pending-user session immediately. A pending user may access only authentication
+lifecycle operations and their own registration status. A pending user cannot perform banking
+operations.
 
 ### 5.2 Admin approval
 
@@ -152,7 +159,7 @@ An administrator can:
 Approval must:
 
 1. Change the user status to `ACTIVE`.
-2. Assign the `ACCOUNT_HOLDER` role.
+2. Remove the `PENDING_USER` role and assign the `ACCOUNT_HOLDER` role.
 3. Create an account-holder record.
 4. Generate a unique account number.
 5. Create an opening balance entry with a running balance of zero.
@@ -160,7 +167,8 @@ Approval must:
 Rejection must:
 
 1. Change the user status to `REJECTED`.
-2. Store the rejection reason.
+2. Remove the `PENDING_USER` role.
+3. Store the rejection reason.
 
 ## 6. Authentication and Security
 
@@ -182,10 +190,14 @@ Passwords must never be stored or returned in plain text.
 
 ### 6.1 Email/password behavior
 
-- Registration creates a `PENDING_APPROVAL` user and does not issue tokens.
+- Registration creates a `PENDING_APPROVAL` user with the `PENDING_USER` role and returns an access
+  and refresh token pair as part of the registration response.
 - Login must normalize the email and return a generic invalid-credentials response for an unknown
   email or incorrect password.
-- Only users with `status = ACTIVE` may log in or refresh tokens.
+- Users with `status = ACTIVE` or `status = PENDING_APPROVAL` may log in and refresh tokens.
+- Users with `status = REJECTED` or `status = DEACTIVATED` must not log in or refresh tokens.
+- `PENDING_USER` access tokens may access only `GET /api/auth/registration-status` and the public
+  authentication lifecycle endpoints. They must not access banking or administrative operations.
 - A successful login returns an access token and a refresh token with token type `Bearer`.
 - `PUT /api/auth/password` must verify the current password, reject reuse of the current password,
   BCrypt-hash the new password, and invalidate all existing refresh tokens.
@@ -249,6 +261,9 @@ refreshToken
 tokenType = Bearer
 ```
 
+Successful registration returns the registered user's ID, email, status, and the same token-pair
+structure nested under `tokens`.
+
 Refresh and logout requests contain:
 
 ```text
@@ -267,6 +282,7 @@ newPassword
 - Raw refresh tokens are not stored in the database.
 - `USERS.refresh_token_version` is the server-side revocation value.
 - The system supports one active refresh-token chain per user.
+- Successful registration increments the version before issuing its initial token pair.
 - Successful login increments the version before issuing the token pair, invalidating earlier
   refresh-token chains.
 - Refresh uses rotation: validate the token, lock the user row, compare versions, increment the
@@ -284,6 +300,11 @@ newPassword
 Authorization rules:
 
 ```text
+PENDING_USER
+- View own registration status
+- Use login, refresh, and logout lifecycle operations
+- Cannot access banking or administrative operations
+
 ADMIN
 - View all users and account holders
 - Approve or reject registrations

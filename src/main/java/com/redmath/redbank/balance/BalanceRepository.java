@@ -29,4 +29,12 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
   Optional<Balance> getLatestBalanceByAccountHolderId(Long accountId);
 
   Optional<Balance> getBalanceByTransactionId(Long transactionId);
+
+  @Query("""
+      SELECT b
+      FROM Balance b
+      WHERE b.accountHolder.id = :accountHolderId
+      ORDER BY b.id ASC
+      """)
+  java.util.List<Balance> findAllByAccountHolderId(Long accountHolderId);
 }
