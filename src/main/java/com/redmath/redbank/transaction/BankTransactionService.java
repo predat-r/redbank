@@ -1,8 +1,10 @@
 package com.redmath.redbank.transaction;
 
 import com.redmath.redbank.account_holder.AccountHolder;
-import com.redmath.redbank.account_holder.AccountHolderRepository;
+import com.redmath.redbank.account_holder.AccountHolderService;
 import com.redmath.redbank.account_holder.AccountStatus;
+import com.redmath.redbank.balance.BalanceIndicator;
+import com.redmath.redbank.balance.BalanceService;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.request.DepositRequest;
 import com.redmath.redbank.transaction.request.TransferRequest;
@@ -12,38 +14,59 @@ import com.redmath.redbank.user.UserRepository;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
 public class BankTransactionService {
-
-  private static final int MAX_PAGE_SIZE = 20;
-  private static final int DEFAULT_PAGE_SIZE = 10;
-
+  
   private final BankTransactionRepository bankTransactionRepository;
   private final UserRepository userRepository;
-  private final AccountHolderRepository accountHolderRepository;
+  private final AccountHolderService accountHolderService;
+  private final BalanceService balanceService;
 
   public BankTransactionService(BankTransactionRepository bankTransactionRepository,
       UserRepository userRepository,
-      AccountHolderRepository accountHolderRepository) {
+      AccountHolderService accountHolderService,
+      BalanceService balanceService) {
     this.bankTransactionRepository = bankTransactionRepository;
     this.userRepository = userRepository;
-    this.accountHolderRepository = accountHolderRepository;
+    this.accountHolderService = accountHolderService;
+    this.balanceService = balanceService;
   }
 
-  public Page<BankTransaction> getTransactionsForUser(String email, int page, int size) {
-    int safePage = Math.max(page, 0);
-    int safeSize = (size <= 0 || size > MAX_PAGE_SIZE) ? DEFAULT_PAGE_SIZE : size;
+  public Page<BankTransaction> getTransactionsForUser(String email, Pageable pageable) {
     User user = userRepository.findByEmailIgnoreCase(email)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    AccountHolder accountHolder = accountHolderRepository.findByUser(user)
+    AccountHolder accountHolder = accountHolderService.findByUser(user)
         .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
     return bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(
-        accountHolder.getId(), accountHolder.getId(), PageRequest.of(safePage, safeSize));
+        accountHolder.getId(), accountHolder.getId(), pageable);
+  }
+
+  public Page<BankTransaction> getAllTransactions(Pageable pageable) {
+    return bankTransactionRepository.findAll(pageable);
+  }
+
+  public Page<BankTransaction> getTransactionsByAccountNumber(String accountNumber,
+      Pageable pageable) {
+    AccountHolder accountHolder = accountHolderService.findByAccountNumber(accountNumber)
+        .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
+    return bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(
+        accountHolder.getId(), accountHolder.getId(), pageable);
+  }
+
+  public BankTransaction getTransactionById(Long id) {
+    return bankTransactionRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with ID: " + id));
+  }
+
+  public BankTransaction getTransactionByReference(String reference) {
+    return bankTransactionRepository.findByTransactionReference(reference)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Transaction not found with reference: " + reference));
   }
 
   @Transactional
@@ -52,12 +75,20 @@ public class BankTransactionService {
     BankTransaction transaction = buildBaseTransaction(TransactionType.TRANSFER,
         request.getAmount(), request.getDescription());
     processTransferRules(transaction, myAccount, request.getDestinationAccountNumber());
-    return bankTransactionRepository.save(transaction);
+
+    transaction = bankTransactionRepository.save(transaction);
+
+    balanceService.recordLedgerEntry(transaction.getSourceAccountHolder(), transaction,
+        BalanceIndicator.DEBIT);
+    balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction,
+        BalanceIndicator.CREDIT);
+
+    return transaction;
   }
 
   @Transactional
   public BankTransaction deposit(DepositRequest request) {
-    AccountHolder targetAccount = accountHolderRepository.findByAccountNumber(
+    AccountHolder targetAccount = accountHolderService.findByAccountNumber(
             request.getAccountNumber())
         .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
 
@@ -68,12 +99,17 @@ public class BankTransactionService {
     BankTransaction transaction = buildBaseTransaction(TransactionType.DEPOSIT, request.getAmount(),
         request.getDescription());
     transaction.setDestinationAccountHolder(targetAccount);
-    return bankTransactionRepository.save(transaction);
+
+    transaction = bankTransactionRepository.save(transaction);
+
+    balanceService.recordLedgerEntry(targetAccount, transaction, BalanceIndicator.CREDIT);
+
+    return transaction;
   }
 
   @Transactional
   public BankTransaction withdraw(WithdrawalRequest request) {
-    AccountHolder sourceAccount = accountHolderRepository.findByAccountNumber(
+    AccountHolder sourceAccount = accountHolderService.findByAccountNumber(
             request.getAccountNumber())
         .orElseThrow(() -> new ResourceNotFoundException("Source account not found"));
 
@@ -84,14 +120,19 @@ public class BankTransactionService {
     BankTransaction transaction = buildBaseTransaction(TransactionType.WITHDRAWAL,
         request.getAmount(), request.getDescription());
     transaction.setSourceAccountHolder(sourceAccount);
-    return bankTransactionRepository.save(transaction);
+
+    transaction = bankTransactionRepository.save(transaction);
+
+    balanceService.recordLedgerEntry(sourceAccount, transaction, BalanceIndicator.DEBIT);
+
+    return transaction;
   }
 
 
   private AccountHolder getAndValidateInitiatorAccount(String email) {
     User user = userRepository.findByEmailIgnoreCase(email)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    AccountHolder myAccount = accountHolderRepository.findByUser(user)
+    AccountHolder myAccount = accountHolderService.findByUser(user)
         .orElseThrow(() -> new ResourceNotFoundException("Account holder not found"));
 
     if (myAccount.getAccountStatus() != AccountStatus.ACTIVE) {
@@ -128,7 +169,7 @@ public class BankTransactionService {
     if (sourceAccount.getAccountNumber().equals(destinationAccountNumber)) {
       throw new IllegalArgumentException("Source and destination accounts must differ");
     }
-    AccountHolder destAccount = accountHolderRepository.findByAccountNumber(
+    AccountHolder destAccount = accountHolderService.findByAccountNumber(
             destinationAccountNumber)
         .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
 
