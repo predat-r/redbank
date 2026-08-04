@@ -1,5 +1,6 @@
 package com.redmath.redbank.balance;
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,7 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
           ORDER BY b.id DESC
           LIMIT 1
       """)
-  Balance getLatestBalanceByUserId(Long userId);
+  Optional<Balance> getLatestBalanceByUserId(Long userId);
 
   @Query(
       """
@@ -25,7 +26,7 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
           LIMIT 1
           """
   )
-  Balance getLatestBalanceByAccountHolderId(Long accountId);
+  Optional<Balance> getLatestBalanceByAccountHolderId(Long accountId);
 
-  Balance getBalanceByTransactionId(Long transactionId);
+  Optional<Balance> getBalanceByTransactionId(Long transactionId);
 }

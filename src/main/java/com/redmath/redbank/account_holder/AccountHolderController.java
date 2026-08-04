@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("/api/account")
+@RestController
+@RequestMapping("/api/account")
 public class AccountHolderController {
   private final AccountHolderService accountHolderService;
 
@@ -27,6 +29,9 @@ public class AccountHolderController {
   ResponseEntity<AccountHolderDto> getMyAccountHolder(
       @AuthenticationPrincipal User user
   ) {
+    if (user == null || user.getId() == null) {
+      throw new IllegalArgumentException("Authenticated user is required");
+    }
     AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(user.getId());
     return ResponseEntity.ok(AccountHolderDto.from(accountHolder));
   }
@@ -44,7 +49,6 @@ public class AccountHolderController {
   ResponseEntity<Map<String, Object>> getAccountHolderByAccountNumber(
       @PathVariable String accountNumber
   ) {
-    //TODO: Exception Handling if not found
     AccountHolder accountHolder = accountHolderService.getAccountHolderByAccountNumber(accountNumber);
     Map<String, Object> response = new HashMap<>();
     response.put("name", accountHolder.getUser().getName());
