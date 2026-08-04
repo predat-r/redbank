@@ -125,7 +125,8 @@ public class GlobalExceptionHandler {
       HttpServletRequest request
   ) {
     log.error("Unhandled exception occurred", ex);
-    return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+    return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+        "An unexpected error occurred", request);
   }
 
   private ResponseEntity<ApiError> buildResponse(
