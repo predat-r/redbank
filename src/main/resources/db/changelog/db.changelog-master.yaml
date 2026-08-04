@@ -28,3 +28,6 @@ databaseChangeLog:
 
   - include:
       file: db/changelog/seed/010-assign-admin-role.yaml
+
+  - include:
+      file: db/changelog/seed/011-seed-dev-account-holders.yaml

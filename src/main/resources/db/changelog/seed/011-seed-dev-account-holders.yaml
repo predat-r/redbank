@@ -1,0 +1,82 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-seed-dev-account-holders
+      author: zohaib
+      context: dev
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: email
+                  value: john@gmail.com
+              - column:
+                  name: password_hash
+                  value: "$2a$10$3jPO9h3YHF1uByOUXOr0vei49HtXQ0Bga4NFF3bf9oH3gN92xxru6"
+              - column:
+                  name: name
+                  value: John Doe
+              - column:
+                  name: address
+                  value: 123 Main St, New York, NY
+              - column:
+                  name: phone_number
+                  value: "+12345678901"
+              - column:
+                  name: status
+                  value: ACTIVE
+              - column:
+                  name: approved_at
+                  valueComputed: CURRENT_TIMESTAMP
+
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: email
+                  value: jane@gmail.com
+              - column:
+                  name: password_hash
+                  value: "$2a$10$3jPO9h3YHF1uByOUXOr0vei49HtXQ0Bga4NFF3bf9oH3gN92xxru6"
+              - column:
+                  name: name
+                  value: Jane Smith
+              - column:
+                  name: address
+                  value: 456 Park Ave, New York, NY
+              - column:
+                  name: phone_number
+                  value: "+12345678902"
+              - column:
+                  name: status
+                  value: ACTIVE
+              - column:
+                  name: approved_at
+                  valueComputed: CURRENT_TIMESTAMP
+
+        - sql:
+            sql: |
+              INSERT INTO user_roles (user_id, role_id, assigned_at)
+              SELECT u.id, r.id, CURRENT_TIMESTAMP
+              FROM users u
+              JOIN roles r ON r.name = 'ACCOUNT_HOLDER'
+              WHERE u.email IN ('john@gmail.com', 'jane@gmail.com');
+
+        - sql:
+            sql: |
+              INSERT INTO account_holders (user_id, account_number, currency, account_status, approved_at)
+              SELECT id, 'RB1000000001', 'USD', 'ACTIVE', CURRENT_TIMESTAMP
+              FROM users WHERE email = 'john@gmail.com';
+
+        - sql:
+            sql: |
+              INSERT INTO account_holders (user_id, account_number, currency, account_status, approved_at)
+              SELECT id, 'RB1000000002', 'USD', 'ACTIVE', CURRENT_TIMESTAMP
+              FROM users WHERE email = 'jane@gmail.com';
+
+      rollback:
+        - sql:
+            sql: |
+              DELETE FROM account_holders WHERE account_number IN ('RB1000000001', 'RB1000000002');
+              DELETE FROM user_roles WHERE user_id IN (SELECT id FROM users WHERE email IN ('john@gmail.com', 'jane@gmail.com'));
+              DELETE FROM users WHERE email IN ('john@gmail.com', 'jane@gmail.com');
