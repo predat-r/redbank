@@ -1,6 +1,8 @@
 package com.redmath.redbank.balance;
 
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -37,4 +39,11 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
       ORDER BY b.id ASC
       """)
   java.util.List<Balance> findAllByAccountHolderId(Long accountHolderId);
+
+  @Query("""
+      SELECT b
+      FROM Balance b
+      WHERE b.accountHolder.id = :accountHolderId
+      """)
+  Page<Balance> findAllByAccountHolderId(Long accountHolderId, Pageable pageable);
 }
