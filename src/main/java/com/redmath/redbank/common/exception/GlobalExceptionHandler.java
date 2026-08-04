@@ -58,6 +58,17 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler({
+      org.springframework.security.access.AccessDeniedException.class,
+      org.springframework.security.authorization.AuthorizationDeniedException.class
+  })
+  public ResponseEntity<ApiError> handleAccessDenied(
+      Exception ex,
+      HttpServletRequest request
+  ) {
+    return buildResponse(HttpStatus.FORBIDDEN, "Access Denied: You do not have permission to access this resource", request);
+  }
+
+  @ExceptionHandler({
       DuplicateUserException.class,
       RegistrationAlreadyReviewedException.class,
       ConflictException.class,
