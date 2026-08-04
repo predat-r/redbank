@@ -15,6 +15,8 @@ import com.redmath.redbank.security.jwt.JwtService;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserService;
 import com.redmath.redbank.user.UserStatus;
+import com.redmath.redbank.user.role.RoleRepository;
+import com.redmath.redbank.user.role.UserRoleRepository;
 import java.time.Instant;
 import java.util.Locale;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,19 +34,25 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final JwtDecoder refreshJwtDecoder;
+  private final UserRoleRepository userRoleRepository;
+  private final RoleRepository roleRepository;
 
   public AuthService(
       UserService userService,
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
-      @Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder
+      @Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder,
+      UserRoleRepository userRoleRepository, RoleRepository roleRepository
   ) {
     this.userService = userService;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.refreshJwtDecoder = refreshJwtDecoder;
+    this.userRoleRepository = userRoleRepository;
+    this.roleRepository = roleRepository;
   }
 
+  @Transactional
   public RegisterResponse register(RegisterRequest request) {
     String normalizedEmail = request.email()
         .trim()
