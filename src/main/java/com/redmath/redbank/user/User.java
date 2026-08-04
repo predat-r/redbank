@@ -90,6 +90,7 @@ public class User {
     this.rejectionReason = rejectionReason;
     this.approvedBy = null;
     this.approvedAt = null;
+    this.refreshTokenVersion++;
     this.updatedAt = now;
   }
 

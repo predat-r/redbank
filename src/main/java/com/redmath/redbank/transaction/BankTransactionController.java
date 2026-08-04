@@ -1,7 +1,7 @@
 package com.redmath.redbank.transaction;
 
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
-import com.redmath.redbank.transaction.request.DepositRequest;
+
 import com.redmath.redbank.transaction.request.TransferRequest;
 import com.redmath.redbank.transaction.request.WithdrawalRequest;
 import jakarta.validation.Valid;
@@ -50,19 +50,12 @@ public class BankTransactionController {
     return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
   }
 
-  @PostMapping("/deposits")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<BankTransactionDto> createDeposit(
-      @Valid @RequestBody DepositRequest request) {
-    BankTransaction transaction = bankTransactionService.deposit(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
-  }
-
   @PostMapping("/withdrawals")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public ResponseEntity<BankTransactionDto> createWithdrawal(
+      Authentication authentication,
       @Valid @RequestBody WithdrawalRequest request) {
-    BankTransaction transaction = bankTransactionService.withdraw(request);
+    BankTransaction transaction = bankTransactionService.withdraw(authentication.getName(), request);
     return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
   }
 }

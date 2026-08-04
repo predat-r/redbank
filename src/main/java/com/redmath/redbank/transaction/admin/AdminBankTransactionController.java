@@ -16,6 +16,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.redmath.redbank.transaction.request.DepositRequest;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 @RestController
 @RequestMapping("/api/admin")
 @SecurityRequirement(name = "bearerAuth")
@@ -33,6 +39,14 @@ public class AdminBankTransactionController {
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<BankTransaction> transactions = bankTransactionService.getAllTransactions(pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
+  }
+
+  @PostMapping("/deposits")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<BankTransactionDto> createDeposit(
+      @Valid @RequestBody DepositRequest request) {
+    BankTransaction transaction = bankTransactionService.deposit(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
   }
 
   @GetMapping("/accounts/{accountNumber}/transactions")
