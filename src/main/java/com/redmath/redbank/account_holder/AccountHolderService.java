@@ -3,6 +3,7 @@ package com.redmath.redbank.account_holder;
 import com.redmath.redbank.common.exception.ConflictException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.User;
+import com.redmath.redbank.user.UserService;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -20,9 +21,11 @@ public class AccountHolderService {
   private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "accountNumber",
       "accountStatus", "createdAt", "updatedAt");
   private final AccountHolderRepository accountHolderRepository;
+  private final UserService userService;
 
-  public AccountHolderService(AccountHolderRepository accountHolderRepository) {
+  public AccountHolderService(AccountHolderRepository accountHolderRepository, UserService userService) {
     this.accountHolderRepository = accountHolderRepository;
+    this.userService = userService;
   }
 
   public AccountHolder getAccountHolderByUserId(Long userId) {
@@ -55,7 +58,7 @@ public class AccountHolderService {
   public Optional<AccountHolder> findByUser(User user) {
     return accountHolderRepository.findByUser(user);
   }
-x
+
   public Optional<AccountHolder> findByAccountNumber(String accountNumber) {
     return accountHolderRepository.findByAccountNumber(accountNumber);
   }
@@ -140,6 +143,7 @@ x
 
     accountHolder.setAccountStatus(AccountStatus.CLOSED);
     accountHolderRepository.save(accountHolder);
+    userService.deactivateUser(accountHolder.getUser().getId());
   }
 
   private AccountHolder getOrThrow(Long accountId) {
