@@ -66,10 +66,11 @@ public class GlobalExceptionHandler {
     return buildResponse(HttpStatus.FORBIDDEN, exception.getMessage(), request);
   }
 
-  @ExceptionHandler({
+ @ExceptionHandler({
       DuplicateUserException.class,
       RegistrationAlreadyReviewedException.class,
-      ConflictException.class
+      ConflictException.class,
+      InvalidUserStatusTransitionException.class
   })
   public ResponseEntity<ApiError> handleConflict(
       RuntimeException exception,
@@ -164,7 +165,6 @@ public class GlobalExceptionHandler {
         message,
         request.getRequestURI()
     );
-
     return ResponseEntity.status(status).body(error);
   }
 }

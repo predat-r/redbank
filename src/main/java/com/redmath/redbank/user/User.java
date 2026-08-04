@@ -100,4 +100,15 @@ public class User {
     this.approvedAt = now;
     this.updatedAt = now;
   }
+
+  public void activate(Instant now) {
+    this.status = UserStatus.ACTIVE;
+    this.updatedAt = now;
+  }
+
+  public void deactivate(Instant now) {
+    this.status = UserStatus.DEACTIVATED;
+    this.refreshTokenVersion++;
+    this.updatedAt = now;
+  }
 }
