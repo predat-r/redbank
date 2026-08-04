@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +38,20 @@ public class RegistrationReviewController {
       Pageable pageable
   ) {
     return registrationReviewService.findPendingRegistrations(pageable);
+  }
+
+  @PostMapping("/{userId}/approve")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void approveRegistration(
+      @PathVariable Long userId,
+      @AuthenticationPrincipal Jwt jwt
+  ) {
+    Number adminUserIdClaim = jwt.getClaim("userId");
+
+    registrationReviewService.approveRegistration(
+        userId,
+        adminUserIdClaim.longValue()
+    );
   }
 
   @PostMapping("/{userId}/reject")
