@@ -51,7 +51,8 @@ public class AccountHolderService {
   }
 
   @Transactional(readOnly = true)
-  public Page<AccountHolder> getAllAccountHolders(int page, int size, String sortBy, String sortDir) {
+  public Page<AccountHolder> getAllAccountHolders(int page, int size, String sortBy,
+      String sortDir) {
     if (page < 0) {
       throw new IllegalArgumentException("Page index cannot be negative");
     }
@@ -59,20 +60,22 @@ public class AccountHolderService {
       throw new IllegalArgumentException("Page size must be positive");
     }
     String safeSortBy = ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "id";
-    Sort.Direction direction = "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
+    Sort.Direction direction =
+        "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
     Pageable pageable = PageRequest.of(page, size, Sort.by(direction, safeSortBy));
     return accountHolderRepository.findAll(pageable);
   }
 
   @Transactional
-  public AccountHolder createAccountHolder(Long userId) {
-    if (userId == null) {
+  public AccountHolder createAccountHolder(User user) {
+    if (user == null) {
+      throw new IllegalArgumentException("User is required");
+    }
+    if (user.getId() == null) {
       throw new IllegalArgumentException("User id is required");
     }
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
-    if (accountHolderRepository.findByUserId(userId).isPresent()) {
+    if (accountHolderRepository.findByUserId(user.getId()).isPresent()) {
       throw new ConflictException("User already has an account holder record");
     }
 
@@ -85,10 +88,8 @@ public class AccountHolderService {
     accountHolder.setApprovedAt(now);
     accountHolder.setCreatedAt(now);
     accountHolder.setUpdatedAt(now);
-    AccountHolder saved = accountHolderRepository.save(accountHolder);
-
-    //TODO: call transaction service
-    return saved;
+    accountHolderRepository.save(accountHolder);
+    return accountHolder;
   }
 
 

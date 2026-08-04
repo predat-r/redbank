@@ -21,12 +21,14 @@ public class BalanceDto {
       return dto;
     }
     dto.id = balance.getId();
-    dto.accountHolderId = balance.getAccountHolder() != null ? balance.getAccountHolder().getId() : null;
+    dto.accountHolderId =
+        balance.getAccountHolder() != null ? balance.getAccountHolder().getId() : null;
     dto.transactionId = balance.getTransaction() != null ? balance.getTransaction().getId() : null;
     dto.entryDate = balance.getEntryDate();
     dto.amount = balance.getAmount() != null ? balance.getAmount() : BigDecimal.ZERO;
     dto.indicator = balance.getIndicator();
-    dto.runningBalance = balance.getRunningBalance() != null ? balance.getRunningBalance() : BigDecimal.ZERO;
+    dto.runningBalance =
+        balance.getRunningBalance() != null ? balance.getRunningBalance() : BigDecimal.ZERO;
     return dto;
   }
 }

@@ -4,14 +4,11 @@ import com.redmath.redbank.user.User;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/account")
 public class AccountHolderController {
+
   private final AccountHolderService accountHolderService;
 
   public AccountHolderController(AccountHolderService accountHolderService) {
@@ -49,7 +47,8 @@ public class AccountHolderController {
   ResponseEntity<Map<String, Object>> getAccountHolderByAccountNumber(
       @PathVariable String accountNumber
   ) {
-    AccountHolder accountHolder = accountHolderService.getAccountHolderByAccountNumber(accountNumber);
+    AccountHolder accountHolder = accountHolderService.getAccountHolderByAccountNumber(
+        accountNumber);
     Map<String, Object> response = new HashMap<>();
     response.put("name", accountHolder.getUser().getName());
     response.put("accountNumber", accountHolder.getAccountNumber());
@@ -63,7 +62,8 @@ public class AccountHolderController {
       @RequestParam(defaultValue = "id") String sortBy,
       @RequestParam(defaultValue = "desc") String sortDir
   ) {
-    Page<AccountHolder> accountHoldersPage = accountHolderService.getAllAccountHolders(page, size, sortBy, sortDir);
+    Page<AccountHolder> accountHoldersPage = accountHolderService.getAllAccountHolders(page, size,
+        sortBy, sortDir);
     Map<String, Object> response = new HashMap<>();
     response.put("accountHolders", accountHoldersPage.getContent().stream()
         .map(AccountHolderDto::from)
@@ -75,14 +75,6 @@ public class AccountHolderController {
     response.put("isLast", accountHoldersPage.isLast());
     response.put("total", accountHoldersPage.getTotalElements());
     return ResponseEntity.ok(response);
-  }
-
-  @PostMapping
-  ResponseEntity<AccountHolderDto> createAccountHolder(
-      @RequestBody Long userId
-  ) {
-    AccountHolder accountHolder = accountHolderService.createAccountHolder(userId);
-    return ResponseEntity.status(HttpStatus.CREATED).body(AccountHolderDto.from(accountHolder));
   }
 
   @PatchMapping("/freeze/{accountId}")
