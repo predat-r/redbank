@@ -1,8 +1,8 @@
 package com.redmath.redbank.transaction;
 
-import com.redmath.redbank.account_holder.AccountHolder;
-import com.redmath.redbank.account_holder.AccountHolderService;
-import com.redmath.redbank.account_holder.AccountStatus;
+import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.account.AccountHolderService;
+import com.redmath.redbank.account.AccountStatus;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;

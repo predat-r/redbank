@@ -17,7 +17,7 @@ Send authenticated requests with `Authorization: Bearer <access-token>`.
 ## Main modules
 
 - `auth` and `security` — registration, login, token lifecycle, and access control
-- `user` and `account_holder` — users, registration review, and bank accounts
+- `user` and `account` — users, registration review, and bank accounts
 - `balance` — current balances and balance ledger
 - `transaction` — deposits, withdrawals, transfers, and transaction history
 - `audit` — administrative audit logs

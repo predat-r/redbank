@@ -1,6 +1,5 @@
-package com.redmath.redbank.account_holder;
+package com.redmath.redbank.account;
 
-import com.redmath.redbank.user.User;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;

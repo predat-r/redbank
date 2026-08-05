@@ -1,6 +1,6 @@
 package com.redmath.redbank.balance;
 
-import com.redmath.redbank.account_holder.AccountHolder;
+import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.common.exception.InsufficientFundsException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.BankTransaction;
@@ -37,7 +37,7 @@ public class BalanceService {
   }
 
   @Transactional
-  public Balance recordLedgerEntry(AccountHolder accountHolder,
+  public void recordLedgerEntry(AccountHolder accountHolder,
       BankTransaction transaction,
       BalanceIndicator indicator) {
     if (accountHolder == null || accountHolder.getId() == null) {
@@ -74,8 +74,6 @@ public class BalanceService {
     entry.setAmount(transaction.getAmount());
     entry.setIndicator(indicator);
     entry.setRunningBalance(newRunningBalance);
-
-    return balanceRepository.save(entry);
   }
 
   private Balance newZeroBalanceEntry() {
