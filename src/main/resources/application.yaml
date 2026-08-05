@@ -16,8 +16,8 @@ scheduler:
     cron: "0 0 3 * * *"
   stale-transaction:
     cron: "0 */15 * * * *"
-  token-revocation:
-    cron: "0 0 2 * * *"
+
+
 
 management:
   tracing:
