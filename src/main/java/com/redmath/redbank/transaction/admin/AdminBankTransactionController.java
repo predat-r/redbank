@@ -68,7 +68,8 @@ public class AdminBankTransactionController {
 
   @GetMapping("/transactions/reference/{reference}")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<AdminBankTransactionDetailDto> getTransactionByReference(@PathVariable String reference) {
+  public ResponseEntity<AdminBankTransactionDetailDto> getTransactionByReference(
+      @PathVariable String reference) {
     BankTransaction transaction = bankTransactionService.getTransactionByReference(reference);
     return ResponseEntity.ok(AdminBankTransactionDetailDto.from(transaction));
   }
