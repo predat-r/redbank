@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/redbank_test
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  docker:
+    compose:
+      enabled: true
+      file:
+        - src/test/compose-test.yaml
+      skip:
+        in-tests: false
+  liquibase:
+    contexts: dev
+    parameters:
+      admin.password-hash: ${ADMIN_PASSWORD_HASH}
+  security:
+    jwt:
+      access-token-ttl: 15m
+      refresh-token-ttl: 7d
+      private-key: ${JWT_PRIVATE_KEY}
+      public-key: ${JWT_PUBLIC_KEY}
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.security: DEBUG
+
+    # SQL
+    org.hibernate.SQL: DEBUG
+    org.springframework.orm.jpa: DEBUG

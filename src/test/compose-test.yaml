@@ -1,0 +1,9 @@
+services:
+  postgres-test:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: redbank_test
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
