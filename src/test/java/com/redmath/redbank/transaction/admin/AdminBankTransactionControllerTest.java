@@ -1,4 +1,4 @@
-package com.redmath.redbank.transaction;
+package com.redmath.redbank.transaction.admin;
 
 import static com.redmath.redbank.common.AuthUtilities.withAccountHolder;
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
@@ -12,11 +12,13 @@ import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountHolderRepository;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.transaction.request.DepositRequest;
+import com.redmath.redbank.transaction.request.TransferRequest;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserRepository;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +34,7 @@ import tools.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-class AdminBankTransactionEndpointTests {
+class AdminBankTransactionControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
@@ -84,6 +86,7 @@ class AdminBankTransactionEndpointTests {
   // --- Authentication & Authorization ---
 
   @Test
+  @DisplayName("GET /api/admin/transactions - Returns UNAUTHORIZED when unauthenticated")
   void adminEndpointsWithoutAuthReturnUnauthorized() throws Exception {
     mockMvc.perform(get("/api/admin/transactions"))
         .andExpect(status().isUnauthorized());
@@ -99,6 +102,7 @@ class AdminBankTransactionEndpointTests {
   }
 
   @Test
+  @DisplayName("GET /api/admin/transactions - Returns FORBIDDEN for ACCOUNT_HOLDER role")
   void adminEndpointsWithAccountHolderRoleReturnForbidden() throws Exception {
     mockMvc.perform(get("/api/admin/transactions")
             .with(withAccountHolder(johnUser.getId())))
@@ -108,6 +112,7 @@ class AdminBankTransactionEndpointTests {
   // --- POST /api/admin/deposits ---
 
   @Test
+  @DisplayName("POST /api/admin/deposits - Success for ADMIN")
   void depositWithValidRequestReturnsCreated() throws Exception {
     DepositRequest request = new DepositRequest();
     request.setAccountNumber(johnAccount.getAccountNumber());
@@ -127,6 +132,7 @@ class AdminBankTransactionEndpointTests {
   }
 
   @Test
+  @DisplayName("POST /api/admin/deposits - Returns NOT_FOUND for non-existent account")
   void depositToNonExistentAccountReturnsNotFound() throws Exception {
     DepositRequest request = new DepositRequest();
     request.setAccountNumber("RB9999999999");
@@ -142,6 +148,7 @@ class AdminBankTransactionEndpointTests {
   }
 
   @Test
+  @DisplayName("POST /api/admin/deposits - Returns BAD_REQUEST for invalid amount")
   void depositWithInvalidAmountReturnsBadRequest() throws Exception {
     DepositRequest request = new DepositRequest();
     request.setAccountNumber(johnAccount.getAccountNumber());
@@ -158,6 +165,7 @@ class AdminBankTransactionEndpointTests {
   // --- GET /api/admin/transactions ---
 
   @Test
+  @DisplayName("GET /api/admin/transactions - Success for ADMIN")
   void getAllTransactionsAsAdminReturnsOk() throws Exception {
     createDeposit(johnAccount.getAccountNumber(), new BigDecimal("250.00"));
 
@@ -172,6 +180,7 @@ class AdminBankTransactionEndpointTests {
   // --- GET /api/admin/accounts/{accountNumber}/transactions ---
 
   @Test
+  @DisplayName("GET /api/admin/accounts/{accountNumber}/transactions - Success for ADMIN")
   void getTransactionsForSpecificAccountAsAdminReturnsOk() throws Exception {
     createDeposit(johnAccount.getAccountNumber(), new BigDecimal("150.00"));
 
@@ -182,9 +191,19 @@ class AdminBankTransactionEndpointTests {
         .andExpect(jsonPath("$.content[0].destinationAccountNumber").value(johnAccount.getAccountNumber()));
   }
 
+  @Test
+  @DisplayName("GET /api/admin/accounts/{accountNumber}/transactions - Returns NOT_FOUND for non-existent account")
+  void getTransactionsForNonExistentAccountReturnsNotFound() throws Exception {
+    mockMvc.perform(get("/api/admin/accounts/{accountNumber}/transactions", "RB9999999999")
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value("Account holder not found"));
+  }
+
   // --- GET /api/admin/transactions/{id} ---
 
   @Test
+  @DisplayName("GET /api/admin/transactions/{id} - Success for deposit transaction")
   void getTransactionByIdAsAdminReturnsOk() throws Exception {
     MvcResult depositResult = createDeposit(johnAccount.getAccountNumber(), new BigDecimal("300.00"));
     Number transactionId = readJson(depositResult, "$.id");
@@ -200,6 +219,48 @@ class AdminBankTransactionEndpointTests {
   }
 
   @Test
+  @DisplayName("GET /api/admin/transactions/{id} - Success for transfer transaction with full details")
+  void getTransactionByIdForTransferAsAdminReturnsSourceAndDestinationDetails() throws Exception {
+    User janeUser = createOrGetAccountHolder("jane.admin.test@example.com", "Jane Smith", "03009998866");
+    AccountHolder janeAccount = accountHolderRepository.findByUserId(janeUser.getId()).orElseThrow();
+
+    createDeposit(johnAccount.getAccountNumber(), new BigDecimal("500.00"));
+
+    TransferRequest transferRequest = new TransferRequest();
+    transferRequest.setAmount(new BigDecimal("200.00"));
+    transferRequest.setDestinationAccountNumber(janeAccount.getAccountNumber());
+    transferRequest.setDescription("Admin test transfer");
+
+    MvcResult transferResult = mockMvc.perform(post("/api/accounts/me/transfers")
+            .with(withAccountHolder(johnUser.getId()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(transferRequest)))
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    Number transferId = readJson(transferResult, "$.id");
+
+    mockMvc.perform(get("/api/admin/transactions/{id}", transferId.longValue())
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(transferId.longValue()))
+        .andExpect(jsonPath("$.type").value("TRANSFER"))
+        .andExpect(jsonPath("$.sourceAccountNumber").value(johnAccount.getAccountNumber()))
+        .andExpect(jsonPath("$.sourceAccountCurrency").value("USD"))
+        .andExpect(jsonPath("$.sourceAccountStatus").value("ACTIVE"))
+        .andExpect(jsonPath("$.sourceUserName").value(johnUser.getName()))
+        .andExpect(jsonPath("$.sourceUserEmail").value(johnUser.getEmail()))
+        .andExpect(jsonPath("$.sourceUserPhoneNumber").value(johnUser.getPhoneNumber()))
+        .andExpect(jsonPath("$.destinationAccountNumber").value(janeAccount.getAccountNumber()))
+        .andExpect(jsonPath("$.destinationAccountCurrency").value("USD"))
+        .andExpect(jsonPath("$.destinationAccountStatus").value("ACTIVE"))
+        .andExpect(jsonPath("$.destinationUserName").value(janeUser.getName()))
+        .andExpect(jsonPath("$.destinationUserEmail").value(janeUser.getEmail()))
+        .andExpect(jsonPath("$.destinationUserPhoneNumber").value(janeUser.getPhoneNumber()));
+  }
+
+  @Test
+  @DisplayName("GET /api/admin/transactions/{id} - Returns NOT_FOUND for non-existent transaction ID")
   void getTransactionByNonExistentIdReturnsNotFound() throws Exception {
     mockMvc.perform(get("/api/admin/transactions/{id}", 999999L)
             .with(withAdmin(adminUser.getId())))
@@ -210,6 +271,7 @@ class AdminBankTransactionEndpointTests {
   // --- GET /api/admin/transactions/reference/{reference} ---
 
   @Test
+  @DisplayName("GET /api/admin/transactions/reference/{reference} - Success for ADMIN")
   void getTransactionByReferenceAsAdminReturnsOk() throws Exception {
     MvcResult depositResult = createDeposit(johnAccount.getAccountNumber(), new BigDecimal("400.00"));
     String reference = readJson(depositResult, "$.transactionReference");
@@ -223,6 +285,7 @@ class AdminBankTransactionEndpointTests {
   }
 
   @Test
+  @DisplayName("GET /api/admin/transactions/reference/{reference} - Returns NOT_FOUND for non-existent reference")
   void getTransactionByNonExistentReferenceReturnsNotFound() throws Exception {
     mockMvc.perform(get("/api/admin/transactions/reference/{reference}", "TXN-NON-EXISTENT")
             .with(withAdmin(adminUser.getId())))

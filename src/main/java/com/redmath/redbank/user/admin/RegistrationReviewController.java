@@ -44,11 +44,9 @@ public class RegistrationReviewController {
       @PathVariable Long userId,
       @AuthenticationPrincipal Jwt jwt
   ) {
-    Number adminUserIdClaim = jwt.getClaim("userId");
-
     registrationReviewService.approveRegistration(
         userId,
-        adminUserIdClaim.longValue()
+        extractUserId(jwt)
     );
   }
 
@@ -59,11 +57,9 @@ public class RegistrationReviewController {
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody RejectRegistrationRequest request
   ) {
-    Number adminUserIdClaim = jwt.getClaim("userId");
-
     registrationReviewService.rejectRegistration(
         userId,
-        adminUserIdClaim.longValue(),
+        extractUserId(jwt),
         request
     );
   }
@@ -73,5 +69,15 @@ public class RegistrationReviewController {
       @PathVariable Long userId
   ) {
     return registrationReviewService.findPendingRegistration(userId);
+  }
+
+  private long extractUserId(Jwt jwt) {
+    Object claim = jwt.getClaim("userId");
+
+    if (!(claim instanceof Number userId)) {
+      throw new IllegalArgumentException("User ID missing from authentication token");
+    }
+
+    return userId.longValue();
   }
 }
