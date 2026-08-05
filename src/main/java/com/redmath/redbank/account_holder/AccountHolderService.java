@@ -39,6 +39,15 @@ public class AccountHolderService {
     return accountHolder.get();
   }
 
+  public AccountHolder lockById(Long accountHolderId) {
+    if (accountHolderId == null) {
+      throw new IllegalArgumentException("Account holder id is required");
+    }
+    return accountHolderRepository.findByIdWithLock(accountHolderId)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Account holder not found: " + accountHolderId));
+  }
+
   @Transactional(readOnly = true)
   public String getAccountHolderNameByAccountNumber(String accountNumber) {
     if (accountNumber == null || accountNumber.isBlank()) {
