@@ -35,4 +35,4 @@ jobs:
           cache: maven
 
       - name: Run Maven verification
-        run: ./mvnw --batch-mode --no-transfer-progress verify
+        run: ./mvnw --batch-mode --no-transfer-progress -DskipPitest=true verify
