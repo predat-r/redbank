@@ -1,7 +1,7 @@
 package com.redmath.redbank.transaction.dto;
 
-import com.redmath.redbank.account_holder.AccountHolder;
-import com.redmath.redbank.account_holder.AccountStatus;
+import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.account.AccountStatus;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.TransactionStatus;
 import com.redmath.redbank.transaction.TransactionType;

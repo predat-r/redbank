@@ -1,4 +1,4 @@
-package com.redmath.redbank.account_holder;
+package com.redmath.redbank.account;
 
 public enum AccountStatus {
   ACTIVE,

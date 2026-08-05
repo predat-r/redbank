@@ -1,6 +1,5 @@
-package com.redmath.redbank.account_holder;
+package com.redmath.redbank.account;
 
-import com.redmath.redbank.user.User;
 import java.time.OffsetDateTime;
 import lombok.Getter;
 

@@ -1,8 +1,8 @@
-package com.redmath.redbank.account_holder.admin;
+package com.redmath.redbank.account.admin;
 
-import com.redmath.redbank.account_holder.AccountHolder;
-import com.redmath.redbank.account_holder.AccountHolderRepository;
-import com.redmath.redbank.account_holder.AccountStatus;
+import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.account.AccountHolderRepository;
+import com.redmath.redbank.account.AccountStatus;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
@@ -12,7 +12,6 @@ import com.redmath.redbank.user.UserService;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,4 +1,4 @@
-package com.redmath.redbank.account_holder;
+package com.redmath.redbank.account;
 
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;

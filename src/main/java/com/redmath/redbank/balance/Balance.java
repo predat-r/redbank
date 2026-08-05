@@ -1,6 +1,6 @@
 package com.redmath.redbank.balance;
 
-import com.redmath.redbank.account_holder.AccountHolder;
+import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.transaction.BankTransaction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
