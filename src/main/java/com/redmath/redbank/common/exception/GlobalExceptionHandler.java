@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
@@ -38,7 +40,8 @@ public class GlobalExceptionHandler {
       NoResourceFoundException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.NOT_FOUND, "Endpoint not found: " + request.getRequestURI(), request);
+    return buildResponse(HttpStatus.NOT_FOUND, "Endpoint not found: " + request.getRequestURI(),
+        request);
   }
 
   @ExceptionHandler({
@@ -68,7 +71,8 @@ public class GlobalExceptionHandler {
       Exception ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.FORBIDDEN, "Access Denied: You do not have permission to access this resource", request);
+    return buildResponse(HttpStatus.FORBIDDEN,
+        "Access Denied: You do not have permission to access this resource", request);
   }
 
   @ExceptionHandler({
@@ -89,7 +93,9 @@ public class GlobalExceptionHandler {
       InvalidSortException.class,
       InvalidPasswordChangeException.class,
       InsufficientFundsException.class,
-      InvalidDataAccessApiUsageException.class
+      InvalidDataAccessApiUsageException.class,
+      MethodArgumentTypeMismatchException.class,
+      TypeMismatchException.class
   })
   public ResponseEntity<ApiError> handleBadRequest(
       Exception ex,
@@ -98,6 +104,11 @@ public class GlobalExceptionHandler {
     String message = ex.getMessage();
     if (ex instanceof InvalidDataAccessApiUsageException) {
       message = "Invalid sort field or parameter specified";
+    } else if (ex instanceof org.springframework.web.method.annotation.MethodArgumentTypeMismatchException typeMismatchEx) {
+      message = String.format("Invalid value '%s' for parameter '%s'", typeMismatchEx.getValue(),
+          typeMismatchEx.getName());
+    } else if (ex instanceof org.springframework.beans.TypeMismatchException) {
+      message = "Invalid parameter value type";
     }
     return buildResponse(HttpStatus.BAD_REQUEST, message, request);
   }
