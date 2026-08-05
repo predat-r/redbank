@@ -74,6 +74,7 @@ public class BalanceService {
     entry.setAmount(transaction.getAmount());
     entry.setIndicator(indicator);
     entry.setRunningBalance(newRunningBalance);
+    balanceRepository.save(entry);
   }
 
   private Balance newZeroBalanceEntry() {
