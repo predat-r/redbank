@@ -11,7 +11,7 @@ spring:
       skip:
         in-tests: false
   liquibase:
-    contexts: dev
+    contexts: test
     parameters:
       admin.password-hash: ${ADMIN_PASSWORD_HASH}
   security:
