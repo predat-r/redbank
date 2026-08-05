@@ -33,3 +33,14 @@ build/
 .vscode/
 
 .env
+
+
+# JMeter generated files
+jmeter/logs/*
+jmeter/results/*
+jmeter/reports/*
+
+# Accidental root-level JMeter output
+jmeter.log
+results.jtl
+html-report/
