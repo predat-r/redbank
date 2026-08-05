@@ -1,5 +1,6 @@
 package com.redmath.redbank.auth;
 
+import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static com.redmath.redbank.common.AuthUtilities.withPendingUser;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,6 +13,7 @@ import com.redmath.redbank.auth.dto.ChangePasswordRequest;
 import com.redmath.redbank.auth.dto.LoginRequest;
 import com.redmath.redbank.auth.dto.RefreshTokenRequest;
 import com.redmath.redbank.auth.dto.RegisterRequest;
+import com.redmath.redbank.user.UserRepository;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,9 @@ class AuthEndpointTests {
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  @Autowired
+  private UserRepository userRepository;
 
   @Test
   void registerWithValidRequestReturnsCreated() throws Exception {
@@ -220,10 +225,95 @@ class AuthEndpointTests {
         .andExpect(jsonPath("$.path").value("/api/auth/password"));
   }
 
+  @Test
+  void activeUserCanChangePassword() throws Exception {
+    RegisteredUser registeredUser = registerAndActivateUser();
+    String newPassword = "new-password-456";
+    ChangePasswordRequest request = new ChangePasswordRequest(PASSWORD, newPassword);
+
+    mockMvc.perform(put("/api/auth/password")
+            .header("Authorization", "Bearer " + registeredUser.accessToken())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isNoContent());
+
+    login(registeredUser.email(), PASSWORD)
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.message").value("Invalid email or password"));
+
+    login(registeredUser.email(), newPassword)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accessToken").isNotEmpty())
+        .andExpect(jsonPath("$.refreshToken").isNotEmpty());
+  }
+
+  @Test
+  void changePasswordWithIncorrectCurrentPasswordReturnsBadRequest() throws Exception {
+    RegisteredUser registeredUser = registerAndActivateUser();
+    ChangePasswordRequest request = new ChangePasswordRequest(
+        "incorrect-password",
+        "new-password-456"
+    );
+
+    mockMvc.perform(put("/api/auth/password")
+            .header("Authorization", "Bearer " + registeredUser.accessToken())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.message").value("Current password is incorrect"))
+        .andExpect(jsonPath("$.path").value("/api/auth/password"));
+  }
+
+  @Test
+  void changePasswordToCurrentPasswordReturnsBadRequest() throws Exception {
+    RegisteredUser registeredUser = registerAndActivateUser();
+    ChangePasswordRequest request = new ChangePasswordRequest(PASSWORD, PASSWORD);
+
+    mockMvc.perform(put("/api/auth/password")
+            .header("Authorization", "Bearer " + registeredUser.accessToken())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.message")
+            .value("New password must be different from the current password"))
+        .andExpect(jsonPath("$.path").value("/api/auth/password"));
+  }
+
   private ResultActions register(RegisterRequest request) throws Exception {
     return mockMvc.perform(post("/api/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)));
+  }
+
+  private ResultActions login(String email, String password) throws Exception {
+    LoginRequest request = new LoginRequest(email, password);
+    return mockMvc.perform(post("/api/auth/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)));
+  }
+
+  private RegisteredUser registerAndActivateUser() throws Exception {
+    RegisterRequest registration = validRegistration();
+    MvcResult result = register(registration)
+        .andExpect(status().isCreated())
+        .andReturn();
+    Number userId = readJson(result, "$.id");
+    long adminUserId = userRepository.findByEmailIgnoreCase("admin@redbank.com")
+        .orElseThrow()
+        .getId();
+
+    mockMvc.perform(post("/api/admin/registrations/{userId}/approve", userId.longValue())
+            .with(withAdmin(adminUserId)))
+        .andExpect(status().isNoContent());
+
+    MvcResult loginResult = login(registration.email(), registration.password())
+        .andExpect(status().isOk())
+        .andReturn();
+    String accessToken = readJson(loginResult, "$.accessToken");
+
+    return new RegisteredUser(registration.email(), accessToken);
   }
 
   private RegisterRequest validRegistration() {
@@ -238,5 +328,8 @@ class AuthEndpointTests {
 
   private <T> T readJson(MvcResult result, String path) throws Exception {
     return JsonPath.read(result.getResponse().getContentAsString(StandardCharsets.UTF_8), path);
+  }
+
+  private record RegisteredUser(String email, String accessToken) {
   }
 }
