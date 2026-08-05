@@ -66,18 +66,23 @@ public class AuthController {
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody ChangePasswordRequest request
   ) {
-    Number userIdClaim = jwt.getClaim("userId");
-
-    authService.changePassword(userIdClaim.longValue(), request);
+    authService.changePassword(extractUserId(jwt), request);
   }
 
 
   @GetMapping("/registration-status")
   public RegistrationStatusResponse getRegistrationStatus(@AuthenticationPrincipal Jwt jwt) {
-    Number userIdClaim = jwt.getClaim("userId");
+    return authService.getRegistrationStatus(extractUserId(jwt));
+  }
 
-    return authService.getRegistrationStatus(userIdClaim.longValue());
+  private long extractUserId(Jwt jwt) {
+    Object claim = jwt.getClaim("userId");
 
+    if (!(claim instanceof Number userId)) {
+      throw new IllegalArgumentException("User ID missing from authentication token");
+    }
+
+    return userId.longValue();
   }
 
 }
