@@ -22,6 +22,7 @@ jobs:
       ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
       JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
       JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+      SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
 
     steps:
       - name: Check out repository
