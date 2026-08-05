@@ -107,9 +107,10 @@ class BankTransactionServiceTest {
   @DisplayName("getTransactionsByAccountNumber throws ResourceNotFoundException when account not found")
   void getTransactionsByAccountNumberNotFound() {
     when(accountHolderService.findByAccountNumber("RB999999")).thenReturn(Optional.empty());
+    Pageable pageable = Pageable.unpaged();
 
     assertThrows(ResourceNotFoundException.class,
-        () -> bankTransactionService.getTransactionsByAccountNumber("RB999999", Pageable.unpaged()));
+        () -> bankTransactionService.getTransactionsByAccountNumber("RB999999", pageable));
   }
 
   @Test
@@ -180,7 +181,7 @@ class BankTransactionServiceTest {
     assertEquals(TransactionType.DEPOSIT, result.getType());
     assertEquals(new BigDecimal("500.00"), result.getAmount());
     verify(balanceService).recordLedgerEntry(eq(target), any(BankTransaction.class), eq(BalanceIndicator.CREDIT));
-    verify(auditService).record(eq(99L), eq(AuditAction.ADMIN_DEPOSIT_RECORDED), eq(AuditTargetType.TRANSACTION), eq("100"), eq(null));
+    verify(auditService).recordAuditLog(eq(99L), eq(AuditAction.ADMIN_DEPOSIT_RECORDED), eq(AuditTargetType.TRANSACTION), eq("100"), eq(null));
   }
 
   @Test

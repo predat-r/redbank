@@ -42,6 +42,7 @@ public class AuthService {
   private final JwtDecoder refreshJwtDecoder;
   private final UserRoleRepository userRoleRepository;
   private final RoleRepository roleRepository;
+  private static final String BEARER_PREFIX = "Bearer";
 
   public AuthService(UserService userService, PasswordEncoder passwordEncoder,
       JwtService jwtService, @Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder,
@@ -85,7 +86,7 @@ public class AuthService {
     savedUser.incrementRefreshTokenVersion(now);
     String accessToken = jwtService.generateAccessToken(savedUser);
     String refreshToken = jwtService.generateRefreshToken(savedUser);
-    LoginResponse tokens = new LoginResponse(accessToken, refreshToken, "Bearer");
+    LoginResponse tokens = new LoginResponse(accessToken, refreshToken, BEARER_PREFIX);
     return new RegisterResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getStatus(),
         tokens);
   }
@@ -110,7 +111,7 @@ public class AuthService {
     String accessToken = jwtService.generateAccessToken(user);
     String refreshToken = jwtService.generateRefreshToken(user);
 
-    return new LoginResponse(accessToken, refreshToken, "Bearer");
+    return new LoginResponse(accessToken, refreshToken, BEARER_PREFIX);
   }
 
   @Transactional
@@ -136,7 +137,7 @@ public class AuthService {
     String accessToken = jwtService.generateAccessToken(user);
     String refreshToken = jwtService.generateRefreshToken(user);
 
-    return new LoginResponse(accessToken, refreshToken, "Bearer");
+    return new LoginResponse(accessToken, refreshToken, BEARER_PREFIX);
   }
 
   @Transactional
@@ -205,7 +206,7 @@ public class AuthService {
   private Jwt decodeRefreshToken(String refreshToken) {
     try {
       return refreshJwtDecoder.decode(refreshToken);
-    } catch (JwtException exception) {
+    } catch (JwtException _) {
       throw new InvalidRefreshTokenException();
     }
   }

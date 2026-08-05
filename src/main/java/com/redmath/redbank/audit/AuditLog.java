@@ -1,7 +1,5 @@
 package com.redmath.redbank.audit;
 
-import com.redmath.redbank.audit.AuditAction;
-import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

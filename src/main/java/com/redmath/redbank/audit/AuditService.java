@@ -27,7 +27,7 @@ public class AuditService {
 
   @Async("auditTaskExecutor")
   @Transactional
-  public void record(Long actorUserId, AuditAction action, AuditTargetType targetType,
+  public void recordAuditLog(Long actorUserId, AuditAction action, AuditTargetType targetType,
       String targetIdentifier, String details) {
     if (actorUserId == null) {
       throw new IllegalArgumentException("Audit actor user id is required");

@@ -2,8 +2,6 @@ package com.redmath.redbank.balance.admin;
 
 import com.redmath.redbank.balance.Balance;
 import com.redmath.redbank.balance.BalanceDto;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,7 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -41,7 +38,7 @@ public class AdminBalanceController {
   ) {
     Page<Balance> balancePage = adminBalanceService.getBalanceLedgerByAccountHolderId(
         accountId, pageable);
-    
+
     Page<BalanceDto> balanceDtoPage = balancePage.map(BalanceDto::from);
     return ResponseEntity.ok(balanceDtoPage);
   }

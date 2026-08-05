@@ -81,7 +81,7 @@ class AccountHolderControllerTest {
   @Test
   @DisplayName("GET /api/accounts/name/{accountNumber} - Success for ACCOUNT_HOLDER or ADMIN")
   void getAccountHolderByAccountNumberSuccess() throws Exception {
-    AccountHolder accountHolder = createAccountHolder("acc.name@example.com", "RB-ACC-NAME-001");
+    createAccountHolder("acc.name@example.com", "RB-ACC-NAME-001");
 
     mockMvc.perform(get("/api/accounts/name/{accountNumber}", "RB-ACC-NAME-001")
             .with(withAccountHolder(99L)))
