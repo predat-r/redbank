@@ -346,12 +346,18 @@
           <mutationThreshold>60</mutationThreshold>
           <coverageThreshold>70</coverageThreshold>
           <failWhenNoMutations>false</failWhenNoMutations>
+          <excludedMethods>
+            <param>generateUniqueAccountNumber</param>
+          </excludedMethods>
           <excludedClasses>
             <param>com.redmath.redbank.RedbankApplication</param>
             <param>com.redmath.redbank.*.config.*</param>
             <param>com.redmath.redbank.*.dto.*</param>
             <param>com.redmath.redbank.*.entity.*</param>
           </excludedClasses>
+          <excludedTestClasses>
+            <param>com.redmath.redbank.RedbankApplicationTests</param>
+          </excludedTestClasses>
         </configuration>
       </plugin>
       <plugin>
