@@ -71,6 +71,7 @@ public class BankTransactionService {
   @Transactional
   public BankTransaction transfer(Long userId, TransferRequest request) {
     AccountHolder myAccount = getAndValidateInitiatorAccount(userId);
+    lockAccount(myAccount.getId());
     BankTransaction transaction = buildBaseTransaction(TransactionType.TRANSFER,
         request.getAmount(), request.getDescription());
     processTransferRules(transaction, myAccount, request.getDestinationAccountNumber());
@@ -96,6 +97,8 @@ public class BankTransactionService {
           "Destination account is not active (status: " + targetAccount.getAccountStatus() + ")");
     }
 
+    lockAccount(targetAccount.getId());
+
     BankTransaction transaction = buildBaseTransaction(TransactionType.DEPOSIT, request.getAmount(),
         request.getDescription());
     transaction.setDestinationAccountHolder(targetAccount);
@@ -112,6 +115,7 @@ public class BankTransactionService {
   @Transactional
   public BankTransaction withdraw(Long userId, WithdrawalRequest request) {
     AccountHolder sourceAccount = getAndValidateInitiatorAccount(userId);
+    lockAccount(sourceAccount.getId());
 
     BankTransaction transaction = buildBaseTransaction(TransactionType.WITHDRAWAL,
         request.getAmount(), request.getDescription());
@@ -131,6 +135,10 @@ public class BankTransactionService {
       throw new IllegalArgumentException("Initiating account must be active");
     }
     return myAccount;
+  }
+
+  private void lockAccount(Long accountHolderId) {
+    accountHolderService.lockById(accountHolderId);
   }
 
   private BankTransaction buildBaseTransaction(TransactionType type, BigDecimal amount,
