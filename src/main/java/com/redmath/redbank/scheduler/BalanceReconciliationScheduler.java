@@ -33,7 +33,9 @@ public class BalanceReconciliationScheduler {
 
     entriesByAccount.forEach(this::reconcileAccount);
 
-    log.info("Balance reconciliation job completed for {} accounts", entriesByAccount.size());
+    if (log.isInfoEnabled()) {
+      log.info("Balance reconciliation job completed for {} accounts", entriesByAccount.size());
+    }
   }
 
   private void reconcileAccount(Long accountHolderId, List<Balance> entries) {
