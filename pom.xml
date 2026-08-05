@@ -46,9 +46,10 @@
     <springdoc-openapi-starter-webmvc-ui.version>3.0.2</springdoc-openapi-starter-webmvc-ui.version>
     <opentelemetry-instrumentation.version>2.28.1-alpha</opentelemetry-instrumentation.version>
     <datasource-micrometer.version>2.2.1</datasource-micrometer.version>
-    <sonar.projectKey>Red-Bank</sonar.projectKey>
-    <sonar.projectName>Red Bank</sonar.projectName>
-    <sonar.host.url>http://localhost:9000</sonar.host.url>
+    <sonar.projectKey>predat-r_redbank</sonar.projectKey>
+    <sonar.projectName>redbank</sonar.projectName>
+    <sonar.organization>predat-r</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
   <dependencies>
     <dependency>
