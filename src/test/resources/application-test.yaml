@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/redbank_test
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
   docker:
     compose:
       enabled: true
@@ -13,13 +13,14 @@ spring:
   liquibase:
     contexts: test
     parameters:
-      admin.password-hash: ${ADMIN_PASSWORD_HASH}
+      admin.password-hash: ${ADMIN_PASSWORD_HASH:$2a$10$3jPO9h3YHF1uByOUXOr0vei49HtXQ0Bga4NFF3bf9oH3gN92xxru6}
   security:
     jwt:
       access-token-ttl: 15m
       refresh-token-ttl: 7d
-      private-key: ${JWT_PRIVATE_KEY}
-      public-key: ${JWT_PUBLIC_KEY}
+      private-key: ${JWT_PRIVATE_KEY:MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCeJGa+2avCzMVWoSpUGlKcOYNiuHbUT+LxmxyT408p6QriLiWvneKE2CMk7athb6Ty2Laf4lx/ZRLFjwnuQcqAlaeq64O0r51oNZgXp+Q4KFQsfWTyZvVe/R3u3UJnAo3HNnNofOlZ7aon2r1a5ox+/uhDZPXxz0LwcYk5uhex76VjeeNevfxL01zdDxOQFSx9dhmW2/SGTZzz5sUd3UFL8qxHlmcUgFSdb8VLyu798SaA13bS5gnoWzEUGCT+uwJNuKitShZl6mvW3+dyOTr7RkFY+oD8tRp5eRzBmxVOArcttehQJZqrlTo+OQ6paFTesZjC47kMlSqNdVYFWesrAgMBAAECggEAFvxS1CH5UtrGmB0xdNX6n0Bwy17lJAjp2JTjZiTKSIeEkHQwABhNE2Ktq7Fr5papUq7oedFsq7ZPhdg7k542cSgkyGAWXaM6QtT/YqOBislkgARIhunWIlSyDsT+4NAV4W3AVTX1XkqAH+4toFJq+2PQ80gabhI3uDvDEVlDa8D0bSbPIr7JMbvRPe2CzDFL8dLTsvpLNoA/akoWDPgGTdHKfZZDHjlxaM56jMf+aH5tR+ccWadJY2SkT8ntJjb7AW1RpmevzZ/Gsd/F/86kme4N4ut+lcbFW8ZS3UBM9jYMUy6O2tOzn0aW5U8UHaoFoFgSTJlVnpCxy7TbAoSCCQKBgQDXfiD/EG6pt9E1qckt0xP5YFhYYL328y0fXEJ0FERDezbtis1ha4fZl7ZS1oGylNtzMMz3EqGlhY6LwWnktSPJVdSjyi57cRYNZz5i9VOVIYeALJUzqC0bu/VajWNpRS56wS+qZLJipf5X9weycy93DG+kxMkHf6lpTkb6CDe3NQKBgQC73nhM+iYwGg80uaK0DgnbzamkSA+LcXDCQHuFPqV40P2ZCjfTYdhNq0INBpwzxUUGJAlYd2tgmKM/qX9msA092TxdAggY+08I3gUVPNZWD9pwxhdXvcpDvXFOK5F9nfKnHpc5yeCkCoLABkObD5TcJS7vc15inPBU8JBaMjKE3wKBgEhtWRPBZyBd6tAZh8eCGUWIz0itA0wcAX9319IB+cugfx6pt0vWA2vr5NjExgTKqVN3BHzKY1ApqnZohHndM/D4iyadzq+om5vXpo1GHViTU2KOGXuqO7cFnnpX6SC5otyZT7b6b0ZeujTAj3K36i0eHewIQ/TkQIFnUM26s1c9AoGAY6ejENIwp5trLYC7Od+ogxwZPLes5z8JnUEvRILyq5/Qpfmxm0NvxeNuahJzkVK3RoafHnpaTycokYCLwCDrJT+ysXN+cCH+zqlW8OkQmR5XtTKe90AJpt062UhrKMM8EEI93b2kl9+rc8je28XsJMrklsgP7SdqpOPm7rFp8ukCgYEA0IZ2M2x+fnCOIC26U/bJaGzyywL87kqatSAfIEfiVKFmOCgY7laMBXU4xeRN9+18y5BMJ5yk8zm57ru2eF3io/UGColTR0AcCrWV6ujCIHpAydGc8ImmPvORyJcSvCSlFRN96YE3qJwaurtB+VrLxb26c+kCSuV0b4wxnVRu3vI=}
+      public-key: ${JWT_PUBLIC_KEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAniRmvtmrwszFVqEqVBpSnDmDYrh21E/i8Zsck+NPKekK4i4lr53ihNgjJO2rYW+k8ti2n+Jcf2USxY8J7kHKgJWnquuDtK+daDWYF6fkOChULH1k8mb1Xv0d7t1CZwKNxzZzaHzpWe2qJ9q9WuaMfv7oQ2T18c9C8HGJOboXse+lY3njXr38S9Nc3Q8TkBUsfXYZltv0hk2c8+bFHd1BS/KsR5ZnFIBUnW/FS8ru/fEmgNd20uYJ6FsxFBgk/rsCTbiorUoWZepr1t/ncjk6+0ZBWPqA/LUaeXkcwZsVTgK3LbXoUCWaq5U6PjkOqWhU3rGYwuO5DJUqjXVWBVnrKwIDAQAB}
+
 
 logging:
   level:
