@@ -1,5 +1,6 @@
 package com.redmath.redbank.audit;
 
+import static com.redmath.redbank.common.AuthUtilities.withAccountHolder;
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -98,6 +99,58 @@ class AuditLogEndpointTests {
         .andExpect(jsonPath("$.targetIdentifier").value("view-user-456"))
         .andExpect(jsonPath("$.details").value("Registration documents were invalid"))
         .andExpect(jsonPath("$.createdAt").isNotEmpty());
+  }
+
+  @Test
+  void unknownAuditLogReturnsNotFound() throws Exception {
+    long unknownAuditLogId = Long.MAX_VALUE;
+
+    mockMvc.perform(get("/api/admin/audit-logs/{auditLogId}", unknownAuditLogId)
+            .with(withAdmin(adminUserId())))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.message")
+            .value("Audit log not found: " + unknownAuditLogId))
+        .andExpect(jsonPath("$.path")
+            .value("/api/admin/audit-logs/" + unknownAuditLogId));
+  }
+
+  @Test
+  void unsupportedListSortReturnsBadRequest() throws Exception {
+    mockMvc.perform(get("/api/admin/audit-logs")
+            .param("sort", "actorEmail,asc")
+            .with(withAdmin(adminUserId())))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.message")
+            .value("Unsupported sort field. Allowed fields are: "
+                + "action, createdAt, id, targetType"))
+        .andExpect(jsonPath("$.path").value("/api/admin/audit-logs"));
+  }
+
+  @Test
+  void listingAuditLogsWithoutAuthenticationReturnsUnauthorized() throws Exception {
+    mockMvc.perform(get("/api/admin/audit-logs"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.status").value(401))
+        .andExpect(jsonPath("$.path").value("/api/admin/audit-logs"));
+  }
+
+  @Test
+  void accountHolderCannotViewAuditLogs() throws Exception {
+    AuditLog auditLog = saveAuditLog(
+        AuditAction.ACCOUNT_CLOSED,
+        AuditTargetType.ACCOUNT,
+        "secured-account-789",
+        null
+    );
+
+    mockMvc.perform(get("/api/admin/audit-logs/{auditLogId}", auditLog.getId())
+            .with(withAccountHolder(adminUserId())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.path")
+            .value("/api/admin/audit-logs/" + auditLog.getId()));
   }
 
   private AuditLog saveAuditLog(
