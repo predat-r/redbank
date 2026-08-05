@@ -106,7 +106,7 @@ public class BankTransactionService {
     transaction = bankTransactionRepository.save(transaction);
 
     balanceService.recordLedgerEntry(targetAccount, transaction, BalanceIndicator.CREDIT);
-    auditService.record(adminUserId, AuditAction.ADMIN_DEPOSIT_RECORDED,
+    auditService.recordAuditLog(adminUserId, AuditAction.ADMIN_DEPOSIT_RECORDED,
         AuditTargetType.TRANSACTION, transaction.getId().toString(), null);
 
     return transaction;

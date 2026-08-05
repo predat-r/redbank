@@ -79,11 +79,12 @@ public class RegistrationReviewService {
       userRoleRepository.save(userRole);
     }
 
-    auditService.record(adminUserId, AuditAction.REGISTRATION_APPROVED, AuditTargetType.USER,
+    auditService.recordAuditLog(adminUserId, AuditAction.REGISTRATION_APPROVED,
+        AuditTargetType.USER,
         userId.toString(), null);
     AccountHolder createdAccount = accountHolderService.createAccountHolder(user);
 
-    auditService.record(adminUserId, AuditAction.ACCOUNT_CREATED, AuditTargetType.ACCOUNT,
+    auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_CREATED, AuditTargetType.ACCOUNT,
         createdAccount.getId().toString(), null);
   }
 
@@ -137,7 +138,8 @@ public class RegistrationReviewService {
     }
 
     user.rejectRegistration(rejectionReason, Instant.now());
-    auditService.record(adminUserId, AuditAction.REGISTRATION_REJECTED, AuditTargetType.USER,
+    auditService.recordAuditLog(adminUserId, AuditAction.REGISTRATION_REJECTED,
+        AuditTargetType.USER,
         userId.toString(), rejectionReason);
   }
 

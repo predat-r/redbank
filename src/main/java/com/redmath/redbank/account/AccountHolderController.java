@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccountHolderController {
 
   private final AccountHolderService accountHolderService;
+  private static final String USER_ID = "userId";
 
   public AccountHolderController(AccountHolderService accountHolderService) {
     this.accountHolderService = accountHolderService;
@@ -27,7 +28,7 @@ public class AccountHolderController {
   ResponseEntity<AccountHolderDto> getMyAccountHolder(
       @AuthenticationPrincipal Jwt jwt
   ) {
-    Long userId = jwt.getClaim("userId");
+    Long userId = jwt.getClaim(USER_ID);
     if (userId == null) {
       throw new IllegalArgumentException("Authenticated user is required");
     }
@@ -53,7 +54,7 @@ public class AccountHolderController {
   ResponseEntity<Void> freezeMyAccountHolder(
       @AuthenticationPrincipal Jwt jwt
   ) {
-    Long userId = jwt.getClaim("userId");
+    Long userId = jwt.getClaim(USER_ID);
     if (userId == null) {
       throw new IllegalArgumentException("Authenticated user is required");
     }
@@ -66,7 +67,7 @@ public class AccountHolderController {
   ResponseEntity<Void> deactivateMyAccountHolder(
       @AuthenticationPrincipal Jwt jwt
   ) {
-    Long userId = jwt.getClaim("userId");
+    Long userId = jwt.getClaim(USER_ID);
     if (userId == null) {
       throw new IllegalArgumentException("Authenticated user is required");
     }

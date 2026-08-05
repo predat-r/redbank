@@ -9,7 +9,6 @@ import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.common.exception.ConflictException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.UserService;
-import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AdminAccountHolderService {
 
-  private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "accountNumber",
-      "accountStatus", "createdAt", "updatedAt");
   private final AccountHolderRepository accountHolderRepository;
   private final AuditService auditService;
   private final UserService userService;
@@ -53,7 +50,7 @@ public class AdminAccountHolderService {
 
     accountHolder.setAccountStatus(AccountStatus.FROZEN);
     accountHolderRepository.save(accountHolder);
-    auditService.record(adminUserId, AuditAction.ACCOUNT_FROZEN, AuditTargetType.ACCOUNT,
+    auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_FROZEN, AuditTargetType.ACCOUNT,
         accountId.toString(), null);
   }
 
@@ -68,7 +65,7 @@ public class AdminAccountHolderService {
     accountHolder.setAccountStatus(AccountStatus.CLOSED);
     accountHolderRepository.save(accountHolder);
     userService.deactivateUser(accountHolder.getUser().getId());
-    auditService.record(adminUserId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
+    auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
         accountId.toString(), null);
   }
 

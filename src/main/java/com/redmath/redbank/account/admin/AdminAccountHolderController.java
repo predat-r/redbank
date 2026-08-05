@@ -40,7 +40,8 @@ public class AdminAccountHolderController {
   ResponseEntity<Page<AccountHolderDto>> getAllAccountHolders(
       @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
   ) {
-    Page<AccountHolder> accountHoldersPage = adminAccountHolderService.getAllAccountHolders(pageable);
+    Page<AccountHolder> accountHoldersPage = adminAccountHolderService.getAllAccountHolders(
+        pageable);
 
     Page<AccountHolderDto> accountHolderDtoPage = accountHoldersPage.map(AccountHolderDto::from);
     return ResponseEntity.ok(accountHolderDtoPage);
