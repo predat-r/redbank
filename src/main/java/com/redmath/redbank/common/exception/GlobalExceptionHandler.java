@@ -38,7 +38,8 @@ public class GlobalExceptionHandler {
       NoResourceFoundException ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.NOT_FOUND, "Endpoint not found: " + request.getRequestURI(), request);
+    return buildResponse(HttpStatus.NOT_FOUND, "Endpoint not found: " + request.getRequestURI(),
+        request);
   }
 
   @ExceptionHandler({
@@ -68,7 +69,8 @@ public class GlobalExceptionHandler {
       Exception ex,
       HttpServletRequest request
   ) {
-    return buildResponse(HttpStatus.FORBIDDEN, "Access Denied: You do not have permission to access this resource", request);
+    return buildResponse(HttpStatus.FORBIDDEN,
+        "Access Denied: You do not have permission to access this resource", request);
   }
 
   @ExceptionHandler({

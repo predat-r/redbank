@@ -99,7 +99,7 @@ public class AccountHolderService {
   public void freezeMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getOrThrowByUserId(userId);
     if (freezeMyAccountHolderInternal(accountHolder)) {
-      auditService.record(userId, AuditAction.ACCOUNT_FROZEN, AuditTargetType.ACCOUNT,
+      auditService.recordAuditLog(userId, AuditAction.ACCOUNT_FROZEN, AuditTargetType.ACCOUNT,
           accountHolder.getId().toString(), null);
     }
   }
@@ -108,7 +108,7 @@ public class AccountHolderService {
   public void deactivateMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getOrThrowByUserId(userId);
     if (deactivateMyAccountHolderInternal(accountHolder)) {
-      auditService.record(userId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
+      auditService.recordAuditLog(userId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
           accountHolder.getId().toString(), null);
     }
   }

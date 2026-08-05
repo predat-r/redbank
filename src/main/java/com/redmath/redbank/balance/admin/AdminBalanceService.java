@@ -3,16 +3,14 @@ package com.redmath.redbank.balance.admin;
 import com.redmath.redbank.balance.Balance;
 import com.redmath.redbank.balance.BalanceRepository;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
-import java.util.Set;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AdminBalanceService {
+
   private final BalanceRepository balanceRepository;
 
   public AdminBalanceService(BalanceRepository balanceRepository) {
