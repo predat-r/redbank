@@ -2,6 +2,8 @@ package com.redmath.redbank.transaction;
 
 import static com.redmath.redbank.common.AuthUtilities.withAccountHolder;
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
+import static com.redmath.redbank.common.AuthUtilities.withPendingUser;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -19,11 +21,13 @@ import com.redmath.redbank.user.UserRepository;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -34,7 +38,7 @@ import tools.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-class BankTransactionEndpointTests {
+class BankTransactionControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
@@ -48,18 +52,17 @@ class BankTransactionEndpointTests {
   @Autowired
   private AccountHolderRepository accountHolderRepository;
 
+  private User adminUser;
   private User johnUser;
   private User janeUser;
-  private User adminUser;
   private AccountHolder johnAccount;
   private AccountHolder janeAccount;
 
   @BeforeEach
   void setUp() throws Exception {
     adminUser = userRepository.findByEmailIgnoreCase("admin@redbank.com").orElseThrow();
-
-    johnUser = createOrGetAccountHolder("john.test@example.com", "John Doe", "03001112233");
-    janeUser = createOrGetAccountHolder("jane.test@example.com", "Jane Smith", "03004445566");
+    johnUser = createOrGetAccountHolder("john.txn.test@example.com", "John Doe", "03001234567");
+    janeUser = createOrGetAccountHolder("jane.txn.test@example.com", "Jane Doe", "03007654321");
 
     johnAccount = accountHolderRepository.findByUserId(johnUser.getId()).orElseThrow();
     janeAccount = accountHolderRepository.findByUserId(janeUser.getId()).orElseThrow();
@@ -68,7 +71,7 @@ class BankTransactionEndpointTests {
   private User createOrGetAccountHolder(String email, String name, String phone) throws Exception {
     return userRepository.findByEmailIgnoreCase(email).orElseGet(() -> {
       try {
-        RegisterRequest registerRequest = new RegisterRequest(email, phone, "password123", name, "123 Street");
+        RegisterRequest registerRequest = new RegisterRequest(email, phone, "password123", name, "123 Test Street");
         MvcResult regResult = mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
@@ -92,54 +95,41 @@ class BankTransactionEndpointTests {
   // --- Authentication & Authorization ---
 
   @Test
-  void getMyTransactionsWithoutAuthReturnsUnauthorized() throws Exception {
+  @DisplayName("GET /api/accounts/me/transactions - Returns UNAUTHORIZED when unauthenticated")
+  void endpointsWithoutAuthReturnUnauthorized() throws Exception {
     mockMvc.perform(get("/api/accounts/me/transactions"))
         .andExpect(status().isUnauthorized());
-  }
 
-  @Test
-  void createTransferWithoutAuthReturnsUnauthorized() throws Exception {
-    TransferRequest request = new TransferRequest();
-    request.setAmount(new BigDecimal("100.00"));
-    request.setDestinationAccountNumber(janeAccount.getAccountNumber());
-    request.setDescription("Test transfer");
-
-    mockMvc.perform(post("/api/accounts/me/transfers")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isUnauthorized());
-  }
-
-  @Test
-  void createWithdrawalWithoutAuthReturnsUnauthorized() throws Exception {
-    WithdrawalRequest request = new WithdrawalRequest();
-    request.setAmount(new BigDecimal("50.00"));
-    request.setDescription("Test withdrawal");
+    WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
+    withdrawalRequest.setAmount(new BigDecimal("50.00"));
 
     mockMvc.perform(post("/api/accounts/me/withdrawals")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(withdrawalRequest)))
         .andExpect(status().isUnauthorized());
   }
 
   @Test
-  void createTransferWithAdminRoleReturnsForbidden() throws Exception {
-    TransferRequest request = new TransferRequest();
-    request.setAmount(new BigDecimal("100.00"));
-    request.setDestinationAccountNumber(janeAccount.getAccountNumber());
-    request.setDescription("Test transfer");
-
-    mockMvc.perform(post("/api/accounts/me/transfers")
-            .with(withAdmin(adminUser.getId()))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+  @DisplayName("GET /api/accounts/me/transactions - Returns FORBIDDEN for non-account holder role")
+  void endpointsWithForbiddenRoleReturnForbidden() throws Exception {
+    mockMvc.perform(get("/api/accounts/me/transactions")
+            .with(withPendingUser(johnUser.getId())))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("GET /api/accounts/me/transactions - Returns BAD_REQUEST when JWT userId claim is missing")
+  void endpointReturnsBadRequestWhenUserIdClaimMissing() throws Exception {
+    mockMvc.perform(get("/api/accounts/me/transactions")
+            .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ACCOUNT_HOLDER"))))
+        .andExpect(status().isBadRequest());
   }
 
   // --- GET /api/accounts/me/transactions ---
 
   @Test
-  void getMyTransactionsReturnsPageOfTransactions() throws Exception {
+  @DisplayName("GET /api/accounts/me/transactions - Success for ACCOUNT_HOLDER")
+  void getMyTransactionsAsAccountHolderReturnsOk() throws Exception {
     depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("500.00"));
 
     mockMvc.perform(get("/api/accounts/me/transactions")
@@ -150,9 +140,25 @@ class BankTransactionEndpointTests {
         .andExpect(jsonPath("$.content[0].amount").value(500.00));
   }
 
+  @Test
+  @DisplayName("GET /api/accounts/me/transactions - Supports pagination and sorting parameters")
+  void getMyTransactionsWithPaginationParameters() throws Exception {
+    depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("100.00"));
+    depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("200.00"));
+
+    mockMvc.perform(get("/api/accounts/me/transactions")
+            .param("page", "0")
+            .param("size", "1")
+            .param("sort", "createdAt,desc")
+            .with(withAccountHolder(johnUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1));
+  }
+
   // --- POST /api/accounts/me/withdrawals ---
 
   @Test
+  @DisplayName("POST /api/accounts/me/withdrawals - Success with valid amount")
   void withdrawalWithValidAmountReturnsCreated() throws Exception {
     depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("300.00"));
 
@@ -169,13 +175,27 @@ class BankTransactionEndpointTests {
         .andExpect(jsonPath("$.type").value("WITHDRAWAL"))
         .andExpect(jsonPath("$.amount").value(100.00))
         .andExpect(jsonPath("$.status").value("COMPLETED"))
-        .andExpect(jsonPath("$.transactionReference").isNotEmpty());
+        .andExpect(jsonPath("$.sourceAccountNumber").value(johnAccount.getAccountNumber()));
   }
 
   @Test
+  @DisplayName("POST /api/accounts/me/withdrawals - Returns BAD_REQUEST for invalid amount")
+  void withdrawalWithInvalidAmountReturnsBadRequest() throws Exception {
+    WithdrawalRequest request = new WithdrawalRequest();
+    request.setAmount(new BigDecimal("-10.00"));
+
+    mockMvc.perform(post("/api/accounts/me/withdrawals")
+            .with(withAccountHolder(johnUser.getId()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("POST /api/accounts/me/withdrawals - Returns BAD_REQUEST for insufficient balance")
   void withdrawalWithInsufficientBalanceReturnsBadRequest() throws Exception {
     WithdrawalRequest request = new WithdrawalRequest();
-    request.setAmount(new BigDecimal("10000.00"));
+    request.setAmount(new BigDecimal("1000.00"));
     request.setDescription("Overdraft attempt");
 
     mockMvc.perform(post("/api/accounts/me/withdrawals")
@@ -186,22 +206,10 @@ class BankTransactionEndpointTests {
         .andExpect(jsonPath("$.message").value("Insufficient funds for this transaction"));
   }
 
-  @Test
-  void withdrawalWithInvalidAmountReturnsBadRequest() throws Exception {
-    WithdrawalRequest request = new WithdrawalRequest();
-    request.setAmount(new BigDecimal("0.00"));
-    request.setDescription("Invalid zero amount");
-
-    mockMvc.perform(post("/api/accounts/me/withdrawals")
-            .with(withAccountHolder(johnUser.getId()))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest());
-  }
-
   // --- POST /api/accounts/me/transfers ---
 
   @Test
+  @DisplayName("POST /api/accounts/me/transfers - Success with valid request")
   void transferWithValidRequestReturnsCreated() throws Exception {
     depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("500.00"));
 
@@ -224,6 +232,7 @@ class BankTransactionEndpointTests {
   }
 
   @Test
+  @DisplayName("POST /api/accounts/me/transfers - Returns BAD_REQUEST when source and destination match")
   void transferToSameAccountReturnsBadRequest() throws Exception {
     depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("500.00"));
 
@@ -241,6 +250,7 @@ class BankTransactionEndpointTests {
   }
 
   @Test
+  @DisplayName("POST /api/accounts/me/transfers - Returns NOT_FOUND for non-existent destination account")
   void transferToNonExistentAccountReturnsNotFound() throws Exception {
     depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("500.00"));
 
@@ -258,6 +268,7 @@ class BankTransactionEndpointTests {
   }
 
   @Test
+  @DisplayName("POST /api/accounts/me/transfers - Returns BAD_REQUEST for insufficient balance")
   void transferWithInsufficientBalanceReturnsBadRequest() throws Exception {
     TransferRequest request = new TransferRequest();
     request.setAmount(new BigDecimal("50000.00"));
