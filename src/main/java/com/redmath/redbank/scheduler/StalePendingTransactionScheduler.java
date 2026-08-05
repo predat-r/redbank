@@ -33,8 +33,10 @@ public class StalePendingTransactionScheduler {
           transaction.setStatus(TransactionStatus.CANCELLED);
           transaction.setCompletedAt(OffsetDateTime.now(ZoneOffset.UTC));
           count[0]++;
-          log.warn("Auto-cancelled stale transaction: ref={}, createdAt={}",
-              transaction.getTransactionReference(), transaction.getCreatedAt());
+          if (log.isWarnEnabled()) {
+            log.warn("Auto-cancelled stale transaction: ref={}, createdAt={}",
+                transaction.getTransactionReference(), transaction.getCreatedAt());
+          }
         });
 
     log.info("Stale pending transaction cleanup completed: {} transactions cancelled", count[0]);

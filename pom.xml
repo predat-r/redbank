@@ -261,6 +261,7 @@
         <configuration>
           <failOnViolation>true</failOnViolation>
           <printFailingErrors>true</printFailingErrors>
+          <failurePriority>2</failurePriority>
           <rulesets>
             <ruleset>/category/java/bestpractices.xml</ruleset>
             <ruleset>/category/java/errorprone.xml</ruleset>
