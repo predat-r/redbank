@@ -53,6 +53,7 @@ class AdminAccountHolderControllerTest {
             .with(withAdmin(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(accountHolder.getId()))
+        .andExpect(jsonPath("$.user.id").value(accountHolder.getUser().getId()))
         .andExpect(jsonPath("$.accountNumber").value("RB-ADM-ACC-001"))
         .andExpect(jsonPath("$.accountStatus").value("ACTIVE"));
   }

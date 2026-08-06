@@ -2,6 +2,7 @@ package com.redmath.redbank.account.dto;
 
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountStatus;
+import com.redmath.redbank.user.dto.UserDto;
 import java.time.OffsetDateTime;
 import lombok.Getter;
 
@@ -9,7 +10,7 @@ import lombok.Getter;
 public class AccountHolderDto {
 
   Long id;
-  Long userId;
+  UserDto user;
   String accountNumber;
   String currency;
   AccountStatus accountStatus;
@@ -21,7 +22,7 @@ public class AccountHolderDto {
     AccountHolderDto dto = new AccountHolderDto();
     dto.id = accountHolder.getId();
     if (accountHolder.getUser() != null) {
-      dto.userId = accountHolder.getUser().getId();
+      dto.user = UserDto.from(accountHolder.getUser());
     }
     dto.accountNumber = accountHolder.getAccountNumber();
     dto.currency = accountHolder.getCurrency();

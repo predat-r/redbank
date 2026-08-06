@@ -49,7 +49,8 @@ class AccountHolderControllerTest {
             .with(withAccountHolder(accountHolder.getUser().getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(accountHolder.getId()))
-        .andExpect(jsonPath("$.userId").value(accountHolder.getUser().getId()))
+        .andExpect(jsonPath("$.user.id").value(accountHolder.getUser().getId()))
+        .andExpect(jsonPath("$.user.email").value("acc.me@example.com"))
         .andExpect(jsonPath("$.accountNumber").value("RB-ACC-ME-001"))
         .andExpect(jsonPath("$.currency").value("USD"))
         .andExpect(jsonPath("$.accountStatus").value("ACTIVE"));
