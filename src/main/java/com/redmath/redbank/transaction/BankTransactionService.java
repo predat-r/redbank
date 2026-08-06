@@ -49,6 +49,19 @@ public class BankTransactionService {
     return bankTransactionRepository.findAll(pageable);
   }
 
+  public Page<BankTransaction> getAllTransactions(
+      String reference,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate,
+      Pageable pageable) {
+    return bankTransactionRepository.findAll(
+        BankTransactionSpecification.filter(reference, accountNumber, type, status, fromDate, toDate),
+        pageable);
+  }
+
   public Page<BankTransaction> getTransactionsByAccountNumber(String accountNumber,
       Pageable pageable) {
     AccountHolder accountHolder = accountHolderService.findByAccountNumber(accountNumber)

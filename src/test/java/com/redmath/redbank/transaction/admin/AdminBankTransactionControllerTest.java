@@ -177,6 +177,57 @@ class AdminBankTransactionControllerTest {
         .andExpect(jsonPath("$.content[0].amount").value(250.00));
   }
 
+  @Test
+  @DisplayName("GET /api/admin/transactions - Success with filters for ADMIN")
+  void getAllTransactionsWithFiltersAsAdminReturnsMatchingTransactions() throws Exception {
+    MvcResult depositResult = createDeposit(johnAccount.getAccountNumber(), new BigDecimal("250.00"));
+    String reference = readJson(depositResult, "$.transactionReference");
+
+    // Filter by reference
+    mockMvc.perform(get("/api/admin/transactions")
+            .param("reference", reference)
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].transactionReference").value(reference));
+
+    // Filter by non-matching reference
+    mockMvc.perform(get("/api/admin/transactions")
+            .param("reference", "NON_EXISTENT_REF_12345")
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(0));
+
+    // Filter by accountNumber
+    mockMvc.perform(get("/api/admin/transactions")
+            .param("accountNumber", johnAccount.getAccountNumber())
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].destinationAccountNumber").value(johnAccount.getAccountNumber()));
+
+    // Filter by type
+    mockMvc.perform(get("/api/admin/transactions")
+            .param("type", "DEPOSIT")
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].type").value("DEPOSIT"));
+
+    // Filter by status
+    mockMvc.perform(get("/api/admin/transactions")
+            .param("status", "COMPLETED")
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].status").value("COMPLETED"));
+
+    // Filter by date range (fromDate & toDate)
+    java.time.OffsetDateTime now = java.time.OffsetDateTime.now();
+    mockMvc.perform(get("/api/admin/transactions")
+            .param("fromDate", now.minusDays(1).toString())
+            .param("toDate", now.plusDays(1).toString())
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray());
+  }
+
   // --- GET /api/admin/accounts/{accountNumber}/transactions ---
 
   @Test

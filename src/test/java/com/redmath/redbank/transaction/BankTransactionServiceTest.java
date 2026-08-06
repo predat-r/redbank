@@ -88,6 +88,21 @@ class BankTransactionServiceTest {
   }
 
   @Test
+  @DisplayName("getAllTransactions with filter parameters executes repository findAll with specification")
+  void getAllTransactionsWithFiltersSuccess() {
+    when(bankTransactionRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(List.of()));
+
+    Page<BankTransaction> result = bankTransactionService.getAllTransactions(
+        "TXN", "RB12345", TransactionType.DEPOSIT, TransactionStatus.COMPLETED,
+        java.time.OffsetDateTime.now().minusDays(1), java.time.OffsetDateTime.now(),
+        Pageable.unpaged());
+
+    assertNotNull(result);
+    verify(bankTransactionRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), eq(Pageable.unpaged()));
+  }
+
+  @Test
   @DisplayName("getTransactionsByAccountNumber fetches transactions for matching account number")
   void getTransactionsByAccountNumberSuccess() {
     AccountHolder accountHolder = new AccountHolder();
