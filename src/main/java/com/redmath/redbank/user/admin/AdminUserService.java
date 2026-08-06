@@ -137,6 +137,22 @@ public class AdminUserService {
         AuditTargetType.USER, userId.toString(), null);
   }
 
+  @Transactional
+  public void reactivateUser(Long adminUserId, Long userId) {
+    requireActiveAdmin(adminUserId);
+    User user = userService.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
+
+    if (!userService.reactivateUser(userId)) {
+      return;
+    }
+
+    accountHolderService.findByUser(user)
+        .ifPresent(accountHolder -> adminAccountHolderService.reactivateAccountHolder(
+            accountHolder.getId(), adminUserId));
+    auditService.recordAuditLog(adminUserId, AuditAction.USER_ACTIVATED,
+        AuditTargetType.USER, userId.toString(), null);
+  }
+
   private User requireActiveAdmin(Long adminUserId) {
     return userService.findById(adminUserId)
         .filter(user -> user.getStatus() == UserStatus.ACTIVE)

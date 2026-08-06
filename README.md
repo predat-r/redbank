@@ -144,6 +144,7 @@ The account-name lookup also permits `ROLE_ADMIN`.
 | `GET`   | `/api/admin/users/{userId}`                   | Retrieves a user by ID.                                                           |
 | `PUT`   | `/api/admin/users/{userId}`                   | Replaces the user's editable email, phone number, name, and address details.       |
 | `PATCH` | `/api/admin/users/{userId}/deactivate`        | Deactivates the user, invalidates refresh tokens, and closes the linked account.   |
+| `PATCH` | `/api/admin/users/{userId}/reactivate`        | Reactivates the user and reopens the existing linked account.                      |
 | `GET`   | `/api/admin/accounts`                         | Retrieves a paginated list of account holders.                                    |
 | `GET`   | `/api/admin/accounts/{accountId}`             | Retrieves an account holder by ID.                                                |
 | `PATCH` | `/api/admin/accounts/freeze/{accountId}`      | Freezes an account holder's account.                                              |
@@ -153,6 +154,8 @@ Admin user creation accepts `email`, `phoneNumber`, `password`, `name`, and `add
 HTTP `201 Created` with a `user` object and an embedded `accountHolder` object. Updating a user
 returns HTTP `200 OK` and does not modify the password or status. Deactivation requires no request
 body and returns HTTP `204 No Content`; repeated deactivation is treated as a successful no-op.
+Reactivation also returns HTTP `204 No Content`, preserves the existing account number and history,
+and treats an already-active user as a successful no-op.
 Duplicate email or phone-number values return HTTP `409 Conflict`, while unknown user IDs return
 HTTP `404 Not Found`.
 

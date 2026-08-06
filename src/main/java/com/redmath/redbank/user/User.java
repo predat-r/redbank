@@ -117,4 +117,9 @@ public class User {
     this.refreshTokenVersion++;
     this.updatedAt = now;
   }
+
+  public void reactivate(Instant now) {
+    this.status = UserStatus.ACTIVE;
+    this.updatedAt = now;
+  }
 }

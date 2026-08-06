@@ -81,4 +81,23 @@ public class UserService {
     user.deactivate(Instant.now());
     return true;
   }
+
+  @Transactional(propagation = Propagation.MANDATORY)
+  public boolean reactivateUser(Long userId) {
+    User user = userRepository.findByIdForUpdate(userId)
+        .orElseThrow(UserNotFoundException::new);
+
+    if (user.getStatus() == UserStatus.ACTIVE) {
+      return false;
+    }
+
+    if (user.getStatus() != UserStatus.DEACTIVATED) {
+      throw new InvalidUserStatusTransitionException(
+          "Only deactivated users can be reactivated"
+      );
+    }
+
+    user.reactivate(Instant.now());
+    return true;
+  }
 }

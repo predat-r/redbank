@@ -73,6 +73,15 @@ public class AdminUserController {
     adminUserService.deactivateUser(extractUserId(jwt), userId);
   }
 
+  @PatchMapping("/{userId}/reactivate")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void reactivateUser(
+      @AuthenticationPrincipal Jwt jwt,
+      @PathVariable Long userId
+  ) {
+    adminUserService.reactivateUser(extractUserId(jwt), userId);
+  }
+
   private long extractUserId(Jwt jwt) {
     Object claim = jwt.getClaim("userId");
 

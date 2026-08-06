@@ -161,7 +161,46 @@ class AdminUserEndpointTests {
   }
 
   @Test
-  void unknownUserCannotBeUpdatedOrDeactivated() throws Exception {
+  void adminCanReactivateUserAndReopenExistingAccountHolder() throws Exception {
+    CreatedUser created = createUserByAdmin("reactivate.user@example.com", "03005550009");
+    AccountHolder originalAccountHolder = accountHolderRepository.findByUserId(created.userId())
+        .orElseThrow();
+    String originalAccountNumber = originalAccountHolder.getAccountNumber();
+
+    mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", created.userId())
+            .with(withAdmin(adminUserId())))
+        .andExpect(status().isNoContent());
+
+    mockMvc.perform(patch("/api/admin/users/{userId}/reactivate", created.userId())
+            .with(withAdmin(adminUserId())))
+        .andExpect(status().isNoContent());
+
+    mockMvc.perform(patch("/api/admin/users/{userId}/reactivate", created.userId())
+            .with(withAdmin(adminUserId())))
+        .andExpect(status().isNoContent());
+
+    User user = userRepository.findById(created.userId()).orElseThrow();
+    AccountHolder reactivatedAccountHolder = accountHolderRepository.findByUserId(created.userId())
+        .orElseThrow();
+    assertThat(user.getStatus()).isEqualTo(UserStatus.ACTIVE);
+    assertThat(user.getRefreshTokenVersion()).isEqualTo(1L);
+    assertThat(reactivatedAccountHolder.getAccountStatus()).isEqualTo(AccountStatus.ACTIVE);
+    assertThat(reactivatedAccountHolder.getAccountNumber()).isEqualTo(originalAccountNumber);
+  }
+
+  @Test
+  void pendingUserCannotBeReactivated() throws Exception {
+    RegisteredUser registration = registerPendingUser();
+
+    mockMvc.perform(patch("/api/admin/users/{userId}/reactivate", registration.userId())
+            .with(withAdmin(adminUserId())))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.message")
+            .value("Only deactivated users can be reactivated"));
+  }
+
+  @Test
+  void unknownUserCannotBeUpdatedDeactivatedOrReactivated() throws Exception {
     long unknownUserId = Long.MAX_VALUE;
     UpdateUserRequest request = new UpdateUserRequest(
         "unknown@example.com",
@@ -177,6 +216,10 @@ class AdminUserEndpointTests {
         .andExpect(status().isNotFound());
 
     mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", unknownUserId)
+            .with(withAdmin(adminUserId())))
+        .andExpect(status().isNotFound());
+
+    mockMvc.perform(patch("/api/admin/users/{userId}/reactivate", unknownUserId)
             .with(withAdmin(adminUserId())))
         .andExpect(status().isNotFound());
   }

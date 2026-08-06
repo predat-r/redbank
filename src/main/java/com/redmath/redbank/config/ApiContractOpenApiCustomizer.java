@@ -40,6 +40,7 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "findUser",
       "updateUser",
       "deactivateUser",
+      "reactivateUser",
       "getAccountHolder",
       "getMyAccountHolder",
       "getAccountHolderByAccountNumber",
@@ -62,6 +63,7 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "createUser",
       "updateUser",
       "deactivateUser",
+      "reactivateUser",
       "approveRegistration",
       "rejectRegistration",
       "findPendingRegistration",
@@ -78,6 +80,7 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
 
   private static final Set<String> NO_CONTENT_OPERATIONS = Set.of(
       "deactivateUser",
+      "reactivateUser",
       "freezeAccountHolder",
       "deactivateAccountHolder",
       "freezeMyAccountHolder",
