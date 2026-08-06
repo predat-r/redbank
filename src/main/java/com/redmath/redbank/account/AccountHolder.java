@@ -28,7 +28,7 @@ public class AccountHolder {
   private Long id;
 
   @NotNull
-  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @OneToOne(fetch = FetchType.EAGER, optional = false)
   @JoinColumn(name = "user_id", nullable = false, unique = true)
   private User user;
 

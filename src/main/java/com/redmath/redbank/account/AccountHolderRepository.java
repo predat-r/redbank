@@ -3,21 +3,33 @@ package com.redmath.redbank.account;
 import com.redmath.redbank.user.User;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface AccountHolderRepository extends JpaRepository<AccountHolder, Long> {
 
+  @EntityGraph(attributePaths = {"user"})
   Optional<AccountHolder> findByUserId(Long userId);
 
+  @EntityGraph(attributePaths = {"user"})
   AccountHolder getAccountHoldersById(Long id);
 
+  @EntityGraph(attributePaths = {"user"})
   AccountHolder getAccountHoldersByAccountNumber(String accountNumber);
 
+  @EntityGraph(attributePaths = {"user"})
   Optional<AccountHolder> findByUser(User user);
 
+  @EntityGraph(attributePaths = {"user"})
   Optional<AccountHolder> findByAccountNumber(String accountNumber);
+
+  @EntityGraph(attributePaths = {"user"})
+  @Override
+  Page<AccountHolder> findAll(Pageable pageable);
 
   boolean existsByAccountNumber(String accountNumber);
 

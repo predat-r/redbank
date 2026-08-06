@@ -1,10 +1,13 @@
 package com.redmath.redbank.account;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.redmath.redbank.account.dto.AccountHolderDto;
 import com.redmath.redbank.user.User;
+import com.redmath.redbank.user.UserStatus;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class AccountHolderDtoTest {
 
   @Test
-  @DisplayName("AccountHolderDto.from(accountHolder) with null user sets userId to null")
+  @DisplayName("AccountHolderDto.from(accountHolder) with null user sets user to null")
   void fromAccountHolderNullUser() {
     AccountHolder ah = new AccountHolder();
     ah.setId(100L);
@@ -23,7 +26,7 @@ class AccountHolderDtoTest {
 
     AccountHolderDto dto = AccountHolderDto.from(ah);
     assertEquals(100L, dto.getId());
-    assertNull(dto.getUserId());
+    assertNull(dto.getUser());
     assertEquals("RB-DTO-001", dto.getAccountNumber());
     assertEquals("USD", dto.getCurrency());
     assertEquals(AccountStatus.ACTIVE, dto.getAccountStatus());
@@ -32,8 +35,16 @@ class AccountHolderDtoTest {
   @Test
   @DisplayName("AccountHolderDto.from(accountHolder) populates all fields when user present")
   void fromAccountHolderPopulatedUser() {
-    User user = User.builder().email("dto@example.com").build();
-    // Using reflection or id mapping if user has id
+    User user = User.builder()
+        .id(55L)
+        .email("dto@example.com")
+        .name("Test User")
+        .phoneNumber("+123456789")
+        .address("123 Street")
+        .status(UserStatus.ACTIVE)
+        .createdAt(Instant.now())
+        .updatedAt(Instant.now())
+        .build();
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
     AccountHolder ah = new AccountHolder();
@@ -48,6 +59,10 @@ class AccountHolderDtoTest {
 
     AccountHolderDto dto = AccountHolderDto.from(ah);
     assertEquals(200L, dto.getId());
+    assertNotNull(dto.getUser());
+    assertEquals(55L, dto.getUser().getId());
+    assertEquals("dto@example.com", dto.getUser().getEmail());
+    assertEquals("Test User", dto.getUser().getName());
     assertEquals("RB-DTO-002", dto.getAccountNumber());
     assertEquals("USD", dto.getCurrency());
     assertEquals(AccountStatus.FROZEN, dto.getAccountStatus());
