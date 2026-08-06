@@ -1,7 +1,7 @@
 package com.redmath.redbank.balance.admin;
 
 import com.redmath.redbank.balance.Balance;
-import com.redmath.redbank.balance.BalanceDto;
+import com.redmath.redbank.balance.dto.BalanceDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;

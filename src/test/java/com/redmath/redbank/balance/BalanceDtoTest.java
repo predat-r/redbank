@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.balance.dto.BalanceDto;
 import com.redmath.redbank.transaction.BankTransaction;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

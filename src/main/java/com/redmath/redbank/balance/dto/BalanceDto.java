@@ -1,5 +1,7 @@
-package com.redmath.redbank.balance;
+package com.redmath.redbank.balance.dto;
 
+import com.redmath.redbank.balance.Balance;
+import com.redmath.redbank.balance.BalanceIndicator;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import lombok.Getter;

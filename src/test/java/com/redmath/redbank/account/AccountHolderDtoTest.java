@@ -3,6 +3,7 @@ package com.redmath.redbank.account;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.redmath.redbank.account.dto.AccountHolderDto;
 import com.redmath.redbank.user.User;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
