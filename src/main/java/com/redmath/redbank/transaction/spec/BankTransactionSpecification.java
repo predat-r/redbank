@@ -1,6 +1,9 @@
-package com.redmath.redbank.transaction;
+package com.redmath.redbank.transaction.spec;
 
 import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.transaction.BankTransaction;
+import com.redmath.redbank.transaction.TransactionStatus;
+import com.redmath.redbank.transaction.TransactionType;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;

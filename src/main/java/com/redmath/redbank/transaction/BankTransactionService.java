@@ -12,6 +12,7 @@ import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.request.DepositRequest;
 import com.redmath.redbank.transaction.request.TransferRequest;
 import com.redmath.redbank.transaction.request.WithdrawalRequest;
+import com.redmath.redbank.transaction.spec.BankTransactionSpecification;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
