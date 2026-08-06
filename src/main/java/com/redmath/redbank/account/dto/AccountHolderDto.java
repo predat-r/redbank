@@ -1,5 +1,7 @@
-package com.redmath.redbank.account;
+package com.redmath.redbank.account.dto;
 
+import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.account.AccountStatus;
 import java.time.OffsetDateTime;
 import lombok.Getter;
 

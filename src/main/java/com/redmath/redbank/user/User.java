@@ -94,6 +94,15 @@ public class User {
     this.updatedAt = now;
   }
 
+  public void updateDetails(String email, String phoneNumber, String name, String address,
+      Instant now) {
+    this.email = email;
+    this.phoneNumber = phoneNumber;
+    this.name = name;
+    this.address = address;
+    this.updatedAt = now;
+  }
+
   public void approveRegistration(User admin, Instant now) {
     this.status = UserStatus.ACTIVE;
     this.rejectionReason = null;
@@ -106,6 +115,11 @@ public class User {
   public void deactivate(Instant now) {
     this.status = UserStatus.DEACTIVATED;
     this.refreshTokenVersion++;
+    this.updatedAt = now;
+  }
+
+  public void reactivate(Instant now) {
+    this.status = UserStatus.ACTIVE;
     this.updatedAt = now;
   }
 }

@@ -3,6 +3,8 @@ package com.redmath.redbank.audit;
 public enum AuditAction {
   REGISTRATION_APPROVED,
   REGISTRATION_REJECTED,
+  USER_CREATED,
+  USER_UPDATED,
   USER_ACTIVATED,
   USER_DEACTIVATED,
   ACCOUNT_CREATED,

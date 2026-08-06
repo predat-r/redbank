@@ -26,6 +26,9 @@ authentication, transaction execution, and background reconciliation.
       and auto-generates a unique account number (`RB-XXXXXX`).
     - **Rejection**: Admin calls `POST /api/admin/registrations/{userId}/reject` with a rejection
       reason. The user status is set to `REJECTED`.
+5. **Direct Admin Creation**: An administrator can bypass the pending-registration workflow with
+   `POST /api/admin/users`. The user is created as `ACTIVE`, assigned `ROLE_ACCOUNT_HOLDER`, and
+   given an active account-holder profile in one transaction.
 
 ### 2. Authentication and Token Management
 
@@ -71,8 +74,8 @@ authentication, transaction execution, and background reconciliation.
   unapproved for over 30 days.
 - **Stale Transaction Cleanup**: Cron job cancels pending transactions that remain uncompleted after
   30 minutes.
-- **Audit Logging**: All administrative deposits and registration decisions write records to the
-  `audit_logs` database table.
+- **Audit Logging**: Administrative deposits, registration decisions, and administrator-driven
+  user lifecycle changes write records to the `audit_logs` database table.
 
 ---
 
@@ -134,14 +137,27 @@ The account-name lookup also permits `ROLE_ADMIN`.
 
 #### User & Account Management
 
-| Method  | Endpoint                                     | Description                                    |
-|:--------|:---------------------------------------------|:-----------------------------------------------|
-| `GET`   | `/api/admin/users`                           | Retrieves a paginated list of users.           |
-| `GET`   | `/api/admin/users/{userId}`                  | Retrieves a user by ID.                        |
-| `GET`   | `/api/admin/accounts`                        | Retrieves a paginated list of account holders. |
-| `GET`   | `/api/admin/accounts/{accountId}`            | Retrieves an account holder by ID.             |
-| `PATCH` | `/api/admin/accounts/freeze/{accountId}`     | Freezes an account holder's account.           |
-| `PATCH` | `/api/admin/accounts/deactivate/{accountId}` | Deactivates an account holder's account.       |
+| Method  | Endpoint                                      | Description                                                                       |
+|:--------|:----------------------------------------------|:----------------------------------------------------------------------------------|
+| `POST`  | `/api/admin/users`                            | Creates an active user and account holder; returns both in a nested response.      |
+| `GET`   | `/api/admin/users`                            | Retrieves a paginated list of users.                                              |
+| `GET`   | `/api/admin/users/{userId}`                   | Retrieves a user by ID.                                                           |
+| `PUT`   | `/api/admin/users/{userId}`                   | Replaces the user's editable email, phone number, name, and address details.       |
+| `PATCH` | `/api/admin/users/{userId}/deactivate`        | Deactivates the user, invalidates refresh tokens, and closes the linked account.   |
+| `PATCH` | `/api/admin/users/{userId}/reactivate`        | Reactivates the user and reopens the existing linked account.                      |
+| `GET`   | `/api/admin/accounts`                         | Retrieves a paginated list of account holders.                                    |
+| `GET`   | `/api/admin/accounts/{accountId}`             | Retrieves an account holder by ID.                                                |
+| `PATCH` | `/api/admin/accounts/freeze/{accountId}`      | Freezes an account holder's account.                                              |
+| `PATCH` | `/api/admin/accounts/deactivate/{accountId}`  | Deactivates an account holder's account.                                          |
+
+Admin user creation accepts `email`, `phoneNumber`, `password`, `name`, and `address`. It returns
+HTTP `201 Created` with a `user` object and an embedded `accountHolder` object. Updating a user
+returns HTTP `200 OK` and does not modify the password or status. Deactivation requires no request
+body and returns HTTP `204 No Content`; repeated deactivation is treated as a successful no-op.
+Reactivation also returns HTTP `204 No Content`, preserves the existing account number and history,
+and treats an already-active user as a successful no-op.
+Duplicate email or phone-number values return HTTP `409 Conflict`, while unknown user IDs return
+HTTP `404 Not Found`.
 
 #### Financial & Transaction Management
 

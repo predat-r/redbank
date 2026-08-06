@@ -1,7 +1,7 @@
 package com.redmath.redbank.account.admin;
 
 import com.redmath.redbank.account.AccountHolder;
-import com.redmath.redbank.account.AccountHolderDto;
+import com.redmath.redbank.account.dto.AccountHolderDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;

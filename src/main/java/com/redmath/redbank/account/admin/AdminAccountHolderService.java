@@ -9,6 +9,7 @@ import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.common.exception.ConflictException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.user.UserService;
+import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,25 @@ public class AdminAccountHolderService {
     userService.deactivateUser(accountHolder.getUser().getId());
     auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
         accountId.toString(), null);
+  }
+
+  @Transactional
+  public void reactivateAccountHolder(Long accountId, Long adminUserId) {
+    AccountHolder accountHolder = getOrThrow(accountId);
+
+    if (accountHolder.getAccountStatus() == AccountStatus.ACTIVE) {
+      return;
+    }
+    if (accountHolder.getAccountStatus() != AccountStatus.CLOSED) {
+      throw new ConflictException("Only closed accounts can be reactivated");
+    }
+
+    accountHolder.setAccountStatus(AccountStatus.ACTIVE);
+    accountHolder.setUpdatedAt(OffsetDateTime.now());
+    accountHolderRepository.save(accountHolder);
+    userService.reactivateUser(accountHolder.getUser().getId());
+    auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_ACTIVATED,
+        AuditTargetType.ACCOUNT, accountId.toString(), null);
   }
 
   private AccountHolder getOrThrow(Long accountId) {
