@@ -1,7 +1,9 @@
 package com.redmath.redbank.security;
 
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -11,6 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
@@ -43,16 +48,32 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth -> auth.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                    "/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
+                    "/api/auth/register", "/api/auth/login", "/api/auth/refresh",
+                    "/api/auth/logout")
                 .permitAll().requestMatchers("/api/auth/registration-status")
                 .hasAnyRole("PENDING_USER", "ACCOUNT_HOLDER").requestMatchers("/api/admin/**")
                 .hasRole("ADMIN").anyRequest().hasAnyRole("ADMIN", "ACCOUNT_HOLDER"))
-        .exceptionHandling(
+        .cors(Customizer.withDefaults()).exceptionHandling(
             exceptions -> exceptions.authenticationEntryPoint(securityErrorResponseHandler)
                 .accessDeniedHandler(securityErrorResponseHandler)).oauth2ResourceServer(
             oauth2 -> oauth2.authenticationEntryPoint(securityErrorResponseHandler)
                 .accessDeniedHandler(securityErrorResponseHandler)
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
     return http.build();
+  }
+
+  @Bean
+  CorsConfigurationSource corsConfigurationSource(TrustedOriginService trustedOriginService) {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(trustedOriginService.allowedOrigins());
+    configuration.setAllowedMethods(
+        List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+    configuration.setAllowCredentials(true);
+    configuration.setMaxAge(3600L);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 }

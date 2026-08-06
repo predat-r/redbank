@@ -60,7 +60,7 @@ class OpenApiContractTest {
     assertRequiredFields(schemas.path("ApiError"),
         "timestamp", "status", "error", "message", "path");
     assertRequiredFields(schemas.path("LoginResponse"),
-        "accessToken", "refreshToken", "tokenType");
+        "accessToken", "tokenType");
     assertRequiredFields(schemas.path("BankTransactionDto"),
         "id", "transactionReference", "type", "amount", "status", "createdAt");
     assertRequiredFields(schemas.path("PageMetadata"),

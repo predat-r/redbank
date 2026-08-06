@@ -31,3 +31,7 @@ logging:
     # SQL
     org.hibernate.SQL: DEBUG
     org.springframework.orm.jpa: DEBUG
+
+app:
+  cors:
+    allowed-origins: http://localhost:3001

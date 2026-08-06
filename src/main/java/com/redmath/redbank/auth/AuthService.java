@@ -3,9 +3,9 @@ package com.redmath.redbank.auth;
 import com.redmath.redbank.auth.dto.ChangePasswordRequest;
 import com.redmath.redbank.auth.dto.LoginRequest;
 import com.redmath.redbank.auth.dto.LoginResponse;
-import com.redmath.redbank.auth.dto.RefreshTokenRequest;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.auth.dto.RegisterResponse;
+import com.redmath.redbank.auth.dto.RegistrationResult;
 import com.redmath.redbank.auth.dto.RegistrationStatusResponse;
 import com.redmath.redbank.common.exception.DuplicateUserException;
 import com.redmath.redbank.common.exception.InvalidCredentialsException;
@@ -56,7 +56,7 @@ public class AuthService {
   }
 
   @Transactional
-  public RegisterResponse register(RegisterRequest request) {
+  public RegistrationResult register(RegisterRequest request) {
     String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
 
     String normalizedPhoneNumber = request.phoneNumber().trim();
@@ -86,13 +86,14 @@ public class AuthService {
     savedUser.incrementRefreshTokenVersion(now);
     String accessToken = jwtService.generateAccessToken(savedUser);
     String refreshToken = jwtService.generateRefreshToken(savedUser);
-    LoginResponse tokens = new LoginResponse(accessToken, refreshToken, BEARER_PREFIX);
-    return new RegisterResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getStatus(),
-        tokens);
+    LoginResponse tokens = new LoginResponse(accessToken, BEARER_PREFIX);
+    RegisterResponse response = new RegisterResponse(savedUser.getId(), savedUser.getEmail(),
+        savedUser.getStatus(), tokens);
+    return new RegistrationResult(response, refreshToken);
   }
 
   @Transactional
-  public LoginResponse login(LoginRequest request) {
+  public AuthenticationResult login(LoginRequest request) {
     String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
 
     User user = userService.findByEmailForUpdate(normalizedEmail)
@@ -111,12 +112,12 @@ public class AuthService {
     String accessToken = jwtService.generateAccessToken(user);
     String refreshToken = jwtService.generateRefreshToken(user);
 
-    return new LoginResponse(accessToken, refreshToken, BEARER_PREFIX);
+    return new AuthenticationResult(new LoginResponse(accessToken, BEARER_PREFIX), refreshToken);
   }
 
   @Transactional
-  public LoginResponse refresh(RefreshTokenRequest request) {
-    Jwt jwt = decodeRefreshToken(request.refreshToken());
+  public AuthenticationResult refresh(String refreshToken) {
+    Jwt jwt = decodeRefreshToken(refreshToken);
 
     long userId = requiredLongClaim(jwt, "userId");
     long tokenVersion = requiredLongClaim(jwt, "refreshTokenVersion");
@@ -135,14 +136,15 @@ public class AuthService {
     user.incrementRefreshTokenVersion(Instant.now());
 
     String accessToken = jwtService.generateAccessToken(user);
-    String refreshToken = jwtService.generateRefreshToken(user);
+    String rotatedRefreshToken = jwtService.generateRefreshToken(user);
 
-    return new LoginResponse(accessToken, refreshToken, BEARER_PREFIX);
+    return new AuthenticationResult(new LoginResponse(accessToken, BEARER_PREFIX),
+        rotatedRefreshToken);
   }
 
   @Transactional
-  public void logout(RefreshTokenRequest request) {
-    Jwt jwt = decodeRefreshToken(request.refreshToken());
+  public void logout(String refreshToken) {
+    Jwt jwt = decodeRefreshToken(refreshToken);
 
     long userId = requiredLongClaim(jwt, "userId");
     long tokenVersion = requiredLongClaim(jwt, "refreshTokenVersion");
@@ -204,6 +206,9 @@ public class AuthService {
   }
 
   private Jwt decodeRefreshToken(String refreshToken) {
+    if (refreshToken == null || refreshToken.isBlank()) {
+      throw new InvalidRefreshTokenException();
+    }
     try {
       return refreshJwtDecoder.decode(refreshToken);
     } catch (JwtException _) {

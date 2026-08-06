@@ -30,13 +30,15 @@ authentication, transaction execution, and background reconciliation.
 ### 2. Authentication and Token Management
 
 1. **User Login**: The user authenticates via `POST /api/auth/login` using email and password.
-2. **JWT Issuance**: Upon successful credential validation, the server returns an **access token**
-   (short-lived) and a **refresh token** (longer lived) containing claims such as `userId`, `email`,
-   and GrantedAuthorities (`ROLE_ACCOUNT_HOLDER` or `ROLE_ADMIN`).
+2. **JWT Issuance**: Upon successful credential validation, the server returns a short-lived
+   **access token** in the JSON response and sets the longer-lived **refresh token** as an
+   `HttpOnly` cookie. Tokens contain claims such as `userId`, `email`, and GrantedAuthorities
+   (`ROLE_ACCOUNT_HOLDER` or `ROLE_ADMIN`).
 3. **Authenticated Requests**: Clients attach `Authorization: Bearer <access-token>` header to all
    subsequent API requests.
-4. **Token Refresh**: When the access token expires, clients submit the refresh token to
-   `POST /api/auth/refresh` to obtain a new access token without re-entering credentials.
+4. **Token Refresh**: When the access token expires, browsers call `POST /api/auth/refresh` with
+   credentials enabled. The server reads and rotates the refresh-token cookie and returns a new
+   access token without requiring the user to re-enter credentials.
 
 ### 3. Funding and Transaction Execution
 
@@ -90,9 +92,9 @@ authentication, transaction execution, and background reconciliation.
 | Method | Endpoint                        | Access Level                   | Description                                                          |
 |:-------|:--------------------------------|:-------------------------------|:---------------------------------------------------------------------|
 | `POST` | `/api/auth/register`            | Public                         | Registers a new user (creates account in `PENDING_APPROVAL` state).  |
-| `POST` | `/api/auth/login`               | Public                         | Authenticates credentials and returns JWT access and refresh tokens. |
-| `POST` | `/api/auth/refresh`             | Public                         | Issues a new access token using a valid refresh token.               |
-| `POST` | `/api/auth/logout`              | Public                         | Revokes the supplied refresh token.                                  |
+| `POST` | `/api/auth/login`               | Public                         | Returns an access token and sets the refresh-token cookie.           |
+| `POST` | `/api/auth/refresh`             | Public                         | Rotates the refresh cookie and issues a new access token.            |
+| `POST` | `/api/auth/logout`              | Public                         | Revokes and clears the refresh-token cookie.                         |
 | `PUT`  | `/api/auth/password`            | Authenticated                  | Changes the authenticated user's password.                           |
 | `GET`  | `/api/auth/registration-status` | Pending user or account holder | Returns the authenticated user's registration status.                |
 
@@ -217,7 +219,12 @@ POSTGRES_PASSWORD=redbank_password
 ADMIN_PASSWORD_HASH='your-bcrypt-password-hash'
 JWT_PRIVATE_KEY='your-base64-pkcs8-private-key'
 JWT_PUBLIC_KEY='your-base64-x509-public-key'
+CORS_ALLOWED_ORIGINS='http://localhost:3001'
 ```
+
+Production uses a cross-site `Secure`, `HttpOnly`, `SameSite=None` refresh-token cookie. The
+frontend must send authentication requests with credentials enabled, and `CORS_ALLOWED_ORIGINS`
+must contain the exact frontend origin. Multiple trusted origins can be comma-separated.
 
 `POSTGRES_DB` is fixed to `redbank` in `compose.yaml` and is not configurable through an environment
 variable.

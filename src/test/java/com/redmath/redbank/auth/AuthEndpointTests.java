@@ -2,6 +2,8 @@ package com.redmath.redbank.auth;
 
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static com.redmath.redbank.common.AuthUtilities.withPendingUser;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -11,14 +13,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import com.redmath.redbank.auth.dto.ChangePasswordRequest;
 import com.redmath.redbank.auth.dto.LoginRequest;
-import com.redmath.redbank.auth.dto.RefreshTokenRequest;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.user.UserRepository;
+import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,6 +37,8 @@ import tools.jackson.databind.ObjectMapper;
 class AuthEndpointTests {
 
   private static final String PASSWORD = "password123";
+  private static final String FRONTEND_ORIGIN = "http://localhost:3001";
+  private static final String REFRESH_COOKIE_NAME = "__Secure-refresh-token";
 
   @Autowired
   private MockMvc mockMvc;
@@ -54,7 +59,7 @@ class AuthEndpointTests {
         .andExpect(jsonPath("$.email").value(request.email()))
         .andExpect(jsonPath("$.status").value("PENDING_APPROVAL"))
         .andExpect(jsonPath("$.tokens.accessToken").isNotEmpty())
-        .andExpect(jsonPath("$.tokens.refreshToken").isNotEmpty())
+        .andExpect(jsonPath("$.tokens.refreshToken").doesNotExist())
         .andExpect(jsonPath("$.tokens.tokenType").value("Bearer"));
   }
 
@@ -119,7 +124,7 @@ class AuthEndpointTests {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken").isNotEmpty())
-        .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+        .andExpect(jsonPath("$.refreshToken").doesNotExist())
         .andExpect(jsonPath("$.tokenType").value("Bearer"));
   }
 
@@ -144,25 +149,22 @@ class AuthEndpointTests {
     MvcResult registration = register(validRegistration())
         .andExpect(status().isCreated())
         .andReturn();
-    String refreshToken = readJson(registration, "$.tokens.refreshToken");
-    RefreshTokenRequest request = new RefreshTokenRequest(refreshToken);
+    String refreshToken = refreshToken(registration);
 
     mockMvc.perform(post("/api/auth/refresh")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .cookie(new Cookie(REFRESH_COOKIE_NAME, refreshToken))
+            .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken").isNotEmpty())
-        .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+        .andExpect(jsonPath("$.refreshToken").doesNotExist())
         .andExpect(jsonPath("$.tokenType").value("Bearer"));
   }
 
   @Test
   void malformedRefreshTokenReturnsUnauthorized() throws Exception {
-    RefreshTokenRequest request = new RefreshTokenRequest("not-a-jwt");
-
     mockMvc.perform(post("/api/auth/refresh")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .cookie(new Cookie(REFRESH_COOKIE_NAME, "not-a-jwt"))
+            .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.status").value(401))
         .andExpect(jsonPath("$.message").value("Refresh token is invalid or expired"))
@@ -174,20 +176,30 @@ class AuthEndpointTests {
     MvcResult registration = register(validRegistration())
         .andExpect(status().isCreated())
         .andReturn();
-    String refreshToken = readJson(registration, "$.tokens.refreshToken");
-    RefreshTokenRequest request = new RefreshTokenRequest(refreshToken);
-    String requestJson = objectMapper.writeValueAsString(request);
+    String refreshToken = refreshToken(registration);
 
     mockMvc.perform(post("/api/auth/logout")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestJson))
+            .cookie(new Cookie(REFRESH_COOKIE_NAME, refreshToken))
+            .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN))
         .andExpect(status().isNoContent());
 
     mockMvc.perform(post("/api/auth/refresh")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestJson))
+            .cookie(new Cookie(REFRESH_COOKIE_NAME, refreshToken))
+            .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.message").value("Refresh token is invalid or expired"));
+  }
+
+  @Test
+  void refreshFromUntrustedOriginReturnsForbidden() throws Exception {
+    MvcResult registration = register(validRegistration())
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    mockMvc.perform(post("/api/auth/refresh")
+            .cookie(new Cookie(REFRESH_COOKIE_NAME, refreshToken(registration)))
+            .header(HttpHeaders.ORIGIN, "https://attacker.example"))
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -244,7 +256,7 @@ class AuthEndpointTests {
     login(registeredUser.email(), newPassword)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken").isNotEmpty())
-        .andExpect(jsonPath("$.refreshToken").isNotEmpty());
+        .andExpect(jsonPath("$.refreshToken").doesNotExist());
   }
 
   @Test
@@ -328,6 +340,22 @@ class AuthEndpointTests {
 
   private <T> T readJson(MvcResult result, String path) throws Exception {
     return JsonPath.read(result.getResponse().getContentAsString(StandardCharsets.UTF_8), path);
+  }
+
+  private String refreshToken(MvcResult result) {
+    String setCookie = result.getResponse().getHeader(HttpHeaders.SET_COOKIE);
+    assertNotNull(setCookie);
+    assertTrue(setCookie.contains("HttpOnly"));
+    assertTrue(setCookie.contains("Secure"));
+    assertTrue(setCookie.contains("SameSite=None"));
+    assertTrue(setCookie.contains("Path=/api/auth"));
+
+    String prefix = REFRESH_COOKIE_NAME + "=";
+    int valueStart = setCookie.indexOf(prefix);
+    assertTrue(valueStart >= 0);
+    valueStart += prefix.length();
+    int valueEnd = setCookie.indexOf(';', valueStart);
+    return setCookie.substring(valueStart, valueEnd);
   }
 
   private record RegisteredUser(String email, String accessToken) {

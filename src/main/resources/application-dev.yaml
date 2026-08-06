@@ -26,3 +26,12 @@ logging:
     # SQL
     org.hibernate.SQL: DEBUG
     org.springframework.orm.jpa: DEBUG
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3001,http://localhost:8080}
+  security:
+    refresh-cookie:
+      name: refresh-token
+      same-site: Lax
+      secure: false

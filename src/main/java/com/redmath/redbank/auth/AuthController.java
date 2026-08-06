@@ -3,19 +3,24 @@ package com.redmath.redbank.auth;
 import com.redmath.redbank.auth.dto.ChangePasswordRequest;
 import com.redmath.redbank.auth.dto.LoginRequest;
 import com.redmath.redbank.auth.dto.LoginResponse;
-import com.redmath.redbank.auth.dto.RefreshTokenRequest;
 import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.auth.dto.RegisterResponse;
+import com.redmath.redbank.auth.dto.RegistrationResult;
 import com.redmath.redbank.auth.dto.RegistrationStatusResponse;
+import com.redmath.redbank.security.TrustedOriginService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,38 +31,60 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
+  private final RefreshTokenCookieService refreshTokenCookieService;
+  private final TrustedOriginService trustedOriginService;
 
 
   @PostMapping("/register")
   @ResponseStatus(HttpStatus.CREATED)
   public RegisterResponse register(
-      @Valid @RequestBody RegisterRequest request
+      @Valid @RequestBody RegisterRequest request,
+      HttpServletResponse servletResponse
   ) {
-    return authService.register(request);
+    RegistrationResult result = authService.register(request);
+    refreshTokenCookieService.write(servletResponse, result.refreshToken());
+    return result.response();
   }
 
 
   @PostMapping("/login")
   public LoginResponse login(
-      @Valid @RequestBody LoginRequest request
+      @Valid @RequestBody LoginRequest request,
+      HttpServletResponse servletResponse
   ) {
-    return authService.login(request);
+    AuthenticationResult result = authService.login(request);
+    refreshTokenCookieService.write(servletResponse, result.refreshToken());
+    return result.response();
   }
 
 
   @PostMapping("/refresh")
   public LoginResponse refresh(
-      @Valid @RequestBody RefreshTokenRequest request
+      @CookieValue(name = "${app.security.refresh-cookie.name:__Secure-refresh-token}",
+          required = false) String refreshToken,
+      @RequestHeader(name = HttpHeaders.ORIGIN, required = false) String origin,
+      HttpServletResponse servletResponse
   ) {
-    return authService.refresh(request);
+    trustedOriginService.requireTrusted(origin);
+    AuthenticationResult result = authService.refresh(refreshToken);
+    refreshTokenCookieService.write(servletResponse, result.refreshToken());
+    return result.response();
   }
 
   @PostMapping("/logout")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void logout(
-      @Valid @RequestBody RefreshTokenRequest request
+      @CookieValue(name = "${app.security.refresh-cookie.name:__Secure-refresh-token}",
+          required = false) String refreshToken,
+      @RequestHeader(name = HttpHeaders.ORIGIN, required = false) String origin,
+      HttpServletResponse servletResponse
   ) {
-    authService.logout(request);
+    trustedOriginService.requireTrusted(origin);
+    try {
+      authService.logout(refreshToken);
+    } finally {
+      refreshTokenCookieService.clear(servletResponse);
+    }
   }
 
   @PutMapping("/password")

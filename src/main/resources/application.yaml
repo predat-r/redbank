@@ -9,6 +9,16 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+  security:
+    refresh-cookie:
+      name: __Secure-refresh-token
+      path: /api/auth
+      same-site: None
+      secure: true
+
 scheduler:
   reconciliation:
     cron: "0 0 0 * * *"
