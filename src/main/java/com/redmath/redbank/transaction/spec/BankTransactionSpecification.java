@@ -25,43 +25,7 @@ public final class BankTransactionSpecification {
       TransactionStatus status,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return (root, query, cb) -> {
-      List<Predicate> predicates = new ArrayList<>();
-
-      if (reference != null && !reference.isBlank()) {
-        predicates.add(cb.like(cb.lower(root.get("transactionReference")),
-            "%" + reference.trim().toLowerCase() + "%"));
-      }
-
-      if (accountNumber != null && !accountNumber.isBlank()) {
-        String searchPattern = "%" + accountNumber.trim().toLowerCase() + "%";
-        Join<BankTransaction, AccountHolder> sourceJoin = root.join("sourceAccountHolder", JoinType.LEFT);
-        Join<BankTransaction, AccountHolder> destJoin = root.join("destinationAccountHolder", JoinType.LEFT);
-
-        Predicate sourceMatch = cb.like(cb.lower(sourceJoin.get("accountNumber")), searchPattern);
-        Predicate destMatch = cb.like(cb.lower(destJoin.get("accountNumber")), searchPattern);
-
-        predicates.add(cb.or(sourceMatch, destMatch));
-      }
-
-      if (type != null) {
-        predicates.add(cb.equal(root.get("type"), type));
-      }
-
-      if (status != null) {
-        predicates.add(cb.equal(root.get("status"), status));
-      }
-
-      if (fromDate != null) {
-        predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
-      }
-
-      if (toDate != null) {
-        predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), toDate));
-      }
-
-      return cb.and(predicates.toArray(new Predicate[0]));
-    };
+    return filterInternal(null, reference, accountNumber, type, status, fromDate, toDate);
   }
 
   public static Specification<BankTransaction> filterForUser(
@@ -71,21 +35,49 @@ public final class BankTransactionSpecification {
       TransactionStatus status,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
+    return filterInternal(accountHolderId, null, accountNumber, type, status, fromDate, toDate);
+  }
+
+  private static Specification<BankTransaction> filterInternal(
+      Long accountHolderId,
+      String reference,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
 
-      Join<BankTransaction, AccountHolder> sourceJoin = root.join("sourceAccountHolder", JoinType.LEFT);
-      Join<BankTransaction, AccountHolder> destJoin = root.join("destinationAccountHolder", JoinType.LEFT);
+      Join<BankTransaction, AccountHolder> sourceJoin = null;
+      Join<BankTransaction, AccountHolder> destJoin = null;
 
-      predicates.add(cb.or(
-          cb.equal(sourceJoin.get("id"), accountHolderId),
-          cb.equal(destJoin.get("id"), accountHolderId)
-      ));
+      if (accountHolderId != null) {
+        sourceJoin = root.join("sourceAccountHolder", JoinType.LEFT);
+        destJoin = root.join("destinationAccountHolder", JoinType.LEFT);
+        predicates.add(cb.or(
+            cb.equal(sourceJoin.get("id"), accountHolderId),
+            cb.equal(destJoin.get("id"), accountHolderId)
+        ));
+      }
+
+      if (reference != null && !reference.isBlank()) {
+        predicates.add(cb.like(cb.lower(root.get("transactionReference")),
+            "%" + reference.trim().toLowerCase() + "%"));
+      }
 
       if (accountNumber != null && !accountNumber.isBlank()) {
         String searchPattern = "%" + accountNumber.trim().toLowerCase() + "%";
+        if (sourceJoin == null) {
+          sourceJoin = root.join("sourceAccountHolder", JoinType.LEFT);
+        }
+        if (destJoin == null) {
+          destJoin = root.join("destinationAccountHolder", JoinType.LEFT);
+        }
+
         Predicate sourceMatch = cb.like(cb.lower(sourceJoin.get("accountNumber")), searchPattern);
         Predicate destMatch = cb.like(cb.lower(destJoin.get("accountNumber")), searchPattern);
+
         predicates.add(cb.or(sourceMatch, destMatch));
       }
 
