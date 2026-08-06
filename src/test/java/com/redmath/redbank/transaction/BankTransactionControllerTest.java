@@ -155,6 +155,42 @@ class BankTransactionControllerTest {
         .andExpect(jsonPath("$.content.length()").value(1));
   }
 
+  @Test
+  @DisplayName("GET /api/accounts/me/transactions - Supports filter query parameters")
+  void getMyTransactionsWithFilters() throws Exception {
+    depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("100.00"));
+
+    // Filter by type
+    mockMvc.perform(get("/api/accounts/me/transactions")
+            .param("type", "DEPOSIT")
+            .with(withAccountHolder(johnUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].type").value("DEPOSIT"));
+
+    // Filter by status
+    mockMvc.perform(get("/api/accounts/me/transactions")
+            .param("status", "COMPLETED")
+            .with(withAccountHolder(johnUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].status").value("COMPLETED"));
+
+    // Filter by accountNumber
+    mockMvc.perform(get("/api/accounts/me/transactions")
+            .param("accountNumber", johnAccount.getAccountNumber())
+            .with(withAccountHolder(johnUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].destinationAccountNumber").value(johnAccount.getAccountNumber()));
+
+    // Filter by date range
+    java.time.OffsetDateTime now = java.time.OffsetDateTime.now();
+    mockMvc.perform(get("/api/accounts/me/transactions")
+            .param("fromDate", now.minusDays(1).toString())
+            .param("toDate", now.plusDays(1).toString())
+            .with(withAccountHolder(johnUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray());
+  }
+
   // --- POST /api/accounts/me/withdrawals ---
 
   @Test

@@ -77,6 +77,25 @@ class BankTransactionServiceTest {
   }
 
   @Test
+  @DisplayName("getTransactionsForUser with filters executes repository findAll with specification")
+  void getTransactionsForUserWithFiltersSuccess() {
+    AccountHolder accountHolder = new AccountHolder();
+    accountHolder.setId(10L);
+
+    when(accountHolderService.getAccountHolderByUserId(10L)).thenReturn(accountHolder);
+    when(bankTransactionRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(List.of()));
+
+    Page<BankTransaction> result = bankTransactionService.getTransactionsForUser(
+        10L, "RB12345", TransactionType.DEPOSIT, TransactionStatus.COMPLETED,
+        java.time.OffsetDateTime.now().minusDays(1), java.time.OffsetDateTime.now(),
+        Pageable.unpaged());
+
+    assertNotNull(result);
+    verify(bankTransactionRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), eq(Pageable.unpaged()));
+  }
+
+  @Test
   @DisplayName("getAllTransactions fetches all transactions with pagination")
   void getAllTransactionsSuccess() {
     when(bankTransactionRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));

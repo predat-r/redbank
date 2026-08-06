@@ -63,4 +63,49 @@ public final class BankTransactionSpecification {
       return cb.and(predicates.toArray(new Predicate[0]));
     };
   }
+
+  public static Specification<BankTransaction> filterForUser(
+      Long accountHolderId,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate) {
+    return (root, query, cb) -> {
+      List<Predicate> predicates = new ArrayList<>();
+
+      Join<BankTransaction, AccountHolder> sourceJoin = root.join("sourceAccountHolder", JoinType.LEFT);
+      Join<BankTransaction, AccountHolder> destJoin = root.join("destinationAccountHolder", JoinType.LEFT);
+
+      predicates.add(cb.or(
+          cb.equal(sourceJoin.get("id"), accountHolderId),
+          cb.equal(destJoin.get("id"), accountHolderId)
+      ));
+
+      if (accountNumber != null && !accountNumber.isBlank()) {
+        String searchPattern = "%" + accountNumber.trim().toLowerCase() + "%";
+        Predicate sourceMatch = cb.like(cb.lower(sourceJoin.get("accountNumber")), searchPattern);
+        Predicate destMatch = cb.like(cb.lower(destJoin.get("accountNumber")), searchPattern);
+        predicates.add(cb.or(sourceMatch, destMatch));
+      }
+
+      if (type != null) {
+        predicates.add(cb.equal(root.get("type"), type));
+      }
+
+      if (status != null) {
+        predicates.add(cb.equal(root.get("status"), status));
+      }
+
+      if (fromDate != null) {
+        predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
+      }
+
+      if (toDate != null) {
+        predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), toDate));
+      }
+
+      return cb.and(predicates.toArray(new Predicate[0]));
+    };
+  }
 }
