@@ -16,7 +16,7 @@ import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserRepository;
 import com.redmath.redbank.user.UserStatus;
-import com.redmath.redbank.user.dto.RejectRegistrationRequest;
+import com.redmath.redbank.user.admin.dto.RejectRegistrationRequest;
 import com.redmath.redbank.user.role.RoleName;
 import com.redmath.redbank.user.role.UserRoleRepository;
 import java.nio.charset.StandardCharsets;

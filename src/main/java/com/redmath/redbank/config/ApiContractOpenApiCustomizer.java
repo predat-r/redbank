@@ -38,6 +38,8 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "rejectRegistration",
       "findPendingRegistration",
       "findUser",
+      "updateUser",
+      "deactivateUser",
       "getAccountHolder",
       "getMyAccountHolder",
       "getAccountHolderByAccountNumber",
@@ -57,6 +59,9 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
 
   private static final Set<String> CONFLICT_OPERATIONS = Set.of(
       "register",
+      "createUser",
+      "updateUser",
+      "deactivateUser",
       "approveRegistration",
       "rejectRegistration",
       "findPendingRegistration",
@@ -66,11 +71,13 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "deactivateMyAccountHolder");
 
   private static final Map<String, String> CREATED_OPERATIONS = Map.of(
+      "createUser", "User created",
       "createDeposit", "Deposit created",
       "createTransfer", "Transfer created",
       "createWithdrawal", "Withdrawal created");
 
   private static final Set<String> NO_CONTENT_OPERATIONS = Set.of(
+      "deactivateUser",
       "freezeAccountHolder",
       "deactivateAccountHolder",
       "freezeMyAccountHolder",
@@ -84,6 +91,7 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       Map.entry("AdminUserResponse",
           List.of("id", "email", "phoneNumber", "name", "address", "status", "createdAt",
               "updatedAt")),
+      Map.entry("CreateUserResponse", List.of("user", "accountHolder")),
       Map.entry("PendingRegistrationResponse",
           List.of("id", "email", "phoneNumber", "name", "address", "status", "createdAt")),
       Map.entry("AccountHolderDto",

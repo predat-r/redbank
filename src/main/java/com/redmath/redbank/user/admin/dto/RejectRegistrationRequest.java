@@ -1,4 +1,4 @@
-package com.redmath.redbank.user.dto;
+package com.redmath.redbank.user.admin.dto;
 
 import jakarta.validation.constraints.Size;
 
