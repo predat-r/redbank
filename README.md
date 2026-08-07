@@ -114,6 +114,7 @@ The account-name lookup also permits `ROLE_ADMIN`.
 | `GET`   | `/api/accounts/me`                      | None                                                                       | Returns the authenticated user's account-holder profile.                     |
 | `GET`   | `/api/accounts/name/{accountNumber}`    | None                                                                       | Returns the name and account number for an account holder.                   |
 | `PATCH` | `/api/accounts/freeze/me`               | None                                                                       | Freezes the authenticated user's account.                                    |
+| `PATCH` | `/api/accounts/unfreeze/me`             | None                                                                       | Unfreezes the authenticated user's account.                                  |
 | `PATCH` | `/api/accounts/deactivate/me`           | None                                                                       | Deactivates the authenticated user's account.                                |
 | `GET`   | `/api/accounts/me/transactions`         | `page` (default 0), `size` (default 10), `sort` (default `createdAt,desc`) | Retrieves paginated transaction history for the authenticated user.          |
 | `POST`  | `/api/accounts/me/withdrawals`          | None                                                                       | Executes a cash withdrawal from the user's account.                          |
@@ -148,6 +149,7 @@ The account-name lookup also permits `ROLE_ADMIN`.
 | `GET`   | `/api/admin/accounts`                         | Retrieves a paginated list of account holders.                                    |
 | `GET`   | `/api/admin/accounts/{accountId}`             | Retrieves an account holder by ID.                                                |
 | `PATCH` | `/api/admin/accounts/freeze/{accountId}`      | Freezes an account holder's account.                                              |
+| `PATCH` | `/api/admin/accounts/unfreeze/{accountId}`    | Unfreezes an account holder's account.                                            |
 | `PATCH` | `/api/admin/accounts/deactivate/{accountId}`  | Deactivates an account holder's account.                                          |
 
 Admin user creation accepts `email`, `phoneNumber`, `password`, `name`, and `address`. It returns
