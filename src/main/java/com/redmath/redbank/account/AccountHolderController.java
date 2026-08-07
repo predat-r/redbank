@@ -64,6 +64,32 @@ public class AccountHolderController {
   }
 
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
+  @PatchMapping("/unfreeze/me")
+  ResponseEntity<Void> unfreezeMyAccountHolder(
+      @AuthenticationPrincipal Jwt jwt
+  ) {
+    Long userId = jwt.getClaim(USER_ID);
+    if (userId == null) {
+      throw new IllegalArgumentException("Authenticated user is required");
+    }
+    accountHolderService.unfreezeMyAccountHolder(userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
+  @PatchMapping("/activate/me")
+  ResponseEntity<Void> activateMyAccountHolder(
+      @AuthenticationPrincipal Jwt jwt
+  ) {
+    Long userId = jwt.getClaim(USER_ID);
+    if (userId == null) {
+      throw new IllegalArgumentException("Authenticated user is required");
+    }
+    accountHolderService.unfreezeMyAccountHolder(userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   @PatchMapping("/deactivate/me")
   ResponseEntity<Void> deactivateMyAccountHolder(
       @AuthenticationPrincipal Jwt jwt

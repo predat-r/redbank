@@ -173,6 +173,30 @@ class AccountHolderServiceTest {
   }
 
   @Test
+  @DisplayName("unfreezeMyAccountHolder handles FROZEN, already ACTIVE, and CLOSED accounts")
+  void unfreezeMyAccountHolderScenarios() {
+    AccountHolder ah = createAccountHolder("svc.user8@example.com", "RB-AH-SVC-008");
+    Long userId = ah.getUser().getId();
+    ah.setAccountStatus(AccountStatus.FROZEN);
+    accountHolderRepository.save(ah);
+
+    // Unfreeze frozen account
+    accountHolderService.unfreezeMyAccountHolder(userId);
+    assertEquals(AccountStatus.ACTIVE,
+        accountHolderRepository.findById(ah.getId()).orElseThrow().getAccountStatus());
+
+    // Unfreeze already active account (no-op)
+    accountHolderService.unfreezeMyAccountHolder(userId);
+    assertEquals(AccountStatus.ACTIVE,
+        accountHolderRepository.findById(ah.getId()).orElseThrow().getAccountStatus());
+
+    // Unfreeze closed account (conflict)
+    ah.setAccountStatus(AccountStatus.CLOSED);
+    accountHolderRepository.save(ah);
+    assertThrows(ConflictException.class, () -> accountHolderService.unfreezeMyAccountHolder(userId));
+  }
+
+  @Test
   @DisplayName("deactivateMyAccountHolder handles ACTIVE and already CLOSED accounts")
   void deactivateMyAccountHolderScenarios() {
     AccountHolder ah = createAccountHolder("svc.user7@example.com", "RB-AH-SVC-007");

@@ -138,6 +138,35 @@ class AdminAccountHolderControllerTest {
   }
 
   @Test
+  @DisplayName("PATCH /api/admin/accounts/unfreeze/{accountId} - Success for FROZEN and CLOSED accounts")
+  void unfreezeAccountHolderSuccess() throws Exception {
+    AccountHolder frzAccount = createAccountHolder("adm.unfrz1@example.com", "RB-ADM-UNF-001");
+    frzAccount.setAccountStatus(AccountStatus.FROZEN);
+    accountHolderRepository.save(frzAccount);
+
+    mockMvc.perform(patch("/api/admin/accounts/unfreeze/{accountId}", frzAccount.getId())
+            .with(withAdmin(1L)))
+        .andExpect(status().isNoContent());
+
+    AccountHolder updatedFrz = accountHolderRepository.findById(frzAccount.getId()).orElseThrow();
+    assertEquals(AccountStatus.ACTIVE, updatedFrz.getAccountStatus());
+
+    AccountHolder closedAccount = createAccountHolder("adm.unfrz2@example.com", "RB-ADM-UNF-002");
+    closedAccount.setAccountStatus(AccountStatus.CLOSED);
+    closedAccount.getUser().deactivate(Instant.now());
+    userRepository.save(closedAccount.getUser());
+    accountHolderRepository.save(closedAccount);
+
+    mockMvc.perform(patch("/api/admin/accounts/activate/{accountId}", closedAccount.getId())
+            .with(withAdmin(1L)))
+        .andExpect(status().isNoContent());
+
+    AccountHolder updatedClosed = accountHolderRepository.findById(closedAccount.getId()).orElseThrow();
+    assertEquals(AccountStatus.ACTIVE, updatedClosed.getAccountStatus());
+    assertEquals(UserStatus.ACTIVE, updatedClosed.getUser().getStatus());
+  }
+
+  @Test
   @DisplayName("PATCH /api/admin/accounts/deactivate/{accountId} - Success for ADMIN")
   void deactivateAccountHolderSuccess() throws Exception {
     AccountHolder accountHolder = createAccountHolder("adm.deact@example.com", "RB-ADM-DEA-001");

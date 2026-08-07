@@ -91,6 +91,33 @@ class AdminAccountHolderServiceTest {
   }
 
   @Test
+  @DisplayName("unfreezeAccountHolder handles FROZEN, CLOSED, and already ACTIVE accounts")
+  void unfreezeAccountHolderScenarios() {
+    AccountHolder ah = createAccountHolder("adm.svc5@example.com", "RB-ADM-AH-005");
+    Long adminUserId = 1L;
+    ah.setAccountStatus(AccountStatus.FROZEN);
+    accountHolderRepository.save(ah);
+
+    // Unfreeze frozen account
+    adminAccountHolderService.unfreezeAccountHolder(ah.getId(), adminUserId);
+    assertEquals(AccountStatus.ACTIVE, accountHolderRepository.findById(ah.getId()).orElseThrow().getAccountStatus());
+
+    // Unfreeze already active account (no-op)
+    adminAccountHolderService.unfreezeAccountHolder(ah.getId(), adminUserId);
+    assertEquals(AccountStatus.ACTIVE, accountHolderRepository.findById(ah.getId()).orElseThrow().getAccountStatus());
+
+    // Unfreeze closed account (activates account and reactivates user)
+    ah.setAccountStatus(AccountStatus.CLOSED);
+    ah.getUser().deactivate(Instant.now());
+    userRepository.save(ah.getUser());
+    accountHolderRepository.save(ah);
+
+    adminAccountHolderService.unfreezeAccountHolder(ah.getId(), adminUserId);
+    assertEquals(AccountStatus.ACTIVE, accountHolderRepository.findById(ah.getId()).orElseThrow().getAccountStatus());
+    assertEquals(UserStatus.ACTIVE, userRepository.findById(ah.getUser().getId()).orElseThrow().getStatus());
+  }
+
+  @Test
   @DisplayName("deactivateAccountHolder handles ACTIVE and already CLOSED accounts")
   void deactivateAccountHolderScenarios() {
     AccountHolder ah = createAccountHolder("adm.svc4@example.com", "RB-ADM-AH-004");
