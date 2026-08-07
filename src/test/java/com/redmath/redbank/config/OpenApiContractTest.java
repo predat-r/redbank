@@ -55,6 +55,7 @@ class OpenApiContractTest {
     assertResponse(openApi, "/api/accounts/me/withdrawals", "post", "201");
     assertResponse(openApi, "/api/admin/accounts/freeze/{accountId}", "patch", "204");
     assertResponse(openApi, "/api/accounts/freeze/me", "patch", "204");
+    assertResponse(openApi, "/api/accounts/me/transactions/{id}", "get", "200");
 
     assertEveryOperationHasSuccessAndStandardErrors(openApi);
     assertFalse(document.contains("\"*/*\""));
@@ -92,7 +93,7 @@ class OpenApiContractTest {
         assertJsonResponseMediaTypes(responses, pathEntry.getKey(), methodEntry.getKey());
       }
     }
-    assertEquals(37, operationCount);
+    assertEquals(38, operationCount);
   }
 
   private boolean hasSuccessfulResponse(JsonNode responses) {

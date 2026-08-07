@@ -191,6 +191,59 @@ class BankTransactionControllerTest {
         .andExpect(jsonPath("$.content").isArray());
   }
 
+  @Test
+  @DisplayName("GET /api/accounts/me/transactions/{id} - Success for transaction owner with account holder names")
+  void getMyTransactionByIdSuccess() throws Exception {
+    depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("300.00"));
+
+    TransferRequest request = new TransferRequest();
+    request.setAmount(new BigDecimal("150.00"));
+    request.setDestinationAccountNumber(janeAccount.getAccountNumber());
+    request.setDescription("Test transfer for detail view");
+
+    MvcResult result = mockMvc.perform(post("/api/accounts/me/transfers")
+            .with(withAccountHolder(johnUser.getId()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    Number txIdNum = readJson(result, "$.id");
+    Long txId = txIdNum.longValue();
+
+    mockMvc.perform(get("/api/accounts/me/transactions/{id}", txId)
+            .with(withAccountHolder(johnUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(txId))
+        .andExpect(jsonPath("$.sourceAccountHolderName").value("John Doe"))
+        .andExpect(jsonPath("$.destinationAccountHolderName").value("Jane Doe"))
+        .andExpect(jsonPath("$.amount").value(150.00));
+  }
+
+  @Test
+  @DisplayName("GET /api/accounts/me/transactions/{id} - Returns NOT_FOUND when transaction does not belong to user")
+  void getMyTransactionByIdNotOwnerReturnsNotFound() throws Exception {
+    depositToAccount(johnAccount.getAccountNumber(), new BigDecimal("300.00"));
+
+    WithdrawalRequest request = new WithdrawalRequest();
+    request.setAmount(new BigDecimal("50.00"));
+    request.setDescription("John's withdrawal");
+
+    MvcResult result = mockMvc.perform(post("/api/accounts/me/withdrawals")
+            .with(withAccountHolder(johnUser.getId()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    Number txIdNum = readJson(result, "$.id");
+    Long txId = txIdNum.longValue();
+
+    mockMvc.perform(get("/api/accounts/me/transactions/{id}", txId)
+            .with(withAccountHolder(janeUser.getId())))
+        .andExpect(status().isNotFound());
+  }
+
   // --- POST /api/accounts/me/withdrawals ---
 
   @Test
