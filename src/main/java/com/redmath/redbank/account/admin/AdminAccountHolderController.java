@@ -58,6 +58,26 @@ public class AdminAccountHolderController {
   }
 
   @PreAuthorize("hasRole('ADMIN')")
+  @PatchMapping("/unfreeze/{accountId}")
+  ResponseEntity<Void> unfreezeAccountHolder(
+      @PathVariable Long accountId,
+      @AuthenticationPrincipal Jwt jwt
+  ) {
+    adminAccountHolderService.unfreezeAccountHolder(accountId, extractUserId(jwt));
+    return ResponseEntity.noContent().build();
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @PatchMapping("/activate/{accountId}")
+  ResponseEntity<Void> activateAccountHolder(
+      @PathVariable Long accountId,
+      @AuthenticationPrincipal Jwt jwt
+  ) {
+    adminAccountHolderService.unfreezeAccountHolder(accountId, extractUserId(jwt));
+    return ResponseEntity.noContent().build();
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
   @PatchMapping("/deactivate/{accountId}")
   ResponseEntity<Void> deactivateAccountHolder(
       @PathVariable Long accountId,

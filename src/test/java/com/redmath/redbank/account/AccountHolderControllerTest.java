@@ -146,6 +146,41 @@ class AccountHolderControllerTest {
   }
 
   @Test
+  @DisplayName("PATCH /api/accounts/unfreeze/me - Success for FROZEN account")
+  void unfreezeMyAccountHolderSuccess() throws Exception {
+    AccountHolder accountHolder = createAccountHolder("acc.unfrz@example.com", "RB-ACC-UNF-001");
+    accountHolder.setAccountStatus(AccountStatus.FROZEN);
+    accountHolderRepository.save(accountHolder);
+
+    mockMvc.perform(patch("/api/accounts/unfreeze/me")
+            .with(withAccountHolder(accountHolder.getUser().getId())))
+        .andExpect(status().isNoContent());
+
+    AccountHolder updated = accountHolderRepository.findById(accountHolder.getId()).orElseThrow();
+    org.junit.jupiter.api.Assertions.assertEquals(AccountStatus.ACTIVE, updated.getAccountStatus());
+  }
+
+  @Test
+  @DisplayName("PATCH /api/accounts/unfreeze/me - Returns CONFLICT for CLOSED account")
+  void unfreezeMyAccountHolderConflictWhenClosed() throws Exception {
+    AccountHolder accountHolder = createAccountHolder("acc.unfrzclose@example.com", "RB-ACC-UNF-002");
+    accountHolder.setAccountStatus(AccountStatus.CLOSED);
+    accountHolderRepository.save(accountHolder);
+
+    mockMvc.perform(patch("/api/accounts/unfreeze/me")
+            .with(withAccountHolder(accountHolder.getUser().getId())))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  @DisplayName("PATCH /api/accounts/unfreeze/me - Returns BAD_REQUEST when userId claim is missing")
+  void unfreezeMyAccountHolderMissingUserIdClaim() throws Exception {
+    mockMvc.perform(patch("/api/accounts/unfreeze/me")
+            .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ACCOUNT_HOLDER"))))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   @DisplayName("PATCH /api/accounts/deactivate/me - Success for ACTIVE account")
   void deactivateMyAccountHolderSuccess() throws Exception {
     AccountHolder accountHolder = createAccountHolder("acc.deact@example.com", "RB-ACC-DEA-001");

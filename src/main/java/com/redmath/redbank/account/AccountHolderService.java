@@ -105,6 +105,15 @@ public class AccountHolderService {
   }
 
   @Transactional
+  public void unfreezeMyAccountHolder(Long userId) {
+    AccountHolder accountHolder = getOrThrowByUserId(userId);
+    if (unfreezeMyAccountHolderInternal(accountHolder)) {
+      auditService.recordAuditLog(userId, AuditAction.ACCOUNT_ACTIVATED, AuditTargetType.ACCOUNT,
+          accountHolder.getId().toString(), null);
+    }
+  }
+
+  @Transactional
   public void deactivateMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getOrThrowByUserId(userId);
     if (deactivateMyAccountHolderInternal(accountHolder)) {
@@ -122,6 +131,20 @@ public class AccountHolderService {
     }
 
     accountHolder.setAccountStatus(AccountStatus.FROZEN);
+    accountHolderRepository.save(accountHolder);
+    return true;
+  }
+
+  private boolean unfreezeMyAccountHolderInternal(AccountHolder accountHolder) {
+    if (accountHolder.getAccountStatus() == AccountStatus.CLOSED) {
+      throw new ConflictException("Closed accounts cannot be un-frozen by account holder");
+    }
+    if (accountHolder.getAccountStatus() == AccountStatus.ACTIVE) {
+      return false;
+    }
+
+    accountHolder.setAccountStatus(AccountStatus.ACTIVE);
+    accountHolder.setUpdatedAt(OffsetDateTime.now());
     accountHolderRepository.save(accountHolder);
     return true;
   }

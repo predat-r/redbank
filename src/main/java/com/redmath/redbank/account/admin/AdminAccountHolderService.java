@@ -71,22 +71,30 @@ public class AdminAccountHolderService {
   }
 
   @Transactional
-  public void reactivateAccountHolder(Long accountId, Long adminUserId) {
+  public void unfreezeAccountHolder(Long accountId, Long adminUserId) {
     AccountHolder accountHolder = getOrThrow(accountId);
 
     if (accountHolder.getAccountStatus() == AccountStatus.ACTIVE) {
       return;
     }
-    if (accountHolder.getAccountStatus() != AccountStatus.CLOSED) {
-      throw new ConflictException("Only closed accounts can be reactivated");
-    }
+
+    boolean wasClosed = accountHolder.getAccountStatus() == AccountStatus.CLOSED;
 
     accountHolder.setAccountStatus(AccountStatus.ACTIVE);
     accountHolder.setUpdatedAt(OffsetDateTime.now());
     accountHolderRepository.save(accountHolder);
-    userService.reactivateUser(accountHolder.getUser().getId());
+
+    if (wasClosed) {
+      userService.reactivateUser(accountHolder.getUser().getId());
+    }
+
     auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_ACTIVATED,
         AuditTargetType.ACCOUNT, accountId.toString(), null);
+  }
+
+  @Transactional
+  public void reactivateAccountHolder(Long accountId, Long adminUserId) {
+    unfreezeAccountHolder(accountId, adminUserId);
   }
 
   private AccountHolder getOrThrow(Long accountId) {
