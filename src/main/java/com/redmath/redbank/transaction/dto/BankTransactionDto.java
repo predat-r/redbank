@@ -15,7 +15,9 @@ public class BankTransactionDto {
   private Long id;
   private String transactionReference;
   private String sourceAccountNumber;
+  private String sourceAccountHolderName;
   private String destinationAccountNumber;
+  private String destinationAccountHolderName;
   private TransactionType type;
   private String description;
   private BigDecimal amount;
@@ -29,9 +31,15 @@ public class BankTransactionDto {
     dto.setTransactionReference(transaction.getTransactionReference());
     if (transaction.getSourceAccountHolder() != null) {
       dto.setSourceAccountNumber(transaction.getSourceAccountHolder().getAccountNumber());
+      if (transaction.getSourceAccountHolder().getUser() != null) {
+        dto.setSourceAccountHolderName(transaction.getSourceAccountHolder().getUser().getName());
+      }
     }
     if (transaction.getDestinationAccountHolder() != null) {
       dto.setDestinationAccountNumber(transaction.getDestinationAccountHolder().getAccountNumber());
+      if (transaction.getDestinationAccountHolder().getUser() != null) {
+        dto.setDestinationAccountHolderName(transaction.getDestinationAccountHolder().getUser().getName());
+      }
     }
     dto.setType(transaction.getType());
     dto.setDescription(transaction.getDescription());

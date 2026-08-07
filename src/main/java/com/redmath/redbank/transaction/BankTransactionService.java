@@ -91,6 +91,21 @@ public class BankTransactionService {
         .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with ID: " + id));
   }
 
+  public BankTransaction getUserTransactionById(Long userId, Long transactionId) {
+    AccountHolder myAccount = accountHolderService.getAccountHolderByUserId(userId);
+    BankTransaction transaction = getTransactionById(transactionId);
+
+    boolean isSource = transaction.getSourceAccountHolder() != null
+        && transaction.getSourceAccountHolder().getId().equals(myAccount.getId());
+    boolean isDestination = transaction.getDestinationAccountHolder() != null
+        && transaction.getDestinationAccountHolder().getId().equals(myAccount.getId());
+
+    if (!isSource && !isDestination) {
+      throw new ResourceNotFoundException("Transaction not found with ID: " + transactionId);
+    }
+    return transaction;
+  }
+
   public BankTransaction getTransactionByReference(String reference) {
     return bankTransactionRepository.findByTransactionReference(reference)
         .orElseThrow(() -> new ResourceNotFoundException(

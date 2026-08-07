@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,6 +48,17 @@ public class BankTransactionController {
     Page<BankTransaction> transactions = bankTransactionService.getTransactionsForUser(
         userId, accountNumber, type, status, fromDate, toDate, pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
+  }
+
+  @GetMapping("/transactions/{id}")
+  @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
+  public ResponseEntity<BankTransactionDto> getMyTransactionById(
+      @AuthenticationPrincipal Jwt jwt,
+      @PathVariable Long id) {
+
+    Long userId = extractUserId(jwt);
+    BankTransaction transaction = bankTransactionService.getUserTransactionById(userId, id);
+    return ResponseEntity.ok(BankTransactionDto.from(transaction));
   }
 
   @PostMapping("/transfers")
