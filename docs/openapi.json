@@ -723,6 +723,42 @@
         }
       }
     },
+    "/api/admin/accounts/unfreeze/{accountId}": {
+      "patch": {
+        "tags": [
+          "admin-account-holder-controller"
+        ],
+        "operationId": "unfreezeAccountHolder",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
     "/api/admin/accounts/freeze/{accountId}": {
       "patch": {
         "tags": [
@@ -807,6 +843,67 @@
         }
       }
     },
+    "/api/admin/accounts/activate/{accountId}": {
+      "patch": {
+        "tags": [
+          "admin-account-holder-controller"
+        ],
+        "operationId": "activateAccountHolder",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/accounts/unfreeze/me": {
+      "patch": {
+        "tags": [
+          "account-holder-controller"
+        ],
+        "operationId": "unfreezeMyAccountHolder",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
     "/api/accounts/freeze/me": {
       "patch": {
         "tags": [
@@ -865,6 +962,31 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/accounts/activate/me": {
+      "patch": {
+        "tags": [
+          "account-holder-controller"
+        ],
+        "operationId": "activateMyAccountHolder",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -2203,68 +2325,6 @@
           "type"
         ]
       },
-      "BankTransactionDetailDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "transactionReference": {
-            "type": "string"
-          },
-          "sourceAccountNumber": {
-            "type": "string"
-          },
-          "sourceAccountHolderName": {
-            "type": "string"
-          },
-          "destinationAccountNumber": {
-            "type": "string"
-          },
-          "destinationAccountHolderName": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "DEPOSIT",
-              "WITHDRAWAL",
-              "TRANSFER"
-            ]
-          },
-          "description": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "number"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "COMPLETED",
-              "CANCELLED"
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "completedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "amount",
-          "createdAt",
-          "id",
-          "status",
-          "transactionReference",
-          "type"
-        ]
-      },
       "WithdrawalRequest": {
         "type": "object",
         "properties": {
@@ -2721,6 +2781,60 @@
           "content",
           "page"
         ]
+      },
+      "BankTransactionDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionReference": {
+            "type": "string"
+          },
+          "sourceAccountNumber": {
+            "type": "string"
+          },
+          "destinationAccountNumber": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT",
+              "WITHDRAWAL",
+              "TRANSFER"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sourceAccountHolderName": {
+            "type": "string"
+          },
+          "destinationAccountHolderName": {
+            "type": "string"
+          }
+        }
       },
       "ApiError": {
         "type": "object",
