@@ -7,31 +7,34 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.Hibernate;
 
 @Getter
 @Setter
-public class BankTransactionDto {
+public class BankTransactionDetailDto extends BankTransactionDto {
 
-  private Long id;
-  private String transactionReference;
-  private String sourceAccountNumber;
-  private String destinationAccountNumber;
-  private TransactionType type;
-  private String description;
-  private BigDecimal amount;
-  private TransactionStatus status;
-  private OffsetDateTime createdAt;
-  private OffsetDateTime completedAt;
+  private String sourceAccountHolderName;
+  private String destinationAccountHolderName;
 
-  public static BankTransactionDto from(BankTransaction transaction) {
-    BankTransactionDto dto = new BankTransactionDto();
+  public static BankTransactionDetailDto fromDetail(BankTransaction transaction) {
+    BankTransactionDetailDto dto = new BankTransactionDetailDto();
     dto.setId(transaction.getId());
     dto.setTransactionReference(transaction.getTransactionReference());
     if (transaction.getSourceAccountHolder() != null) {
       dto.setSourceAccountNumber(transaction.getSourceAccountHolder().getAccountNumber());
+      if (Hibernate.isInitialized(transaction.getSourceAccountHolder())
+          && transaction.getSourceAccountHolder().getUser() != null
+          && Hibernate.isInitialized(transaction.getSourceAccountHolder().getUser())) {
+        dto.setSourceAccountHolderName(transaction.getSourceAccountHolder().getUser().getName());
+      }
     }
     if (transaction.getDestinationAccountHolder() != null) {
       dto.setDestinationAccountNumber(transaction.getDestinationAccountHolder().getAccountNumber());
+      if (Hibernate.isInitialized(transaction.getDestinationAccountHolder())
+          && transaction.getDestinationAccountHolder().getUser() != null
+          && Hibernate.isInitialized(transaction.getDestinationAccountHolder().getUser())) {
+        dto.setDestinationAccountHolderName(transaction.getDestinationAccountHolder().getUser().getName());
+      }
     }
     dto.setType(transaction.getType());
     dto.setDescription(transaction.getDescription());
