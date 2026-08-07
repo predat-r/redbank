@@ -1,2951 +1,2951 @@
 {
-    "openapi": "3.1.0",
-    "servers": [
-        {
-            "url": "http://localhost:8080",
-            "description": "Generated server url"
-        }
-    ],
-    "security": [
-        {
-            "bearerAuth": []
-        }
-    ],
-    "paths": {
-        "/api/auth/password": {
-            "put": {
-                "tags": [
-                    "auth-controller"
-                ],
-                "operationId": "changePassword",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ChangePasswordRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
+  "openapi": "3.1.0",
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/auth/password": {
+      "put": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "changePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
             }
-        },
-        "/api/admin/users/{userId}": {
-            "get": {
-                "tags": [
-                    "admin-user-controller"
-                ],
-                "operationId": "findUser",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminUserResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "admin-user-controller"
-                ],
-                "operationId": "updateUser",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateUserRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminUserResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/auth/register": {
-            "post": {
-                "tags": [
-                    "auth-controller"
-                ],
-                "operationId": "register",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RegisterResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                },
-                "security": []
-            }
-        },
-        "/api/auth/refresh": {
-            "post": {
-                "tags": [
-                    "auth-controller"
-                ],
-                "operationId": "refresh",
-                "parameters": [
-                    {
-                        "name": "refresh-token",
-                        "in": "cookie",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Origin",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/LoginResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                },
-                "security": []
-            }
-        },
-        "/api/auth/logout": {
-            "post": {
-                "tags": [
-                    "auth-controller"
-                ],
-                "operationId": "logout",
-                "parameters": [
-                    {
-                        "name": "refresh-token",
-                        "in": "cookie",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Origin",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    }
-                },
-                "security": []
-            }
-        },
-        "/api/auth/login": {
-            "post": {
-                "tags": [
-                    "auth-controller"
-                ],
-                "operationId": "login",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/LoginRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/LoginResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                },
-                "security": []
-            }
-        },
-        "/api/admin/users": {
-            "get": {
-                "tags": [
-                    "admin-user-controller"
-                ],
-                "operationId": "findUsers",
-                "parameters": [
-                    {
-                        "name": "pageable",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/Pageable"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PagedModelAdminUserResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "admin-user-controller"
-                ],
-                "operationId": "createUser",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CreateUserRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "User created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CreateUserResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/registrations/{userId}/reject": {
-            "post": {
-                "tags": [
-                    "registration-review-controller"
-                ],
-                "operationId": "rejectRegistration",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RejectRegistrationRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/registrations/{userId}/approve": {
-            "post": {
-                "tags": [
-                    "registration-review-controller"
-                ],
-                "operationId": "approveRegistration",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/deposits": {
-            "post": {
-                "tags": [
-                    "admin-bank-transaction-controller"
-                ],
-                "operationId": "createDeposit",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DepositRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Deposit created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BankTransactionDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/accounts/me/withdrawals": {
-            "post": {
-                "tags": [
-                    "bank-transaction-controller"
-                ],
-                "operationId": "createWithdrawal",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/WithdrawalRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Withdrawal created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BankTransactionDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/accounts/me/transfers": {
-            "post": {
-                "tags": [
-                    "bank-transaction-controller"
-                ],
-                "operationId": "createTransfer",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TransferRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Transfer created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BankTransactionDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/admin/users/{userId}/reactivate": {
-            "patch": {
-                "tags": [
-                    "admin-user-controller"
-                ],
-                "operationId": "reactivateUser",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/users/{userId}/deactivate": {
-            "patch": {
-                "tags": [
-                    "admin-user-controller"
-                ],
-                "operationId": "deactivateUser",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/accounts/unfreeze/{accountId}": {
-            "patch": {
-                "tags": [
-                    "admin-account-holder-controller"
-                ],
-                "operationId": "unfreezeAccountHolder",
-                "parameters": [
-                    {
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/accounts/freeze/{accountId}": {
-            "patch": {
-                "tags": [
-                    "admin-account-holder-controller"
-                ],
-                "operationId": "freezeAccountHolder",
-                "parameters": [
-                    {
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/accounts/deactivate/{accountId}": {
-            "patch": {
-                "tags": [
-                    "admin-account-holder-controller"
-                ],
-                "operationId": "deactivateAccountHolder",
-                "parameters": [
-                    {
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/accounts/activate/{accountId}": {
-            "patch": {
-                "tags": [
-                    "admin-account-holder-controller"
-                ],
-                "operationId": "activateAccountHolder",
-                "parameters": [
-                    {
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        },
-        "/api/accounts/unfreeze/me": {
-            "patch": {
-                "tags": [
-                    "account-holder-controller"
-                ],
-                "operationId": "unfreezeMyAccountHolder",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/accounts/freeze/me": {
-            "patch": {
-                "tags": [
-                    "account-holder-controller"
-                ],
-                "operationId": "freezeMyAccountHolder",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/accounts/deactivate/me": {
-            "patch": {
-                "tags": [
-                    "account-holder-controller"
-                ],
-                "operationId": "deactivateMyAccountHolder",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/accounts/activate/me": {
-            "patch": {
-                "tags": [
-                    "account-holder-controller"
-                ],
-                "operationId": "activateMyAccountHolder",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        },
-        "/api/balance/me/latest": {
-            "get": {
-                "tags": [
-                    "balance-controller"
-                ],
-                "operationId": "getMyBalance",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BalanceDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        },
-        "/api/auth/registration-status": {
-            "get": {
-                "tags": [
-                    "auth-controller"
-                ],
-                "operationId": "getRegistrationStatus",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RegistrationStatusResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/admin/transactions": {
-            "get": {
-                "tags": [
-                    "admin-bank-transaction-controller"
-                ],
-                "operationId": "getAllTransactions",
-                "parameters": [
-                    {
-                        "name": "reference",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "accountNumber",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "type",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "DEPOSIT",
-                                "WITHDRAWAL",
-                                "TRANSFER"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "PENDING",
-                                "COMPLETED",
-                                "CANCELLED"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "fromDate",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "format": "date-time"
-                        }
-                    },
-                    {
-                        "name": "toDate",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "format": "date-time"
-                        }
-                    },
-                    {
-                        "name": "pageable",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/Pageable"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PagedModelBankTransactionDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        },
-        "/api/admin/transactions/{id}": {
-            "get": {
-                "tags": [
-                    "admin-bank-transaction-controller"
-                ],
-                "operationId": "getTransactionById",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminBankTransactionDetailDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/admin/transactions/reference/{reference}": {
-            "get": {
-                "tags": [
-                    "admin-bank-transaction-controller"
-                ],
-                "operationId": "getTransactionByReference",
-                "parameters": [
-                    {
-                        "name": "reference",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminBankTransactionDetailDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/admin/registrations": {
-            "get": {
-                "tags": [
-                    "registration-review-controller"
-                ],
-                "operationId": "findPendingRegistrations",
-                "parameters": [
-                    {
-                        "name": "pageable",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/Pageable"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PagedModelPendingRegistrationResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        },
-        "/api/admin/registrations/{userId}": {
-            "get": {
-                "tags": [
-                    "registration-review-controller"
-                ],
-                "operationId": "findPendingRegistration",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PendingRegistrationResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    },
-                    "409": {
-                        "$ref": "#/components/responses/Conflict"
-                    }
-                }
-            }
-        },
-        "/api/admin/balance/{accountId}/ledger": {
-            "get": {
-                "tags": [
-                    "admin-balance-controller"
-                ],
-                "operationId": "getBalanceLedger",
-                "parameters": [
-                    {
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    },
-                    {
-                        "name": "pageable",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/Pageable"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PagedModelBalanceDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        },
-        "/api/admin/balance/{accountId}/latest": {
-            "get": {
-                "tags": [
-                    "admin-balance-controller"
-                ],
-                "operationId": "getLatestBalance",
-                "parameters": [
-                    {
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BalanceDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/admin/audit-logs": {
-            "get": {
-                "tags": [
-                    "audit-log-controller"
-                ],
-                "operationId": "findAuditLogs",
-                "parameters": [
-                    {
-                        "name": "pageable",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/Pageable"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PagedModelAuditLogResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        },
-        "/api/admin/audit-logs/{auditLogId}": {
-            "get": {
-                "tags": [
-                    "audit-log-controller"
-                ],
-                "operationId": "findAuditLog",
-                "parameters": [
-                    {
-                        "name": "auditLogId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AuditLogResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/admin/accounts": {
-            "get": {
-                "tags": [
-                    "admin-account-holder-controller"
-                ],
-                "operationId": "getAllAccountHolders",
-                "parameters": [
-                    {
-                        "name": "pageable",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/Pageable"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PagedModelAccountHolderDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        },
-        "/api/admin/accounts/{accountNumber}/transactions": {
-            "get": {
-                "tags": [
-                    "admin-bank-transaction-controller"
-                ],
-                "operationId": "getTransactionsByAccountNumber",
-                "parameters": [
-                    {
-                        "name": "accountNumber",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "pageable",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/Pageable"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PagedModelBankTransactionDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/admin/accounts/{accountId}": {
-            "get": {
-                "tags": [
-                    "admin-account-holder-controller"
-                ],
-                "operationId": "getAccountHolder",
-                "parameters": [
-                    {
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AccountHolderDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/accounts/name/{accountNumber}": {
-            "get": {
-                "tags": [
-                    "account-holder-controller"
-                ],
-                "operationId": "getAccountHolderByAccountNumber",
-                "parameters": [
-                    {
-                        "name": "accountNumber",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {}
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/accounts/me": {
-            "get": {
-                "tags": [
-                    "account-holder-controller"
-                ],
-                "operationId": "getMyAccountHolder",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AccountHolderDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/accounts/me/transactions": {
-            "get": {
-                "tags": [
-                    "bank-transaction-controller"
-                ],
-                "operationId": "getMyTransactions",
-                "parameters": [
-                    {
-                        "name": "accountNumber",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "type",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "DEPOSIT",
-                                "WITHDRAWAL",
-                                "TRANSFER"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "PENDING",
-                                "COMPLETED",
-                                "CANCELLED"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "fromDate",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "format": "date-time"
-                        }
-                    },
-                    {
-                        "name": "toDate",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "format": "date-time"
-                        }
-                    },
-                    {
-                        "name": "pageable",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/schemas/Pageable"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PagedModelBankTransactionDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                }
-            }
-        },
-        "/api/accounts/me/transactions/{id}": {
-            "get": {
-                "tags": [
-                    "bank-transaction-controller"
-                ],
-                "operationId": "getMyTransactionById",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BankTransactionDetailDto"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    }
-                }
-            }
-        }
-    },
-    "components": {
-        "schemas": {
-            "ChangePasswordRequest": {
-                "type": "object",
-                "properties": {
-                    "currentPassword": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "newPassword": {
-                        "type": "string",
-                        "maxLength": 100,
-                        "minLength": 8
-                    }
-                },
-                "required": [
-                    "currentPassword",
-                    "newPassword"
-                ]
-            },
-            "UpdateUserRequest": {
-                "type": "object",
-                "properties": {
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "minLength": 1
-                    },
-                    "phoneNumber": {
-                        "type": "string",
-                        "maxLength": 20,
-                        "minLength": 6
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 150,
-                        "minLength": 2
-                    },
-                    "address": {
-                        "type": "string",
-                        "maxLength": 500,
-                        "minLength": 5
-                    }
-                },
-                "required": [
-                    "address",
-                    "email",
-                    "name",
-                    "phoneNumber"
-                ]
-            },
-            "AdminUserResponse": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "phoneNumber": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "address": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING_APPROVAL",
-                            "ACTIVE",
-                            "REJECTED",
-                            "DEACTIVATED"
-                        ]
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "address",
-                    "createdAt",
-                    "email",
-                    "id",
-                    "name",
-                    "phoneNumber",
-                    "status",
-                    "updatedAt"
-                ]
-            },
-            "RegisterRequest": {
-                "type": "object",
-                "properties": {
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "minLength": 1
-                    },
-                    "phoneNumber": {
-                        "type": "string",
-                        "maxLength": 20,
-                        "minLength": 6
-                    },
-                    "password": {
-                        "type": "string",
-                        "maxLength": 100,
-                        "minLength": 8
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 150,
-                        "minLength": 2
-                    },
-                    "address": {
-                        "type": "string",
-                        "maxLength": 500,
-                        "minLength": 5
-                    }
-                },
-                "required": [
-                    "address",
-                    "email",
-                    "name",
-                    "password",
-                    "phoneNumber"
-                ]
-            },
-            "LoginResponse": {
-                "type": "object",
-                "properties": {
-                    "accessToken": {
-                        "type": "string"
-                    },
-                    "tokenType": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "accessToken",
-                    "tokenType"
-                ]
-            },
-            "RegisterResponse": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING_APPROVAL",
-                            "ACTIVE",
-                            "REJECTED",
-                            "DEACTIVATED"
-                        ]
-                    },
-                    "tokens": {
-                        "$ref": "#/components/schemas/LoginResponse"
-                    }
-                },
-                "required": [
-                    "email",
-                    "id",
-                    "status",
-                    "tokens"
-                ]
-            },
-            "LoginRequest": {
-                "type": "object",
-                "properties": {
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "minLength": 1
-                    },
-                    "password": {
-                        "type": "string",
-                        "minLength": 1
-                    }
-                },
-                "required": [
-                    "email",
-                    "password"
-                ]
-            },
-            "CreateUserRequest": {
-                "type": "object",
-                "properties": {
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "minLength": 1
-                    },
-                    "phoneNumber": {
-                        "type": "string",
-                        "maxLength": 20,
-                        "minLength": 6
-                    },
-                    "password": {
-                        "type": "string",
-                        "maxLength": 100,
-                        "minLength": 8
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 150,
-                        "minLength": 2
-                    },
-                    "address": {
-                        "type": "string",
-                        "maxLength": 500,
-                        "minLength": 5
-                    }
-                },
-                "required": [
-                    "address",
-                    "email",
-                    "name",
-                    "password",
-                    "phoneNumber"
-                ]
-            },
-            "AccountHolderDto": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "user": {
-                        "$ref": "#/components/schemas/UserDto"
-                    },
-                    "accountNumber": {
-                        "type": "string"
-                    },
-                    "currency": {
-                        "type": "string"
-                    },
-                    "accountStatus": {
-                        "type": "string",
-                        "enum": [
-                            "ACTIVE",
-                            "FROZEN",
-                            "CLOSED"
-                        ]
-                    },
-                    "approvedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "accountNumber",
-                    "accountStatus",
-                    "approvedAt",
-                    "createdAt",
-                    "currency",
-                    "id",
-                    "updatedAt",
-                    "user"
-                ]
-            },
-            "CreateUserResponse": {
-                "type": "object",
-                "properties": {
-                    "user": {
-                        "$ref": "#/components/schemas/AdminUserResponse"
-                    },
-                    "accountHolder": {
-                        "$ref": "#/components/schemas/AccountHolderDto"
-                    }
-                },
-                "required": [
-                    "accountHolder",
-                    "user"
-                ]
-            },
-            "UserDto": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "phoneNumber": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "address": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING_APPROVAL",
-                            "ACTIVE",
-                            "REJECTED",
-                            "DEACTIVATED"
-                        ]
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "address",
-                    "createdAt",
-                    "email",
-                    "id",
-                    "name",
-                    "phoneNumber",
-                    "status",
-                    "updatedAt"
-                ]
-            },
-            "RejectRegistrationRequest": {
-                "type": "object",
-                "properties": {
-                    "rejectionReason": {
-                        "type": "string",
-                        "maxLength": 500,
-                        "minLength": 0
-                    }
-                }
-            },
-            "DepositRequest": {
-                "type": "object",
-                "properties": {
-                    "accountNumber": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "amount": {
-                        "type": "number",
-                        "minimum": 0.01
-                    },
-                    "description": {
-                        "type": "string",
-                        "maxLength": 500,
-                        "minLength": 0
-                    }
-                },
-                "required": [
-                    "accountNumber",
-                    "amount"
-                ]
-            },
-            "BankTransactionDto": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "transactionReference": {
-                        "type": "string"
-                    },
-                    "sourceAccountNumber": {
-                        "type": "string"
-                    },
-                    "destinationAccountNumber": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "DEPOSIT",
-                            "WITHDRAWAL",
-                            "TRANSFER"
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "number"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING",
-                            "COMPLETED",
-                            "CANCELLED"
-                        ]
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "amount",
-                    "createdAt",
-                    "id",
-                    "status",
-                    "transactionReference",
-                    "type"
-                ]
-            },
-            "WithdrawalRequest": {
-                "type": "object",
-                "properties": {
-                    "amount": {
-                        "type": "number",
-                        "minimum": 0.01
-                    },
-                    "description": {
-                        "type": "string",
-                        "maxLength": 500,
-                        "minLength": 0
-                    }
-                },
-                "required": [
-                    "amount"
-                ]
-            },
-            "TransferRequest": {
-                "type": "object",
-                "properties": {
-                    "amount": {
-                        "type": "number",
-                        "minimum": 0.01
-                    },
-                    "description": {
-                        "type": "string",
-                        "maxLength": 500,
-                        "minLength": 0
-                    },
-                    "destinationAccountNumber": {
-                        "type": "string",
-                        "minLength": 1
-                    }
-                },
-                "required": [
-                    "amount",
-                    "destinationAccountNumber"
-                ]
-            },
-            "BalanceDto": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "accountHolderId": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "transactionId": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "entryDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "amount": {
-                        "type": "number"
-                    },
-                    "indicator": {
-                        "type": "string",
-                        "enum": [
-                            "DEBIT",
-                            "CREDIT"
-                        ]
-                    },
-                    "runningBalance": {
-                        "type": "number"
-                    }
-                },
-                "required": [
-                    "amount",
-                    "runningBalance"
-                ]
-            },
-            "RegistrationStatusResponse": {
-                "type": "object",
-                "properties": {
-                    "userId": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING_APPROVAL",
-                            "ACTIVE",
-                            "REJECTED",
-                            "DEACTIVATED"
-                        ]
-                    },
-                    "rejectionReason": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "status",
-                    "userId"
-                ]
-            },
-            "Pageable": {
-                "type": "object",
-                "properties": {
-                    "page": {
-                        "type": "integer",
-                        "format": "int32",
-                        "minimum": 0
-                    },
-                    "size": {
-                        "type": "integer",
-                        "format": "int32",
-                        "minimum": 1
-                    },
-                    "sort": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "PageMetadata": {
-                "type": "object",
-                "properties": {
-                    "size": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "number": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "totalElements": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "totalPages": {
-                        "type": "integer",
-                        "format": "int64"
-                    }
-                },
-                "required": [
-                    "number",
-                    "size",
-                    "totalElements",
-                    "totalPages"
-                ]
-            },
-            "PagedModelAdminUserResponse": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AdminUserResponse"
-                        }
-                    },
-                    "page": {
-                        "$ref": "#/components/schemas/PageMetadata"
-                    }
-                },
-                "required": [
-                    "content",
-                    "page"
-                ]
-            },
-            "PagedModelBankTransactionDto": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BankTransactionDto"
-                        }
-                    },
-                    "page": {
-                        "$ref": "#/components/schemas/PageMetadata"
-                    }
-                },
-                "required": [
-                    "content",
-                    "page"
-                ]
-            },
-            "AdminBankTransactionDetailDto": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "transactionReference": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "DEPOSIT",
-                            "WITHDRAWAL",
-                            "TRANSFER"
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "number"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING",
-                            "COMPLETED",
-                            "CANCELLED"
-                        ]
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "sourceAccountNumber": {
-                        "type": "string"
-                    },
-                    "sourceAccountCurrency": {
-                        "type": "string"
-                    },
-                    "sourceAccountStatus": {
-                        "type": "string",
-                        "enum": [
-                            "ACTIVE",
-                            "FROZEN",
-                            "CLOSED"
-                        ]
-                    },
-                    "sourceUserName": {
-                        "type": "string"
-                    },
-                    "sourceUserEmail": {
-                        "type": "string"
-                    },
-                    "sourceUserPhoneNumber": {
-                        "type": "string"
-                    },
-                    "destinationAccountNumber": {
-                        "type": "string"
-                    },
-                    "destinationAccountCurrency": {
-                        "type": "string"
-                    },
-                    "destinationAccountStatus": {
-                        "type": "string",
-                        "enum": [
-                            "ACTIVE",
-                            "FROZEN",
-                            "CLOSED"
-                        ]
-                    },
-                    "destinationUserName": {
-                        "type": "string"
-                    },
-                    "destinationUserEmail": {
-                        "type": "string"
-                    },
-                    "destinationUserPhoneNumber": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "amount",
-                    "createdAt",
-                    "id",
-                    "status",
-                    "transactionReference",
-                    "type"
-                ]
-            },
-            "PagedModelPendingRegistrationResponse": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/PendingRegistrationResponse"
-                        }
-                    },
-                    "page": {
-                        "$ref": "#/components/schemas/PageMetadata"
-                    }
-                },
-                "required": [
-                    "content",
-                    "page"
-                ]
-            },
-            "PendingRegistrationResponse": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "phoneNumber": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "address": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING_APPROVAL",
-                            "ACTIVE",
-                            "REJECTED",
-                            "DEACTIVATED"
-                        ]
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "address",
-                    "createdAt",
-                    "email",
-                    "id",
-                    "name",
-                    "phoneNumber",
-                    "status"
-                ]
-            },
-            "PagedModelBalanceDto": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BalanceDto"
-                        }
-                    },
-                    "page": {
-                        "$ref": "#/components/schemas/PageMetadata"
-                    }
-                },
-                "required": [
-                    "content",
-                    "page"
-                ]
-            },
-            "AuditLogResponse": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "actorUserId": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "actorEmail": {
-                        "type": "string"
-                    },
-                    "action": {
-                        "type": "string",
-                        "enum": [
-                            "REGISTRATION_APPROVED",
-                            "REGISTRATION_REJECTED",
-                            "USER_CREATED",
-                            "USER_UPDATED",
-                            "USER_ACTIVATED",
-                            "USER_DEACTIVATED",
-                            "ACCOUNT_CREATED",
-                            "ACCOUNT_ACTIVATED",
-                            "ACCOUNT_FROZEN",
-                            "ACCOUNT_CLOSED",
-                            "TRANSACTION_REVERSED",
-                            "ADMIN_DEPOSIT_RECORDED"
-                        ]
-                    },
-                    "targetType": {
-                        "type": "string",
-                        "enum": [
-                            "USER",
-                            "ACCOUNT",
-                            "TRANSACTION"
-                        ]
-                    },
-                    "targetIdentifier": {
-                        "type": "string"
-                    },
-                    "details": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "action",
-                    "actorEmail",
-                    "actorUserId",
-                    "createdAt",
-                    "id",
-                    "targetIdentifier",
-                    "targetType"
-                ]
-            },
-            "PagedModelAuditLogResponse": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AuditLogResponse"
-                        }
-                    },
-                    "page": {
-                        "$ref": "#/components/schemas/PageMetadata"
-                    }
-                },
-                "required": [
-                    "content",
-                    "page"
-                ]
-            },
-            "PagedModelAccountHolderDto": {
-                "type": "object",
-                "properties": {
-                    "content": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AccountHolderDto"
-                        }
-                    },
-                    "page": {
-                        "$ref": "#/components/schemas/PageMetadata"
-                    }
-                },
-                "required": [
-                    "content",
-                    "page"
-                ]
-            },
-            "BankTransactionDetailDto": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "transactionReference": {
-                        "type": "string"
-                    },
-                    "sourceAccountNumber": {
-                        "type": "string"
-                    },
-                    "destinationAccountNumber": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "DEPOSIT",
-                            "WITHDRAWAL",
-                            "TRANSFER"
-                        ]
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "number"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING",
-                            "COMPLETED",
-                            "CANCELLED"
-                        ]
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "completedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "sourceAccountHolderName": {
-                        "type": "string"
-                    },
-                    "destinationAccountHolderName": {
-                        "type": "string"
-                    }
-                }
-            },
-            "ApiError": {
-                "type": "object",
-                "properties": {
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "status": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "error": {
-                        "type": "string"
-                    },
-                    "message": {
-                        "type": "string"
-                    },
-                    "path": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "error",
-                    "message",
-                    "path",
-                    "status",
-                    "timestamp"
-                ]
-            }
+          },
+          "required": true
         },
         "responses": {
-            "BadRequest": {
-                "description": "Bad Request",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ApiError"
-                        }
-                    }
-                }
-            },
-            "Unauthorized": {
-                "description": "Unauthorized",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ApiError"
-                        }
-                    }
-                }
-            },
-            "Forbidden": {
-                "description": "Forbidden",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ApiError"
-                        }
-                    }
-                }
-            },
-            "NotFound": {
-                "description": "Not Found",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ApiError"
-                        }
-                    }
-                }
-            },
-            "Conflict": {
-                "description": "Conflict",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ApiError"
-                        }
-                    }
-                }
-            },
-            "InternalServerError": {
-                "description": "Internal Server Error",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ApiError"
-                        }
-                    }
-                }
-            }
-        },
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
-            }
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
         }
+      }
+    },
+    "/api/admin/users/{userId}": {
+      "get": {
+        "tags": [
+          "admin-user-controller"
+        ],
+        "operationId": "findUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "admin-user-controller"
+        ],
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "refresh",
+        "parameters": [
+          {
+            "name": "refresh-token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "logout",
+        "parameters": [
+          {
+            "name": "refresh-token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "tags": [
+          "admin-user-controller"
+        ],
+        "operationId": "findUsers",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelAdminUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin-user-controller"
+        ],
+        "operationId": "createUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/registrations/{userId}/reject": {
+      "post": {
+        "tags": [
+          "registration-review-controller"
+        ],
+        "operationId": "rejectRegistration",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectRegistrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/registrations/{userId}/approve": {
+      "post": {
+        "tags": [
+          "registration-review-controller"
+        ],
+        "operationId": "approveRegistration",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/deposits": {
+      "post": {
+        "tags": [
+          "admin-bank-transaction-controller"
+        ],
+        "operationId": "createDeposit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Deposit created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/accounts/me/withdrawals": {
+      "post": {
+        "tags": [
+          "bank-transaction-controller"
+        ],
+        "operationId": "createWithdrawal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Withdrawal created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/accounts/me/transfers": {
+      "post": {
+        "tags": [
+          "bank-transaction-controller"
+        ],
+        "operationId": "createTransfer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Transfer created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}/reactivate": {
+      "patch": {
+        "tags": [
+          "admin-user-controller"
+        ],
+        "operationId": "reactivateUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}/deactivate": {
+      "patch": {
+        "tags": [
+          "admin-user-controller"
+        ],
+        "operationId": "deactivateUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/accounts/unfreeze/{accountId}": {
+      "patch": {
+        "tags": [
+          "admin-account-holder-controller"
+        ],
+        "operationId": "unfreezeAccountHolder",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/accounts/freeze/{accountId}": {
+      "patch": {
+        "tags": [
+          "admin-account-holder-controller"
+        ],
+        "operationId": "freezeAccountHolder",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/accounts/deactivate/{accountId}": {
+      "patch": {
+        "tags": [
+          "admin-account-holder-controller"
+        ],
+        "operationId": "deactivateAccountHolder",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/accounts/activate/{accountId}": {
+      "patch": {
+        "tags": [
+          "admin-account-holder-controller"
+        ],
+        "operationId": "activateAccountHolder",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/accounts/unfreeze/me": {
+      "patch": {
+        "tags": [
+          "account-holder-controller"
+        ],
+        "operationId": "unfreezeMyAccountHolder",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/accounts/freeze/me": {
+      "patch": {
+        "tags": [
+          "account-holder-controller"
+        ],
+        "operationId": "freezeMyAccountHolder",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/accounts/deactivate/me": {
+      "patch": {
+        "tags": [
+          "account-holder-controller"
+        ],
+        "operationId": "deactivateMyAccountHolder",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/accounts/activate/me": {
+      "patch": {
+        "tags": [
+          "account-holder-controller"
+        ],
+        "operationId": "activateMyAccountHolder",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/balance/me/latest": {
+      "get": {
+        "tags": [
+          "balance-controller"
+        ],
+        "operationId": "getMyBalance",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/auth/registration-status": {
+      "get": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "getRegistrationStatus",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/admin/transactions": {
+      "get": {
+        "tags": [
+          "admin-bank-transaction-controller"
+        ],
+        "operationId": "getAllTransactions",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DEPOSIT",
+                "WITHDRAWAL",
+                "TRANSFER"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelBankTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/transactions/{id}": {
+      "get": {
+        "tags": [
+          "admin-bank-transaction-controller"
+        ],
+        "operationId": "getTransactionById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBankTransactionDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/admin/transactions/reference/{reference}": {
+      "get": {
+        "tags": [
+          "admin-bank-transaction-controller"
+        ],
+        "operationId": "getTransactionByReference",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBankTransactionDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/admin/registrations": {
+      "get": {
+        "tags": [
+          "registration-review-controller"
+        ],
+        "operationId": "findPendingRegistrations",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelPendingRegistrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/registrations/{userId}": {
+      "get": {
+        "tags": [
+          "registration-review-controller"
+        ],
+        "operationId": "findPendingRegistration",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingRegistrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/admin/balance/{accountId}/ledger": {
+      "get": {
+        "tags": [
+          "admin-balance-controller"
+        ],
+        "operationId": "getBalanceLedger",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelBalanceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/balance/{accountId}/latest": {
+      "get": {
+        "tags": [
+          "admin-balance-controller"
+        ],
+        "operationId": "getLatestBalance",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/admin/audit-logs": {
+      "get": {
+        "tags": [
+          "audit-log-controller"
+        ],
+        "operationId": "findAuditLogs",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelAuditLogResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/audit-logs/{auditLogId}": {
+      "get": {
+        "tags": [
+          "audit-log-controller"
+        ],
+        "operationId": "findAuditLog",
+        "parameters": [
+          {
+            "name": "auditLogId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/admin/accounts": {
+      "get": {
+        "tags": [
+          "admin-account-holder-controller"
+        ],
+        "operationId": "getAllAccountHolders",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelAccountHolderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/accounts/{accountNumber}/transactions": {
+      "get": {
+        "tags": [
+          "admin-bank-transaction-controller"
+        ],
+        "operationId": "getTransactionsByAccountNumber",
+        "parameters": [
+          {
+            "name": "accountNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelBankTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/admin/accounts/{accountId}": {
+      "get": {
+        "tags": [
+          "admin-account-holder-controller"
+        ],
+        "operationId": "getAccountHolder",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountHolderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/accounts/name/{accountNumber}": {
+      "get": {
+        "tags": [
+          "account-holder-controller"
+        ],
+        "operationId": "getAccountHolderByAccountNumber",
+        "parameters": [
+          {
+            "name": "accountNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/accounts/me": {
+      "get": {
+        "tags": [
+          "account-holder-controller"
+        ],
+        "operationId": "getMyAccountHolder",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountHolderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/accounts/me/transactions": {
+      "get": {
+        "tags": [
+          "bank-transaction-controller"
+        ],
+        "operationId": "getMyTransactions",
+        "parameters": [
+          {
+            "name": "accountNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DEPOSIT",
+                "WITHDRAWAL",
+                "TRANSFER"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelBankTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/accounts/me/transactions/{id}": {
+      "get": {
+        "tags": [
+          "bank-transaction-controller"
+        ],
+        "operationId": "getMyTransactionById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankTransactionDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
     }
+  },
+  "components": {
+    "schemas": {
+      "ChangePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "minLength": 1
+          },
+          "newPassword": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 8
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "phoneNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 6
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5
+          }
+        },
+        "required": [
+          "address",
+          "email",
+          "name",
+          "phoneNumber"
+        ]
+      },
+      "AdminUserResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_APPROVAL",
+              "ACTIVE",
+              "REJECTED",
+              "DEACTIVATED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "address",
+          "createdAt",
+          "email",
+          "id",
+          "name",
+          "phoneNumber",
+          "status",
+          "updatedAt"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "phoneNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 6
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 8
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5
+          }
+        },
+        "required": [
+          "address",
+          "email",
+          "name",
+          "password",
+          "phoneNumber"
+        ]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessToken",
+          "tokenType"
+        ]
+      },
+      "RegisterResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_APPROVAL",
+              "ACTIVE",
+              "REJECTED",
+              "DEACTIVATED"
+            ]
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/LoginResponse"
+          }
+        },
+        "required": [
+          "email",
+          "id",
+          "status",
+          "tokens"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "phoneNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 6
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 8
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5
+          }
+        },
+        "required": [
+          "address",
+          "email",
+          "name",
+          "password",
+          "phoneNumber"
+        ]
+      },
+      "AccountHolderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserDto"
+          },
+          "accountNumber": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "FROZEN",
+              "CLOSED"
+            ]
+          },
+          "approvedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "accountNumber",
+          "accountStatus",
+          "approvedAt",
+          "createdAt",
+          "currency",
+          "id",
+          "updatedAt",
+          "user"
+        ]
+      },
+      "CreateUserResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AdminUserResponse"
+          },
+          "accountHolder": {
+            "$ref": "#/components/schemas/AccountHolderDto"
+          }
+        },
+        "required": [
+          "accountHolder",
+          "user"
+        ]
+      },
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_APPROVAL",
+              "ACTIVE",
+              "REJECTED",
+              "DEACTIVATED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "address",
+          "createdAt",
+          "email",
+          "id",
+          "name",
+          "phoneNumber",
+          "status",
+          "updatedAt"
+        ]
+      },
+      "RejectRegistrationRequest": {
+        "type": "object",
+        "properties": {
+          "rejectionReason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        }
+      },
+      "DepositRequest": {
+        "type": "object",
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0.01
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "accountNumber",
+          "amount"
+        ]
+      },
+      "BankTransactionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionReference": {
+            "type": "string"
+          },
+          "sourceAccountNumber": {
+            "type": "string"
+          },
+          "destinationAccountNumber": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT",
+              "WITHDRAWAL",
+              "TRANSFER"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "amount",
+          "createdAt",
+          "id",
+          "status",
+          "transactionReference",
+          "type"
+        ]
+      },
+      "WithdrawalRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0.01
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "TransferRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0.01
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          },
+          "destinationAccountNumber": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "amount",
+          "destinationAccountNumber"
+        ]
+      },
+      "BalanceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "accountHolderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "entryDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "indicator": {
+            "type": "string",
+            "enum": [
+              "DEBIT",
+              "CREDIT"
+            ]
+          },
+          "runningBalance": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "amount",
+          "runningBalance"
+        ]
+      },
+      "RegistrationStatusResponse": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_APPROVAL",
+              "ACTIVE",
+              "REJECTED",
+              "DEACTIVATED"
+            ]
+          },
+          "rejectionReason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "userId"
+        ]
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PageMetadata": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "number",
+          "size",
+          "totalElements",
+          "totalPages"
+        ]
+      },
+      "PagedModelAdminUserResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserResponse"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        },
+        "required": [
+          "content",
+          "page"
+        ]
+      },
+      "PagedModelBankTransactionDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BankTransactionDto"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        },
+        "required": [
+          "content",
+          "page"
+        ]
+      },
+      "AdminBankTransactionDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionReference": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT",
+              "WITHDRAWAL",
+              "TRANSFER"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sourceAccountNumber": {
+            "type": "string"
+          },
+          "sourceAccountCurrency": {
+            "type": "string"
+          },
+          "sourceAccountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "FROZEN",
+              "CLOSED"
+            ]
+          },
+          "sourceUserName": {
+            "type": "string"
+          },
+          "sourceUserEmail": {
+            "type": "string"
+          },
+          "sourceUserPhoneNumber": {
+            "type": "string"
+          },
+          "destinationAccountNumber": {
+            "type": "string"
+          },
+          "destinationAccountCurrency": {
+            "type": "string"
+          },
+          "destinationAccountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "FROZEN",
+              "CLOSED"
+            ]
+          },
+          "destinationUserName": {
+            "type": "string"
+          },
+          "destinationUserEmail": {
+            "type": "string"
+          },
+          "destinationUserPhoneNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "createdAt",
+          "id",
+          "status",
+          "transactionReference",
+          "type"
+        ]
+      },
+      "PagedModelPendingRegistrationResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingRegistrationResponse"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        },
+        "required": [
+          "content",
+          "page"
+        ]
+      },
+      "PendingRegistrationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_APPROVAL",
+              "ACTIVE",
+              "REJECTED",
+              "DEACTIVATED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "address",
+          "createdAt",
+          "email",
+          "id",
+          "name",
+          "phoneNumber",
+          "status"
+        ]
+      },
+      "PagedModelBalanceDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BalanceDto"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        },
+        "required": [
+          "content",
+          "page"
+        ]
+      },
+      "AuditLogResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "actorUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "actorEmail": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "REGISTRATION_APPROVED",
+              "REGISTRATION_REJECTED",
+              "USER_CREATED",
+              "USER_UPDATED",
+              "USER_ACTIVATED",
+              "USER_DEACTIVATED",
+              "ACCOUNT_CREATED",
+              "ACCOUNT_ACTIVATED",
+              "ACCOUNT_FROZEN",
+              "ACCOUNT_CLOSED",
+              "TRANSACTION_REVERSED",
+              "ADMIN_DEPOSIT_RECORDED"
+            ]
+          },
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ACCOUNT",
+              "TRANSACTION"
+            ]
+          },
+          "targetIdentifier": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "action",
+          "actorEmail",
+          "actorUserId",
+          "createdAt",
+          "id",
+          "targetIdentifier",
+          "targetType"
+        ]
+      },
+      "PagedModelAuditLogResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditLogResponse"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        },
+        "required": [
+          "content",
+          "page"
+        ]
+      },
+      "PagedModelAccountHolderDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountHolderDto"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        },
+        "required": [
+          "content",
+          "page"
+        ]
+      },
+      "BankTransactionDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionReference": {
+            "type": "string"
+          },
+          "sourceAccountNumber": {
+            "type": "string"
+          },
+          "destinationAccountNumber": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT",
+              "WITHDRAWAL",
+              "TRANSFER"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sourceAccountHolderName": {
+            "type": "string"
+          },
+          "destinationAccountHolderName": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "message",
+          "path",
+          "status",
+          "timestamp"
+        ]
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
 }
