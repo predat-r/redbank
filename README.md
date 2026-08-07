@@ -96,6 +96,7 @@ authentication, transaction execution, and background reconciliation.
 |:-------|:--------------------------------|:-------------------------------|:---------------------------------------------------------------------|
 | `POST` | `/api/auth/register`            | Public                         | Registers a new user (creates account in `PENDING_APPROVAL` state).  |
 | `POST` | `/api/auth/login`               | Public                         | Returns an access token and sets the refresh-token cookie.           |
+| `GET`  | `/api/auth/csrf`                | Public                         | Returns a CSRF token and sets the `XSRF-TOKEN` cookie.               |
 | `POST` | `/api/auth/refresh`             | Public                         | Rotates the refresh cookie and issues a new access token.            |
 | `POST` | `/api/auth/logout`              | Public                         | Revokes and clears the refresh-token cookie.                         |
 | `PUT`  | `/api/auth/password`            | Authenticated                  | Changes the authenticated user's password.                           |
@@ -123,6 +124,14 @@ properties such as account number, currency, and account status are not user-edi
 | `POST`  | `/api/accounts/me/withdrawals`          | None                                                                       | Executes a cash withdrawal from the user's account.                          |
 | `POST`  | `/api/accounts/me/transfers`            | None                                                                       | Transfers funds from the user's account to a destination account number.     |
 | `GET`   | `/api/balance/me/latest`                | None                                                                       | Returns the current running balance and latest ledger entry for the account. |
+
+### CSRF Policy
+
+CSRF protection is enabled for state-changing requests. The frontend should first call
+`GET /api/auth/csrf` with credentials enabled, then send the returned token in the
+`X-XSRF-TOKEN` header on every `POST`, `PUT`, `PATCH`, or `DELETE` request. The refresh and logout
+endpoints are public but still require a valid CSRF token because they use the refresh-token cookie.
+Registration and login are exempt from CSRF checks.
 
 ---
 
