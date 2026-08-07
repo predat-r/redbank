@@ -1118,6 +1118,43 @@
                 }
             }
         },
+        "/api/auth/csrf": {
+            "get": {
+                "tags": [
+                    "auth-controller"
+                ],
+                "operationId": "csrfToken",
+                "parameters": [
+                    {
+                        "name": "csrfToken",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/CsrfToken"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CsrfToken"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                },
+                "security": []
+            }
+        },
         "/api/admin/transactions": {
             "get": {
                 "tags": [
@@ -2517,6 +2554,20 @@
                     "status",
                     "userId"
                 ]
+            },
+            "CsrfToken": {
+                "type": "object",
+                "properties": {
+                    "headerName": {
+                        "type": "string"
+                    },
+                    "parameterName": {
+                        "type": "string"
+                    },
+                    "token": {
+                        "type": "string"
+                    }
+                }
             },
             "Pageable": {
                 "type": "object",

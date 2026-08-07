@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +34,11 @@ public class AuthController {
   private final AuthService authService;
   private final RefreshTokenCookieService refreshTokenCookieService;
   private final TrustedOriginService trustedOriginService;
+
+  @GetMapping("/csrf")
+  public CsrfToken csrfToken(CsrfToken csrfToken) {
+    return csrfToken;
+  }
 
 
   @PostMapping("/register")

@@ -25,7 +25,7 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
   private static final String COMPONENT_RESPONSE_PREFIX = "#/components/responses/";
 
   private static final Set<String> PUBLIC_OPERATIONS = Set.of(
-      "register", "login", "refresh", "logout");
+      "register", "login", "refresh", "logout", "csrfToken");
 
   private static final Set<String> PUBLIC_UNAUTHORIZED_OPERATIONS = Set.of(
       "login", "refresh", "logout");

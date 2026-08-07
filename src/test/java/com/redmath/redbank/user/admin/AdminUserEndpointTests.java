@@ -1,5 +1,7 @@
 package com.redmath.redbank.user.admin;
 
+import com.redmath.redbank.common.MockMvcSecurityTestConfig;
+
 import static com.redmath.redbank.common.AuthUtilities.withAccountHolder;
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +32,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +42,7 @@ import tools.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@Import(MockMvcSecurityTestConfig.class)
 class AdminUserEndpointTests {
 
   private static final String ADMIN_EMAIL = "admin@redbank.com";

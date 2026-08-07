@@ -6,10 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,6 +26,7 @@ public class SecurityConfig {
       "/swagger-ui/**",
       "/swagger-ui.html",
       "/v3/api-docs/**",
+      "/api/auth/csrf",
       "/api/auth/register",
       "/api/auth/login",
       "/api/auth/refresh",
@@ -74,10 +76,21 @@ public class SecurityConfig {
 
   private void configureBasicSecurity(HttpSecurity http) throws Exception {
     http
-        .csrf(AbstractHttpConfigurer::disable)
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(csrfTokenRepository())
+            .ignoringRequestMatchers(
+                "/api/auth/register",
+                "/api/auth/login"))
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .cors(Customizer.withDefaults());
+  }
+
+  @Bean
+  CsrfTokenRepository csrfTokenRepository() {
+    CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+    repository.setCookiePath("/");
+    return repository;
   }
 
   private void configureAuthorization(HttpSecurity http) throws Exception {
@@ -123,7 +136,7 @@ public class SecurityConfig {
     configuration.setAllowedMethods(List.of(
         "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of(
-        "Authorization", "Content-Type"));
+        "Authorization", "Content-Type", "X-XSRF-TOKEN"));
     configuration.setAllowCredentials(true);
     configuration.setMaxAge(3600L);
 
