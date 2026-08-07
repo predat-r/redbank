@@ -1,5 +1,6 @@
 package com.redmath.redbank.transaction;
 
+import com.redmath.redbank.transaction.dto.BankTransactionDetailDto;
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
 import com.redmath.redbank.transaction.request.TransferRequest;
 import com.redmath.redbank.transaction.request.WithdrawalRequest;
@@ -52,13 +53,13 @@ public class BankTransactionController {
 
   @GetMapping("/transactions/{id}")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
-  public ResponseEntity<BankTransactionDto> getMyTransactionById(
+  public ResponseEntity<BankTransactionDetailDto> getMyTransactionById(
       @AuthenticationPrincipal Jwt jwt,
       @PathVariable Long id) {
 
     Long userId = extractUserId(jwt);
     BankTransaction transaction = bankTransactionService.getUserTransactionById(userId, id);
-    return ResponseEntity.ok(BankTransactionDto.from(transaction));
+    return ResponseEntity.ok(BankTransactionDetailDto.fromDetail(transaction));
   }
 
   @PostMapping("/transfers")
