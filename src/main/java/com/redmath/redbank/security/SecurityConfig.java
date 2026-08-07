@@ -21,6 +21,24 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+  private static final String[] PUBLIC_ENDPOINTS = {
+      "/swagger-ui/**",
+      "/swagger-ui.html",
+      "/v3/api-docs/**",
+      "/api/auth/register",
+      "/api/auth/login",
+      "/api/auth/refresh",
+      "/api/auth/logout"
+  };
+
+  private static final String[] REGISTRATION_STATUS_ENDPOINTS = {
+      "/api/auth/registration-status"
+  };
+
+  private static final String[] ADMIN_ENDPOINTS = {
+      "/api/admin/**"
+  };
+
   @Bean
   PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
@@ -28,51 +46,90 @@ public class SecurityConfig {
 
   @Bean
   JwtAuthenticationConverter jwtAuthenticationConverter() {
-    JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+    JwtGrantedAuthoritiesConverter authoritiesConverter =
+        new JwtGrantedAuthoritiesConverter();
 
     authoritiesConverter.setAuthoritiesClaimName("roles");
     authoritiesConverter.setAuthorityPrefix("ROLE_");
 
-    JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
+    JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+    converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
 
-    authenticationConverter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
-
-    return authenticationConverter;
+    return converter;
   }
 
   @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http,
+  SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
       JwtAuthenticationConverter jwtAuthenticationConverter,
-      SecurityErrorResponseHandler securityErrorResponseHandler) {
-    http.csrf(AbstractHttpConfigurer::disable).sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(
-            auth -> auth.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                    "/api/auth/register", "/api/auth/login", "/api/auth/refresh",
-                    "/api/auth/logout")
-                .permitAll().requestMatchers("/api/auth/registration-status")
-                .hasAnyRole("PENDING_USER", "ACCOUNT_HOLDER").requestMatchers("/api/admin/**")
-                .hasRole("ADMIN").anyRequest().hasAnyRole("ADMIN", "ACCOUNT_HOLDER"))
-        .cors(Customizer.withDefaults()).exceptionHandling(
-            exceptions -> exceptions.authenticationEntryPoint(securityErrorResponseHandler)
-                .accessDeniedHandler(securityErrorResponseHandler)).oauth2ResourceServer(
-            oauth2 -> oauth2.authenticationEntryPoint(securityErrorResponseHandler)
-                .accessDeniedHandler(securityErrorResponseHandler)
-                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+      SecurityErrorResponseHandler securityErrorResponseHandler
+  ) throws Exception {
+    configureBasicSecurity(http);
+    configureAuthorization(http);
+    configureExceptionHandling(http, securityErrorResponseHandler);
+    configureJwtAuthentication(http, jwtAuthenticationConverter, securityErrorResponseHandler);
+
     return http.build();
   }
 
+  private void configureBasicSecurity(HttpSecurity http) throws Exception {
+    http
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .cors(Customizer.withDefaults());
+  }
+
+  private void configureAuthorization(HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests(auth -> auth
+        .requestMatchers(PUBLIC_ENDPOINTS)
+        .permitAll()
+        .requestMatchers(REGISTRATION_STATUS_ENDPOINTS)
+        .hasAnyRole("PENDING_USER", "ACCOUNT_HOLDER")
+        .requestMatchers(ADMIN_ENDPOINTS)
+        .hasRole("ADMIN")
+        .anyRequest()
+        .hasAnyRole("ADMIN", "ACCOUNT_HOLDER"));
+  }
+
+  private void configureExceptionHandling(
+      HttpSecurity http,
+      SecurityErrorResponseHandler errorHandler
+  ) throws Exception {
+    http.exceptionHandling(exceptions -> exceptions
+        .authenticationEntryPoint(errorHandler)
+        .accessDeniedHandler(errorHandler));
+  }
+
+  private void configureJwtAuthentication(
+      HttpSecurity http,
+      JwtAuthenticationConverter jwtAuthenticationConverter,
+      SecurityErrorResponseHandler errorHandler
+  ) throws Exception {
+    http.oauth2ResourceServer(oauth2 -> oauth2
+        .authenticationEntryPoint(errorHandler)
+        .accessDeniedHandler(errorHandler)
+        .jwt(jwt -> jwt
+            .jwtAuthenticationConverter(jwtAuthenticationConverter)));
+  }
+
   @Bean
-  CorsConfigurationSource corsConfigurationSource(TrustedOriginService trustedOriginService) {
+  CorsConfigurationSource corsConfigurationSource(
+      TrustedOriginService trustedOriginService
+  ) {
     CorsConfiguration configuration = new CorsConfiguration();
+
     configuration.setAllowedOrigins(trustedOriginService.allowedOrigins());
-    configuration.setAllowedMethods(
-        List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+    configuration.setAllowedMethods(List.of(
+        "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(List.of(
+        "Authorization", "Content-Type"));
     configuration.setAllowCredentials(true);
     configuration.setMaxAge(3600L);
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    UrlBasedCorsConfigurationSource source =
+        new UrlBasedCorsConfigurationSource();
+
     source.registerCorsConfiguration("/**", configuration);
     return source;
   }
