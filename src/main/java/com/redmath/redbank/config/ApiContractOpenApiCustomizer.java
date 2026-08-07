@@ -45,8 +45,10 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "getMyAccountHolder",
       "getAccountHolderByAccountNumber",
       "freezeAccountHolder",
+      "unfreezeAccountHolder",
       "deactivateAccountHolder",
       "freezeMyAccountHolder",
+      "unfreezeMyAccountHolder",
       "deactivateMyAccountHolder",
       "getLatestBalance",
       "findAuditLog",
@@ -68,8 +70,10 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "rejectRegistration",
       "findPendingRegistration",
       "freezeAccountHolder",
+      "unfreezeAccountHolder",
       "deactivateAccountHolder",
       "freezeMyAccountHolder",
+      "unfreezeMyAccountHolder",
       "deactivateMyAccountHolder");
 
   private static final Map<String, String> CREATED_OPERATIONS = Map.of(
@@ -82,8 +86,10 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "deactivateUser",
       "reactivateUser",
       "freezeAccountHolder",
+      "unfreezeAccountHolder",
       "deactivateAccountHolder",
       "freezeMyAccountHolder",
+      "unfreezeMyAccountHolder",
       "deactivateMyAccountHolder");
 
   private static final Map<String, List<String>> REQUIRED_RESPONSE_FIELDS = Map.ofEntries(

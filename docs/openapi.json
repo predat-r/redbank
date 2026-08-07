@@ -741,8 +741,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest"
@@ -755,6 +755,12 @@
                     },
                     "403": {
                         "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
                     }
                 }
             }
@@ -886,8 +892,8 @@
                 ],
                 "operationId": "unfreezeMyAccountHolder",
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest"
@@ -900,6 +906,12 @@
                     },
                     "403": {
                         "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
                     }
                 }
             }
@@ -1869,7 +1881,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/BankTransactionDto"
+                                    "$ref": "#/components/schemas/BankTransactionDetailDto"
                                 }
                             }
                         }
@@ -2282,13 +2294,7 @@
                     "sourceAccountNumber": {
                         "type": "string"
                     },
-                    "sourceAccountHolderName": {
-                        "type": "string"
-                    },
                     "destinationAccountNumber": {
-                        "type": "string"
-                    },
-                    "destinationAccountHolderName": {
                         "type": "string"
                     },
                     "type": {
@@ -2787,6 +2793,60 @@
                     "content",
                     "page"
                 ]
+            },
+            "BankTransactionDetailDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "transactionReference": {
+                        "type": "string"
+                    },
+                    "sourceAccountNumber": {
+                        "type": "string"
+                    },
+                    "destinationAccountNumber": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "DEPOSIT",
+                            "WITHDRAWAL",
+                            "TRANSFER"
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "COMPLETED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "sourceAccountHolderName": {
+                        "type": "string"
+                    },
+                    "destinationAccountHolderName": {
+                        "type": "string"
+                    }
+                }
             },
             "ApiError": {
                 "type": "object",
