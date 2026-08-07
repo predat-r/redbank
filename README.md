@@ -109,6 +109,9 @@ authentication, transaction execution, and background reconciliation.
 
 The account-name lookup also permits `ROLE_ADMIN`.
 
+Account holders can update their personal profile through `PATCH /api/users/me`. Bank-account
+properties such as account number, currency, and account status are not user-editable.
+
 | Method  | Endpoint                                | Query Parameters                                                           | Description                                                                  |
 |:--------|:----------------------------------------|:---------------------------------------------------------------------------|:-----------------------------------------------------------------------------|
 | `GET`   | `/api/accounts/me`                      | None                                                                       | Returns the authenticated user's account-holder profile.                     |

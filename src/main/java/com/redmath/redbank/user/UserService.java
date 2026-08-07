@@ -2,7 +2,10 @@ package com.redmath.redbank.user;
 
 import com.redmath.redbank.common.exception.InvalidUserStatusTransitionException;
 import com.redmath.redbank.common.exception.UserNotFoundException;
+import com.redmath.redbank.common.exception.DuplicateUserException;
+import com.redmath.redbank.user.dto.UpdateMyProfileRequest;
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -60,6 +63,27 @@ public class UserService {
   @Transactional(readOnly = true)
   public Page<User> findAllByStatus(UserStatus status, Pageable pageable) {
     return userRepository.findAllByStatus(status, pageable);
+  }
+
+  @Transactional
+  public User updateMyProfile(Long userId, UpdateMyProfileRequest request) {
+    User user = userRepository.findByIdForUpdate(userId)
+        .orElseThrow(UserNotFoundException::new);
+    String email = request.email().trim().toLowerCase(Locale.ROOT);
+    String phoneNumber = request.phoneNumber().trim();
+
+    userRepository.findByEmailIgnoreCase(email).ifPresent(existing -> {
+      if (!existing.getId().equals(userId)) {
+        throw new DuplicateUserException("Email is already registered");
+      }
+    });
+    if (!user.getPhoneNumber().equals(phoneNumber) && userRepository.existsByPhoneNumber(phoneNumber)) {
+      throw new DuplicateUserException("Phone number is already registered");
+    }
+
+    user.updateDetails(email, phoneNumber, request.name().trim(), request.address().trim(),
+        Instant.now());
+    return user;
   }
 
 
