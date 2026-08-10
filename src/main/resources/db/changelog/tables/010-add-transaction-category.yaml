@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-add-transaction-category
+      author: zohaib
+      changes:
+        - addColumn:
+            tableName: bank_transactions
+            columns:
+              - column:
+                  name: category
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+
+        - sql:
+            sql: >
+              ALTER TABLE bank_transactions
+                ADD CONSTRAINT chk_bank_transactions_category
+                  CHECK (category IS NULL OR category IN ('FOOD', 'GROCERY', 'DONATION', 'BILLS', 'ENTERTAINMENT', 'SHOPPING', 'HEALTH', 'TRANSPORT', 'EDUCATION', 'INVESTMENT', 'OTHER'));

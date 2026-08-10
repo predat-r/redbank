@@ -2,6 +2,7 @@ package com.redmath.redbank.transaction.admin;
 
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionService;
+import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
 import com.redmath.redbank.transaction.TransactionType;
 import com.redmath.redbank.transaction.dto.AdminBankTransactionDetailDto;
@@ -44,11 +45,12 @@ public class AdminBankTransactionController {
       @RequestParam(required = false) String accountNumber,
       @RequestParam(required = false) TransactionType type,
       @RequestParam(required = false) TransactionStatus status,
+      @RequestParam(required = false) TransactionCategory category,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromDate,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toDate,
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<BankTransaction> transactions = bankTransactionService.getAllTransactions(
-        reference, accountNumber, type, status, fromDate, toDate, pageable);
+        reference, accountNumber, type, status, category, fromDate, toDate, pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
   }
 

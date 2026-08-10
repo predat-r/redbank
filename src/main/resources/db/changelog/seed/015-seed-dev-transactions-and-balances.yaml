@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 012-seed-dev-transactions-and-balances
+      id: 015-seed-dev-transactions-and-balances
       author: codex
       context: dev
       changes:

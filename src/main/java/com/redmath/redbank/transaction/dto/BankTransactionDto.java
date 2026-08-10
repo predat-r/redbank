@@ -1,6 +1,7 @@
 package com.redmath.redbank.transaction.dto;
 
 import com.redmath.redbank.transaction.BankTransaction;
+import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
 import com.redmath.redbank.transaction.TransactionType;
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ public class BankTransactionDto {
   private String destinationAccountNumber;
   private TransactionType type;
   private String description;
+  private TransactionCategory category;
   private BigDecimal amount;
   private TransactionStatus status;
   private OffsetDateTime createdAt;
@@ -35,6 +37,7 @@ public class BankTransactionDto {
     }
     dto.setType(transaction.getType());
     dto.setDescription(transaction.getDescription());
+    dto.setCategory(transaction.getCategory());
     dto.setAmount(transaction.getAmount());
     dto.setStatus(transaction.getStatus());
     dto.setCreatedAt(transaction.getCreatedAt());

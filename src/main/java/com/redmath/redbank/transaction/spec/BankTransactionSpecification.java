@@ -2,6 +2,7 @@ package com.redmath.redbank.transaction.spec;
 
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.transaction.BankTransaction;
+import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
 import com.redmath.redbank.transaction.TransactionType;
 import jakarta.persistence.criteria.Join;
@@ -25,7 +26,18 @@ public final class BankTransactionSpecification {
       TransactionStatus status,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return filterInternal(null, reference, accountNumber, type, status, fromDate, toDate);
+    return filterInternal(null, reference, accountNumber, type, status, null, fromDate, toDate);
+  }
+
+  public static Specification<BankTransaction> filter(
+      String reference,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      TransactionCategory category,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate) {
+    return filterInternal(null, reference, accountNumber, type, status, category, fromDate, toDate);
   }
 
   public static Specification<BankTransaction> filterForUser(
@@ -35,7 +47,18 @@ public final class BankTransactionSpecification {
       TransactionStatus status,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return filterInternal(accountHolderId, null, accountNumber, type, status, fromDate, toDate);
+    return filterInternal(accountHolderId, null, accountNumber, type, status, null, fromDate, toDate);
+  }
+
+  public static Specification<BankTransaction> filterForUser(
+      Long accountHolderId,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      TransactionCategory category,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate) {
+    return filterInternal(accountHolderId, null, accountNumber, type, status, category, fromDate, toDate);
   }
 
   private static Specification<BankTransaction> filterInternal(
@@ -44,6 +67,7 @@ public final class BankTransactionSpecification {
       String accountNumber,
       TransactionType type,
       TransactionStatus status,
+      TransactionCategory category,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
     return (root, query, cb) -> {
@@ -87,6 +111,10 @@ public final class BankTransactionSpecification {
 
       if (status != null) {
         predicates.add(cb.equal(root.get("status"), status));
+      }
+
+      if (category != null) {
+        predicates.add(cb.equal(root.get("category"), category));
       }
 
       if (fromDate != null) {

@@ -24,16 +24,19 @@ databaseChangeLog:
       file: db/changelog/tables/009-enable-pgvector.yaml
 
   - include:
-      file: db/changelog/seed/008-seed-roles.yaml
+      file: db/changelog/tables/010-add-transaction-category.yaml
 
   - include:
-      file: db/changelog/seed/009-seed-admin.yaml
+      file: db/changelog/seed/011-seed-roles.yaml
 
   - include:
-      file: db/changelog/seed/010-assign-admin-role.yaml
+      file: db/changelog/seed/012-seed-admin.yaml
 
   - include:
-      file: db/changelog/seed/011-seed-dev-account-holders.yaml
+      file: db/changelog/seed/013-assign-admin-role.yaml
 
   - include:
-      file: db/changelog/seed/012-seed-dev-transactions-and-balances.yaml
+      file: db/changelog/seed/014-seed-dev-account-holders.yaml
+
+  - include:
+      file: db/changelog/seed/015-seed-dev-transactions-and-balances.yaml

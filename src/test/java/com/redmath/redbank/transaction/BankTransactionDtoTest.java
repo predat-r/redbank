@@ -32,6 +32,7 @@ class BankTransactionDtoTest {
     transaction.setType(TransactionType.TRANSFER);
     transaction.setAmount(new BigDecimal("150.00"));
     transaction.setDescription("Test mapping");
+    transaction.setCategory(TransactionCategory.FOOD);
     transaction.setStatus(TransactionStatus.COMPLETED);
     transaction.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
     transaction.setSourceAccountHolder(source);
@@ -43,6 +44,7 @@ class BankTransactionDtoTest {
     assertEquals(10L, dto.getId());
     assertEquals("TXN-REF-1", dto.getTransactionReference());
     assertEquals(TransactionType.TRANSFER, dto.getType());
+    assertEquals(TransactionCategory.FOOD, dto.getCategory());
     assertEquals(new BigDecimal("150.00"), dto.getAmount());
     assertEquals("SRC-123", dto.getSourceAccountNumber());
     assertEquals("DEST-456", dto.getDestinationAccountNumber());

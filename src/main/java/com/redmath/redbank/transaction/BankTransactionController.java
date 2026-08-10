@@ -42,13 +42,14 @@ public class BankTransactionController {
       @RequestParam(required = false) String accountNumber,
       @RequestParam(required = false) TransactionType type,
       @RequestParam(required = false) TransactionStatus status,
+      @RequestParam(required = false) TransactionCategory category,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromDate,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toDate,
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
     Long userId = extractUserId(jwt);
     Page<BankTransaction> transactions = bankTransactionService.getTransactionsForUser(
-        userId, accountNumber, type, status, fromDate, toDate, pageable);
+        userId, accountNumber, type, status, category, fromDate, toDate, pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
   }
 

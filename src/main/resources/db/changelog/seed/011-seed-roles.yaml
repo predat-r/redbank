@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 008-seed-roles
+      id: 011-seed-roles
       author: haris
       changes:
         - insert:
