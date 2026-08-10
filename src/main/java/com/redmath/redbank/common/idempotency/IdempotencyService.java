@@ -47,7 +47,9 @@ public final class IdempotencyService {
       try {
         return hazelcastInstance.getMap(HAZELCAST_MAP_NAME);
       } catch (Exception e) {
-        log.warn("Hazelcast map unavailable, using local memory map: {}", e.getMessage());
+        if (log.isWarnEnabled()) {
+          log.warn("Hazelcast map unavailable, using local memory map: {}", e.getMessage());
+        }
       }
     }
     return fallbackMap;
@@ -62,7 +64,9 @@ public final class IdempotencyService {
     Map<String, IdempotencyKey> map = getIdempotencyMap();
     IdempotencyKey cached = map.get(cacheKey);
     if (cached != null) {
-      log.debug("Idempotency key found in Hazelcast: {}", cacheKey);
+      if (log.isDebugEnabled()) {
+        log.debug("Idempotency key found in Hazelcast: {}", cacheKey);
+      }
       return Optional.of(cached);
     }
     return Optional.empty();
@@ -86,7 +90,9 @@ public final class IdempotencyService {
     if (map instanceof IMap<String, IdempotencyKey> imap) {
       IdempotencyKey existing = imap.putIfAbsent(cacheKey, record, TTL_HOURS, TimeUnit.HOURS);
       if (existing != null) {
-        log.info("Hazelcast lock acquired by another request for key: {}", cacheKey);
+        if (log.isInfoEnabled()) {
+          log.info("Hazelcast lock acquired by another request for key: {}", cacheKey);
+        }
         return existing;
       }
       return record;
@@ -111,7 +117,9 @@ public final class IdempotencyService {
       try {
         record.setResponseBody(objectMapper.writeValueAsString(responseBody));
       } catch (Exception e) {
-        log.warn("Failed to serialize response body for idempotency key {}", key, e);
+        if (log.isWarnEnabled()) {
+          log.warn("Failed to serialize response body for idempotency key {}", key, e);
+        }
         record.setResponseBody(null);
       }
 
@@ -158,15 +166,19 @@ public final class IdempotencyService {
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException("SHA-256 algorithm not available", e);
     } catch (Exception e) {
-      log.warn("Failed to compute hash for request arguments", e);
+      if (log.isWarnEnabled()) {
+        log.warn("Failed to compute hash for request arguments", e);
+      }
       return "HASH_ERROR";
     }
   }
 
   public ResponseEntity<?> createReplayedResponse(IdempotencyKey record,
       Class<?> targetReturnType) {
-    log.info("Replaying cached idempotent response for key: {} user: {}",
-        record.getIdempotencyKey(), record.getUserId());
+    if (log.isInfoEnabled()) {
+      log.info("Replaying cached idempotent response for key: {} user: {}",
+          record.getIdempotencyKey(), record.getUserId());
+    }
     HttpStatus status = HttpStatus.resolve(record.getResponseStatusCode());
     if (status == null) {
       status = HttpStatus.OK;
@@ -181,7 +193,9 @@ public final class IdempotencyService {
           body = objectMapper.readValue(record.getResponseBody(), Object.class);
         }
       } catch (Exception e) {
-        log.error("Failed to deserialize cached idempotency response body", e);
+        if (log.isErrorEnabled()) {
+          log.error("Failed to deserialize cached idempotency response body", e);
+        }
       }
     }
 

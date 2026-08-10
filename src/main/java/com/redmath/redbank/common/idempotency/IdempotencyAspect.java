@@ -87,7 +87,9 @@ public class IdempotencyAspect {
     try {
       result = joinPoint.proceed();
     } catch (Throwable t) {
-      log.warn("Request failed for idempotency key {}: {}", idempotencyKey, t.getMessage());
+      if (log.isWarnEnabled()) {
+        log.warn("Request failed for idempotency key {}: {}", idempotencyKey, t.getMessage());
+      }
       idempotencyService.markFailed(idempotencyKey, userId);
       throw t;
     }
