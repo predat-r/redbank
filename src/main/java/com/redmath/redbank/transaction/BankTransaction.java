@@ -1,6 +1,7 @@
 package com.redmath.redbank.transaction;
 
 import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.ai.anomaly.AnomalyFlag;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,6 +41,10 @@ public class BankTransaction {
   @JoinColumn(name = "destination_account_holder_id")
   private AccountHolder destinationAccountHolder;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "reversed_transaction_id")
+  private BankTransaction reversedTransaction;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "type", nullable = false, length = 20, updatable = false)
   private TransactionType type;
@@ -57,6 +62,10 @@ public class BankTransaction {
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
   private TransactionStatus status;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "anomaly_flag", nullable = false, length = 20)
+  private AnomalyFlag anomalyFlag = AnomalyFlag.NONE;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private OffsetDateTime createdAt;

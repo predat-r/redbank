@@ -3,6 +3,7 @@ package com.redmath.redbank.transaction;
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountHolderService;
 import com.redmath.redbank.account.AccountStatus;
+import com.redmath.redbank.ai.anomaly.AnomalyFlag;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
@@ -66,10 +67,23 @@ public class BankTransactionService {
       OffsetDateTime fromDate,
       OffsetDateTime toDate,
       Pageable pageable) {
+    return getTransactionsForUser(userId, accountNumber, type, status, category, null, fromDate, toDate, pageable);
+  }
+
+  public Page<BankTransaction> getTransactionsForUser(
+      Long userId,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      TransactionCategory category,
+      AnomalyFlag anomalyFlag,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate,
+      Pageable pageable) {
     AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(userId);
     return bankTransactionRepository.findAll(
         BankTransactionSpecification.filterForUser(
-            accountHolder.getId(), accountNumber, type, status, category, fromDate, toDate),
+            accountHolder.getId(), accountNumber, type, status, category, anomalyFlag, fromDate, toDate),
         pageable);
   }
 
@@ -85,7 +99,7 @@ public class BankTransactionService {
       OffsetDateTime fromDate,
       OffsetDateTime toDate,
       Pageable pageable) {
-    return getAllTransactions(reference, accountNumber, type, status, null, fromDate, toDate, pageable);
+    return getAllTransactions(reference, accountNumber, type, status, null, null, fromDate, toDate, pageable);
   }
 
   public Page<BankTransaction> getAllTransactions(
@@ -97,8 +111,21 @@ public class BankTransactionService {
       OffsetDateTime fromDate,
       OffsetDateTime toDate,
       Pageable pageable) {
+    return getAllTransactions(reference, accountNumber, type, status, category, null, fromDate, toDate, pageable);
+  }
+
+  public Page<BankTransaction> getAllTransactions(
+      String reference,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      TransactionCategory category,
+      AnomalyFlag anomalyFlag,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate,
+      Pageable pageable) {
     return bankTransactionRepository.findAll(
-        BankTransactionSpecification.filter(reference, accountNumber, type, status, category, fromDate, toDate),
+        BankTransactionSpecification.filter(reference, accountNumber, type, status, category, anomalyFlag, fromDate, toDate),
         pageable);
   }
 

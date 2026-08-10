@@ -41,7 +41,7 @@ public class AdminBankTransactionController {
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<BankTransaction> transactions = bankTransactionService.getAllTransactions(
         filter.getReference(), filter.getAccountNumber(), filter.getType(), filter.getStatus(),
-        filter.getCategory(), filter.getFromDate(), filter.getToDate(), pageable);
+        filter.getCategory(), filter.getAnomalyFlag(), filter.getFromDate(), filter.getToDate(), pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
   }
 
