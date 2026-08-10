@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class IdempotencyService {
+public final class IdempotencyService {
 
   public static final String IDEMPOTENCY_HEADER = "X-Idempotency-Key";
   public static final String REPLAYED_HEADER = "X-Idempotent-Replayed";
@@ -37,18 +37,9 @@ public class IdempotencyService {
   public IdempotencyService(
       ObjectProvider<ObjectMapper> objectMapperProvider,
       ObjectProvider<HazelcastInstance> hazelcastProvider) {
-    this.objectMapper = objectMapperProvider.getIfAvailable(ObjectMapper::new);
-    this.hazelcastInstance = hazelcastProvider.getIfAvailable();
-  }
-
-  public IdempotencyService(HazelcastInstance hazelcastInstance, ObjectMapper objectMapper) {
-    this.hazelcastInstance = hazelcastInstance;
-    this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
-  }
-
-  public IdempotencyService() {
-    this.hazelcastInstance = null;
-    this.objectMapper = new ObjectMapper();
+    ObjectMapper mapper = objectMapperProvider != null ? objectMapperProvider.getIfAvailable() : null;
+    this.objectMapper = mapper != null ? mapper.copy() : new ObjectMapper();
+    this.hazelcastInstance = hazelcastProvider != null ? hazelcastProvider.getIfAvailable() : null;
   }
 
   private Map<String, IdempotencyKey> getIdempotencyMap() {
@@ -152,9 +143,12 @@ public class IdempotencyService {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       for (Object arg : args) {
-        if (arg == null) continue;
+        if (arg == null) {
+          continue;
+        }
         String className = arg.getClass().getName();
-        if (className.startsWith("org.springframework") || className.startsWith("jakarta.servlet")) {
+        if (className.startsWith("org.springframework") || className.startsWith(
+            "jakarta.servlet")) {
           continue;
         }
         byte[] jsonBytes = objectMapper.writeValueAsString(arg).getBytes(StandardCharsets.UTF_8);
@@ -169,8 +163,10 @@ public class IdempotencyService {
     }
   }
 
-  public ResponseEntity<?> createReplayedResponse(IdempotencyKey record, Class<?> targetReturnType) {
-    log.info("Replaying cached idempotent response for key: {} user: {}", record.getIdempotencyKey(), record.getUserId());
+  public ResponseEntity<?> createReplayedResponse(IdempotencyKey record,
+      Class<?> targetReturnType) {
+    log.info("Replaying cached idempotent response for key: {} user: {}",
+        record.getIdempotencyKey(), record.getUserId());
     HttpStatus status = HttpStatus.resolve(record.getResponseStatusCode());
     if (status == null) {
       status = HttpStatus.OK;

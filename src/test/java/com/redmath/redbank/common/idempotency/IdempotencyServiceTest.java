@@ -6,8 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
+import com.hazelcast.core.HazelcastInstance;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -17,8 +22,15 @@ class IdempotencyServiceTest {
   private IdempotencyService idempotencyService;
 
   @BeforeEach
+  @SuppressWarnings("unchecked")
   void setUp() {
-    idempotencyService = new IdempotencyService(null, objectMapper);
+    ObjectProvider<ObjectMapper> objectMapperProvider = mock(ObjectProvider.class);
+    when(objectMapperProvider.getIfAvailable()).thenReturn(objectMapper);
+
+    ObjectProvider<HazelcastInstance> hazelcastProvider = mock(ObjectProvider.class);
+    when(hazelcastProvider.getIfAvailable()).thenReturn(null);
+
+    idempotencyService = new IdempotencyService(objectMapperProvider, hazelcastProvider);
   }
 
   @Test
