@@ -1,6 +1,6 @@
 services:
   postgres-test:
-    image: postgres:latest
+    image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: redbank_test
       POSTGRES_USER: ${POSTGRES_USERNAME:-postgres}
