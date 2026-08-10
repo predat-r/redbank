@@ -1,5 +1,6 @@
 package com.redmath.redbank.transaction.request;
 
+import com.redmath.redbank.transaction.TransactionCategory;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,4 +22,6 @@ public class TransferRequest {
 
   @NotBlank(message = "Destination account number is required")
   private String destinationAccountNumber;
+
+  private TransactionCategory category;
 }

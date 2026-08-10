@@ -214,6 +214,7 @@ class BankTransactionServiceTest {
     assertNotNull(result);
     assertEquals(TransactionType.DEPOSIT, result.getType());
     assertEquals(new BigDecimal("500.00"), result.getAmount());
+    assertEquals(null, result.getCategory());
     verify(balanceService).recordLedgerEntry(eq(target), any(BankTransaction.class), eq(BalanceIndicator.CREDIT));
     verify(auditService).recordAuditLog(eq(99L), eq(AuditAction.ADMIN_DEPOSIT_RECORDED), eq(AuditTargetType.TRANSACTION), eq("100"), eq(null));
   }
@@ -236,12 +237,14 @@ class BankTransactionServiceTest {
     WithdrawalRequest request = new WithdrawalRequest();
     request.setAmount(new BigDecimal("100.00"));
     request.setDescription("Test Withdrawal");
+    request.setCategory(TransactionCategory.FOOD);
 
     BankTransaction result = bankTransactionService.withdraw(10L, request);
 
     assertNotNull(result);
     assertEquals(TransactionType.WITHDRAWAL, result.getType());
     assertEquals(new BigDecimal("100.00"), result.getAmount());
+    assertEquals(TransactionCategory.FOOD, result.getCategory());
     verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class), eq(BalanceIndicator.DEBIT));
   }
 
@@ -266,11 +269,13 @@ class BankTransactionServiceTest {
     request.setDestinationAccountNumber("RB-DEST-002");
     request.setAmount(new BigDecimal("200.00"));
     request.setDescription("Test Transfer");
+    request.setCategory(TransactionCategory.GROCERY);
 
     BankTransaction result = bankTransactionService.transfer(10L, request);
 
     assertNotNull(result);
     assertEquals(TransactionType.TRANSFER, result.getType());
+    assertEquals(TransactionCategory.GROCERY, result.getCategory());
     verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class), eq(BalanceIndicator.DEBIT));
     verify(balanceService).recordLedgerEntry(eq(dest), any(BankTransaction.class), eq(BalanceIndicator.CREDIT));
   }

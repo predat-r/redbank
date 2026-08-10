@@ -1,5 +1,6 @@
 package com.redmath.redbank.transaction.request;
 
+import com.redmath.redbank.transaction.TransactionCategory;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,4 +18,6 @@ public class WithdrawalRequest {
 
   @Size(max = 500, message = "Description cannot exceed 500 characters")
   private String description;
+
+  private TransactionCategory category;
 }

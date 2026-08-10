@@ -54,10 +54,22 @@ public class BankTransactionService {
       OffsetDateTime fromDate,
       OffsetDateTime toDate,
       Pageable pageable) {
+    return getTransactionsForUser(userId, accountNumber, type, status, null, fromDate, toDate, pageable);
+  }
+
+  public Page<BankTransaction> getTransactionsForUser(
+      Long userId,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      TransactionCategory category,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate,
+      Pageable pageable) {
     AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(userId);
     return bankTransactionRepository.findAll(
         BankTransactionSpecification.filterForUser(
-            accountHolder.getId(), accountNumber, type, status, fromDate, toDate),
+            accountHolder.getId(), accountNumber, type, status, category, fromDate, toDate),
         pageable);
   }
 
@@ -73,8 +85,20 @@ public class BankTransactionService {
       OffsetDateTime fromDate,
       OffsetDateTime toDate,
       Pageable pageable) {
+    return getAllTransactions(reference, accountNumber, type, status, null, fromDate, toDate, pageable);
+  }
+
+  public Page<BankTransaction> getAllTransactions(
+      String reference,
+      String accountNumber,
+      TransactionType type,
+      TransactionStatus status,
+      TransactionCategory category,
+      OffsetDateTime fromDate,
+      OffsetDateTime toDate,
+      Pageable pageable) {
     return bankTransactionRepository.findAll(
-        BankTransactionSpecification.filter(reference, accountNumber, type, status, fromDate, toDate),
+        BankTransactionSpecification.filter(reference, accountNumber, type, status, category, fromDate, toDate),
         pageable);
   }
 
@@ -118,6 +142,7 @@ public class BankTransactionService {
     lockAccount(myAccount.getId());
     BankTransaction transaction = buildBaseTransaction(TransactionType.TRANSFER,
         request.getAmount(), request.getDescription());
+    transaction.setCategory(request.getCategory());
     processTransferRules(transaction, myAccount, request.getDestinationAccountNumber());
 
     transaction = bankTransactionRepository.save(transaction);
@@ -163,6 +188,7 @@ public class BankTransactionService {
 
     BankTransaction transaction = buildBaseTransaction(TransactionType.WITHDRAWAL,
         request.getAmount(), request.getDescription());
+    transaction.setCategory(request.getCategory());
     transaction.setSourceAccountHolder(sourceAccount);
 
     transaction = bankTransactionRepository.save(transaction);

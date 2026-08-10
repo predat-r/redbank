@@ -35,6 +35,7 @@ public class BankTransactionDetailDto extends BankTransactionDto {
     }
     dto.setType(transaction.getType());
     dto.setDescription(transaction.getDescription());
+    dto.setCategory(transaction.getCategory());
     dto.setAmount(transaction.getAmount());
     dto.setStatus(transaction.getStatus());
     dto.setCreatedAt(transaction.getCreatedAt());
