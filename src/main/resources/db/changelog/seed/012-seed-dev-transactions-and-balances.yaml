@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 012-seed-dev-transactions-and-balances
-      author: codex
+      author: haris
       context: dev
       changes:
         - sql:
