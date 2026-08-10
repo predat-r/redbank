@@ -36,8 +36,10 @@ public class AuthController {
   private final TrustedOriginService trustedOriginService;
 
   @GetMapping("/csrf")
-  public CsrfToken csrfToken(CsrfToken csrfToken) {
-    return csrfToken;
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void csrfToken(CsrfToken csrfToken) {
+    // Resolving the token causes CookieCsrfTokenRepository to set XSRF-TOKEN.
+    csrfToken.getToken();
   }
 
 

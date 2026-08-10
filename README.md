@@ -96,7 +96,7 @@ authentication, transaction execution, and background reconciliation.
 |:-------|:--------------------------------|:-------------------------------|:---------------------------------------------------------------------|
 | `POST` | `/api/auth/register`            | Public                         | Registers a new user (creates account in `PENDING_APPROVAL` state).  |
 | `POST` | `/api/auth/login`               | Public                         | Returns an access token and sets the refresh-token cookie.           |
-| `GET`  | `/api/auth/csrf`                | Public                         | Returns a CSRF token and sets the `XSRF-TOKEN` cookie.               |
+| `GET`  | `/api/auth/csrf`                | Public                         | Sets the `XSRF-TOKEN` cookie; the token is not returned in JSON.     |
 | `POST` | `/api/auth/refresh`             | Public                         | Rotates the refresh cookie and issues a new access token.            |
 | `POST` | `/api/auth/logout`              | Public                         | Revokes and clears the refresh-token cookie.                         |
 | `PUT`  | `/api/auth/password`            | Authenticated                  | Changes the authenticated user's password.                           |
@@ -128,8 +128,8 @@ properties such as account number, currency, and account status are not user-edi
 ### CSRF Policy
 
 CSRF protection is enabled for state-changing requests. The frontend should first call
-`GET /api/auth/csrf` with credentials enabled, then send the returned token in the
-`X-XSRF-TOKEN` header on every `POST`, `PUT`, `PATCH`, or `DELETE` request. The refresh and logout
+`GET /api/auth/csrf` with credentials enabled, read the `XSRF-TOKEN` cookie, then send that same
+value in the `X-XSRF-TOKEN` header on every `POST`, `PUT`, `PATCH`, or `DELETE` request. The refresh and logout
 endpoints are public but still require a valid CSRF token because they use the refresh-token cookie.
 Registration and login are exempt from CSRF checks.
 

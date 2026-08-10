@@ -85,6 +85,7 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "createWithdrawal", "Withdrawal created");
 
   private static final Set<String> NO_CONTENT_OPERATIONS = Set.of(
+      "csrfToken",
       "deactivateUser",
       "reactivateUser",
       "freezeAccountHolder",

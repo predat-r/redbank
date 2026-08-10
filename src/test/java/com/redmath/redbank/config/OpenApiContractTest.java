@@ -47,6 +47,7 @@ class OpenApiContractTest {
     assertPublicOperation(openApi, "/api/auth/refresh", "post");
     assertPublicOperation(openApi, "/api/auth/logout", "post");
     assertPublicOperation(openApi, "/api/auth/csrf", "get");
+    assertResponse(openApi, "/api/auth/csrf", "get", "204");
 
     assertResponse(openApi, "/api/admin/deposits", "post", "201");
     assertResponse(openApi, "/api/admin/users", "post", "201");
