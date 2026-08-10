@@ -32,19 +32,37 @@ databaseChangeLog:
               FROM account_holders WHERE account_number = 'RB1000000002';
 
               INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)
-              SELECT a.id, t.id, t.created_at, t.amount, x.indicator, x.running_balance
-              FROM (VALUES
-                ('RB1000000001', 'SEED-JOHN-DEPOSIT', 'CREDIT', 1000.00),
-                ('RB1000000002', 'SEED-JANE-DEPOSIT', 'CREDIT', 600.00),
-                ('RB1000000001', 'SEED-JOHN-TO-JANE', 'DEBIT', 700.00),
-                ('RB1000000002', 'SEED-JOHN-TO-JANE', 'CREDIT', 900.00),
-                ('RB1000000002', 'SEED-JANE-TO-JOHN', 'DEBIT', 700.00),
-                ('RB1000000001', 'SEED-JANE-TO-JOHN', 'CREDIT', 900.00),
-                ('RB1000000001', 'SEED-JOHN-WITHDRAWAL', 'DEBIT', 650.00),
-                ('RB1000000002', 'SEED-JANE-WITHDRAWAL', 'DEBIT', 400.00)
-              ) AS x(account_number, transaction_reference, indicator, running_balance)
-              JOIN account_holders a ON a.account_number = x.account_number
-              JOIN bank_transactions t ON t.transaction_reference = x.transaction_reference;
+              SELECT id, (SELECT id FROM bank_transactions WHERE transaction_reference = 'SEED-JOHN-DEPOSIT'),
+                     TIMESTAMPTZ '2026-01-01 09:00:00+00', 1000.00, 'CREDIT', 1000.00
+              FROM account_holders WHERE account_number = 'RB1000000001';
+              INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)
+              SELECT id, (SELECT id FROM bank_transactions WHERE transaction_reference = 'SEED-JANE-DEPOSIT'),
+                     TIMESTAMPTZ '2026-01-01 09:01:00+00', 600.00, 'CREDIT', 600.00
+              FROM account_holders WHERE account_number = 'RB1000000002';
+              INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)
+              SELECT id, (SELECT id FROM bank_transactions WHERE transaction_reference = 'SEED-JOHN-TO-JANE'),
+                     TIMESTAMPTZ '2026-01-02 10:00:00+00', 300.00, 'DEBIT', 700.00
+              FROM account_holders WHERE account_number = 'RB1000000001';
+              INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)
+              SELECT id, (SELECT id FROM bank_transactions WHERE transaction_reference = 'SEED-JOHN-TO-JANE'),
+                     TIMESTAMPTZ '2026-01-02 10:00:00+00', 300.00, 'CREDIT', 900.00
+              FROM account_holders WHERE account_number = 'RB1000000002';
+              INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)
+              SELECT id, (SELECT id FROM bank_transactions WHERE transaction_reference = 'SEED-JANE-TO-JOHN'),
+                     TIMESTAMPTZ '2026-01-03 11:00:00+00', 200.00, 'DEBIT', 700.00
+              FROM account_holders WHERE account_number = 'RB1000000002';
+              INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)
+              SELECT id, (SELECT id FROM bank_transactions WHERE transaction_reference = 'SEED-JANE-TO-JOHN'),
+                     TIMESTAMPTZ '2026-01-03 11:00:00+00', 200.00, 'CREDIT', 900.00
+              FROM account_holders WHERE account_number = 'RB1000000001';
+              INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)
+              SELECT id, (SELECT id FROM bank_transactions WHERE transaction_reference = 'SEED-JOHN-WITHDRAWAL'),
+                     TIMESTAMPTZ '2026-01-04 12:00:00+00', 250.00, 'DEBIT', 650.00
+              FROM account_holders WHERE account_number = 'RB1000000001';
+              INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)
+              SELECT id, (SELECT id FROM bank_transactions WHERE transaction_reference = 'SEED-JANE-WITHDRAWAL'),
+                     TIMESTAMPTZ '2026-01-05 13:00:00+00', 300.00, 'DEBIT', 400.00
+              FROM account_holders WHERE account_number = 'RB1000000002';
       rollback:
         - sql:
             sql: |
