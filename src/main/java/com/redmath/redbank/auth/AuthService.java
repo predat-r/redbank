@@ -13,6 +13,8 @@ import com.redmath.redbank.common.exception.InvalidPasswordChangeException;
 import com.redmath.redbank.common.exception.InvalidRefreshTokenException;
 import com.redmath.redbank.common.exception.UserAccountNotActiveException;
 import com.redmath.redbank.common.exception.UserNotFoundException;
+import com.redmath.redbank.locationrisk.login.LoginContext;
+import com.redmath.redbank.locationrisk.login.LoginEventService;
 import com.redmath.redbank.security.jwt.JwtService;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserService;
@@ -36,23 +38,28 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
 
+  private static final String BEARER_PREFIX = "Bearer";
   private final UserService userService;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final JwtDecoder refreshJwtDecoder;
   private final UserRoleRepository userRoleRepository;
   private final RoleRepository roleRepository;
-  private static final String BEARER_PREFIX = "Bearer";
+  private final LoginEventService loginEventService;
+  private final JwtDecoder accessJwtDecoder;
 
   public AuthService(UserService userService, PasswordEncoder passwordEncoder,
       JwtService jwtService, @Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder,
-      UserRoleRepository userRoleRepository, RoleRepository roleRepository) {
+      UserRoleRepository userRoleRepository, RoleRepository roleRepository,
+      LoginEventService loginEventService, JwtDecoder accessJwtDecoder) {
     this.userService = userService;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.refreshJwtDecoder = refreshJwtDecoder;
     this.userRoleRepository = userRoleRepository;
     this.roleRepository = roleRepository;
+    this.loginEventService = loginEventService;
+    this.accessJwtDecoder = accessJwtDecoder;
   }
 
   @Transactional
@@ -92,18 +99,21 @@ public class AuthService {
     return new RegistrationResult(response, refreshToken);
   }
 
+
   @Transactional
-  public AuthenticationResult login(LoginRequest request) {
+  public AuthenticationResult login(LoginRequest request, LoginContext context) {
     String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
 
     User user = userService.findByEmailForUpdate(normalizedEmail)
         .orElseThrow(InvalidCredentialsException::new);
 
     if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+      loginEventService.recordFailedLogin(user.getId(), context, "INVALID_PASSWORD");
       throw new InvalidCredentialsException();
     }
 
     if (user.getStatus() != UserStatus.ACTIVE && user.getStatus() != UserStatus.PENDING_APPROVAL) {
+      loginEventService.recordFailedLogin(user.getId(), context, "INACTIVE_ACCOUNT");
       throw new UserAccountNotActiveException();
     }
 
@@ -112,7 +122,17 @@ public class AuthService {
     String accessToken = jwtService.generateAccessToken(user);
     String refreshToken = jwtService.generateRefreshToken(user);
 
-    return new AuthenticationResult(new LoginResponse(accessToken, BEARER_PREFIX), refreshToken);
+    Jwt accessJwt = accessJwtDecoder.decode(accessToken);
+
+    loginEventService.recordSuccessfulLogin(
+        user.getId(),
+        context,
+        accessJwt.getId()
+    );
+
+    return new AuthenticationResult(
+        new LoginResponse(accessToken, BEARER_PREFIX),
+        refreshToken);
   }
 
   @Transactional

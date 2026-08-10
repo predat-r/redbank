@@ -303,7 +303,8 @@ class AuthEndpointTests {
         .content(objectMapper.writeValueAsString(request)));
   }
 
-  private ResultActions login(String email, String password) throws Exception {
+  private ResultActions
+  login(String email, String password) throws Exception {
     LoginRequest request = new LoginRequest(email, password);
     return mockMvc.perform(post("/api/auth/login")
         .contentType(MediaType.APPLICATION_JSON)
@@ -363,5 +364,6 @@ class AuthEndpointTests {
   }
 
   private record RegisteredUser(String email, String accessToken) {
+
   }
 }

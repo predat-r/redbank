@@ -40,3 +40,4 @@ databaseChangeLog:
 
   - include:
       file: db/changelog/seed/015-seed-dev-transactions-and-balances.yaml
+      file: db/changelog/tables/013-create-login-events.yaml
