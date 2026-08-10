@@ -2,30 +2,26 @@ package com.redmath.redbank.transaction.admin;
 
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionService;
-import com.redmath.redbank.transaction.TransactionCategory;
-import com.redmath.redbank.transaction.TransactionStatus;
-import com.redmath.redbank.transaction.TransactionType;
 import com.redmath.redbank.transaction.dto.AdminBankTransactionDetailDto;
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
 import com.redmath.redbank.transaction.request.DepositRequest;
+import com.redmath.redbank.transaction.request.TransactionFilterRequest;
 import jakarta.validation.Valid;
-import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -41,16 +37,11 @@ public class AdminBankTransactionController {
   @GetMapping("/transactions")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<Page<BankTransactionDto>> getAllTransactions(
-      @RequestParam(required = false) String reference,
-      @RequestParam(required = false) String accountNumber,
-      @RequestParam(required = false) TransactionType type,
-      @RequestParam(required = false) TransactionStatus status,
-      @RequestParam(required = false) TransactionCategory category,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromDate,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toDate,
+      @ModelAttribute TransactionFilterRequest filter,
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<BankTransaction> transactions = bankTransactionService.getAllTransactions(
-        reference, accountNumber, type, status, category, fromDate, toDate, pageable);
+        filter.getReference(), filter.getAccountNumber(), filter.getType(), filter.getStatus(),
+        filter.getCategory(), filter.getFromDate(), filter.getToDate(), pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
   }
 
