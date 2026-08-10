@@ -50,8 +50,7 @@ authentication, transaction execution, and background reconciliation.
 2. **Transaction Processing**:
     - For **withdrawals** (`POST /api/accounts/me/withdrawals`) or **transfers**
       (`POST /api/accounts/me/transfers`):
-        1. The system validates request parameters and verifies that initiating/destination accounts
-           are `ACTIVE`.
+        1. The system validates request parameters, including an optional `category` (predefined values: `FOOD`, `GROCERY`, `DONATION`, `BILLS`, `ENTERTAINMENT`, `SHOPPING`, `HEALTH`, `TRANSPORT`, `EDUCATION`, `INVESTMENT`, `OTHER`), and verifies that initiating/destination accounts are `ACTIVE`.
         2. A database pessimistic write lock (`PESSIMISTIC_WRITE`) is acquired on the account holder
            entity to guarantee atomic execution under concurrent requests.
         3. The system queries `BalanceService` to confirm sufficient funds before deducting.
@@ -120,10 +119,10 @@ properties such as account number, currency, and account status are not user-edi
 | `PATCH` | `/api/accounts/freeze/me`               | None                                                                       | Freezes the authenticated user's account.                                    |
 | `PATCH` | `/api/accounts/unfreeze/me`             | None                                                                       | Unfreezes the authenticated user's account.                                  |
 | `PATCH` | `/api/accounts/deactivate/me`           | None                                                                       | Deactivates the authenticated user's account.                                |
-| `GET`   | `/api/accounts/me/transactions`         | `page` (default 0), `size` (default 10), `sort` (default `createdAt,desc`) | Retrieves paginated transaction history for the authenticated user.          |
-| `POST`  | `/api/accounts/me/withdrawals`          | None                                                                       | Executes a cash withdrawal from the user's account.                          |
-| `POST`  | `/api/accounts/me/transfers`            | None                                                                       | Transfers funds from the user's account to a destination account number.     |
-| `GET`   | `/api/balance/me/latest`                | None                                                                       | Returns the current running balance and latest ledger entry for the account. |
+| `GET`   | `/api/accounts/me/transactions`         | `accountNumber`, `type`, `status`, `category`, `fromDate`, `toDate`, `page`, `size`, `sort` | Retrieves paginated transaction history for the authenticated user.          |
+| `POST`  | `/api/accounts/me/withdrawals`          | None                                                                                       | Executes a cash withdrawal from the user's account.                          |
+| `POST`  | `/api/accounts/me/transfers`            | None                                                                                       | Transfers funds from the user's account to a destination account number.     |
+| `GET`   | `/api/balance/me/latest`                | None                                                                                       | Returns the current running balance and latest ledger entry for the account. |
 
 ### CSRF Policy
 
@@ -175,13 +174,13 @@ HTTP `404 Not Found`.
 
 #### Financial & Transaction Management
 
-| Method | Endpoint                                           | Query Parameters       | Description                                                                                   |
-|:-------|:---------------------------------------------------|:-----------------------|:----------------------------------------------------------------------------------------------|
-| `POST` | `/api/admin/deposits`                              | None                   | Deposits funds directly into a specified account number.                                      |
-| `GET`  | `/api/admin/transactions`                          | `page`, `size`, `sort` | Fetches a paginated list of all system transactions.                                          |
-| `GET`  | `/api/admin/transactions/{id}`                     | None                   | Retrieves detailed transaction information by ID (includes source/destination owner details). |
-| `GET`  | `/api/admin/transactions/reference/{reference}`    | None                   | Fetches transaction details by transaction reference string (e.g. `TXN-XXXXXXXXXXXX`).        |
-| `GET`  | `/api/admin/accounts/{accountNumber}/transactions` | `page`, `size`, `sort` | Retrieves transaction history for a specific account number.                                  |
+| Method | Endpoint                                           | Query Parameters                                                                                     | Description                                                                                   |
+|:-------|:---------------------------------------------------|:-----------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| `POST` | `/api/admin/deposits`                              | None                                                                                                 | Deposits funds directly into a specified account number.                                      |
+| `GET`  | `/api/admin/transactions`                          | `reference`, `accountNumber`, `type`, `status`, `category`, `fromDate`, `toDate`, `page`, `size`, `sort` | Fetches a paginated list of all system transactions.                                          |
+| `GET`  | `/api/admin/transactions/{id}`                     | None                                                                                                 | Retrieves detailed transaction information by ID (includes source/destination owner details). |
+| `GET`  | `/api/admin/transactions/reference/{reference}`    | None                                                                                                 | Fetches transaction details by transaction reference string (e.g. `TXN-XXXXXXXXXXXX`).        |
+| `GET`  | `/api/admin/accounts/{accountNumber}/transactions` | `page`, `size`, `sort`                                                                               | Retrieves transaction history for a specific account number.                                  |
 
 #### Balance & Audit Logs
 
