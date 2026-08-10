@@ -21,6 +21,9 @@ databaseChangeLog:
       file: db/changelog/tables/007-create-audit-logs.yaml
 
   - include:
+      file: db/changelog/tables/009-enable-pgvector.yaml
+
+  - include:
       file: db/changelog/seed/008-seed-roles.yaml
 
   - include:

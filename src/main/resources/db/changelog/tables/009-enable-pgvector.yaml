@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-enable-pgvector
+      author: zohaib
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS vector;

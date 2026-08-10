@@ -8,6 +8,22 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
+        chat:
+          options:
+            model: gemini-3.5-flash-lite
+        embedding:
+          api-key: ${GEMINI_API_KEY}
+          options:
+            model: gemini-embedding-001
+    vectorstore:
+      pgvector:
+        dimensions: 768
+        distance-type: COSINE_DISTANCE
+        initialize-schema: true
 
 app:
   cors:

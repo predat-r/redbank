@@ -50,6 +50,7 @@
     <sonar.projectName>redbank</sonar.projectName>
     <spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
     <springdoc-openapi-starter-webmvc-ui.version>3.0.2</springdoc-openapi-starter-webmvc-ui.version>
+    <spring-ai.version>2.0.0</spring-ai.version>
   </properties>
 
   <dependencies>
@@ -179,6 +180,22 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-model-google-genai</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-model-google-genai-embedding</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-vector-store-advisor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
+    </dependency>
   </dependencies>
 
   <dependencyManagement>
@@ -187,6 +204,13 @@
         <groupId>io.cucumber</groupId>
         <artifactId>cucumber-bom</artifactId>
         <version>${cucumber.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.ai</groupId>
+        <artifactId>spring-ai-bom</artifactId>
+        <version>${spring-ai.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
