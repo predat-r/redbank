@@ -1,10 +1,6 @@
 package com.redmath.redbank.transaction.dto;
 
 import com.redmath.redbank.transaction.BankTransaction;
-import com.redmath.redbank.transaction.TransactionStatus;
-import com.redmath.redbank.transaction.TransactionType;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.Hibernate;
@@ -33,7 +29,8 @@ public class BankTransactionDetailDto extends BankTransactionDto {
       if (Hibernate.isInitialized(transaction.getDestinationAccountHolder())
           && transaction.getDestinationAccountHolder().getUser() != null
           && Hibernate.isInitialized(transaction.getDestinationAccountHolder().getUser())) {
-        dto.setDestinationAccountHolderName(transaction.getDestinationAccountHolder().getUser().getName());
+        dto.setDestinationAccountHolderName(
+            transaction.getDestinationAccountHolder().getUser().getName());
       }
     }
     dto.setType(transaction.getType());

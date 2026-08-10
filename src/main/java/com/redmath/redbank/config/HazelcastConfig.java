@@ -29,6 +29,10 @@ public class HazelcastConfig {
         new MapConfig("role-by-name")
             .setTimeToLiveSeconds(900));
 
+    config.addMapConfig(
+        new MapConfig("idempotency-keys")
+            .setTimeToLiveSeconds(86400));
+
     config.getSerializationConfig()
         .getCompactSerializationConfig()
         .addSerializer(new AccountHolderCompactSerializer())

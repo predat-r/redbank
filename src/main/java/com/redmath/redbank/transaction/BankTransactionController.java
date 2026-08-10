@@ -1,5 +1,6 @@
 package com.redmath.redbank.transaction;
 
+import com.redmath.redbank.common.idempotency.RequireIdempotency;
 import com.redmath.redbank.transaction.dto.BankTransactionDetailDto;
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
 import com.redmath.redbank.transaction.request.TransferRequest;
@@ -64,6 +65,7 @@ public class BankTransactionController {
 
   @PostMapping("/transfers")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
+  @RequireIdempotency(required = false)
   public ResponseEntity<BankTransactionDto> createTransfer(
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody TransferRequest request) {
@@ -75,6 +77,7 @@ public class BankTransactionController {
 
   @PostMapping("/withdrawals")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
+  @RequireIdempotency(required = false)
   public ResponseEntity<BankTransactionDto> createWithdrawal(
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody WithdrawalRequest request) {
