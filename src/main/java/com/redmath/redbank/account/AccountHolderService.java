@@ -10,6 +10,9 @@ import com.redmath.redbank.user.UserService;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,13 +22,14 @@ public class AccountHolderService {
   private final AccountHolderRepository accountHolderRepository;
   private final UserService userService;
   private final AuditService auditService;
+  private final CacheManager cacheManager;
 
   public AccountHolderService(AccountHolderRepository accountHolderRepository,
-      UserService userService,
-      AuditService auditService) {
+      UserService userService, AuditService auditService, CacheManager cacheManager) {
     this.accountHolderRepository = accountHolderRepository;
     this.userService = userService;
     this.auditService = auditService;
+    this.cacheManager = cacheManager;
   }
 
   public AccountHolder getAccountHolderByUserId(Long userId) {
@@ -43,10 +47,10 @@ public class AccountHolderService {
     if (accountHolderId == null) {
       throw new IllegalArgumentException("Account holder id is required");
     }
-    return accountHolderRepository.findByIdWithLock(accountHolderId)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Account holder not found: " + accountHolderId));
+    return accountHolderRepository.findByIdWithLock(accountHolderId).orElseThrow(
+        () -> new ResourceNotFoundException("Account holder not found: " + accountHolderId));
   }
+
 
   @Transactional(readOnly = true)
   public String getAccountHolderNameByAccountNumber(String accountNumber) {
@@ -66,6 +70,7 @@ public class AccountHolderService {
     return accountHolderRepository.findByUser(user);
   }
 
+  @Cacheable(cacheNames = "account-holder-by-number", key = "#accountNumber", unless = "#result == null")
   public Optional<AccountHolder> findByAccountNumber(String accountNumber) {
     return accountHolderRepository.findByAccountNumber(accountNumber);
   }
@@ -99,6 +104,7 @@ public class AccountHolderService {
   public void freezeMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getOrThrowByUserId(userId);
     if (freezeMyAccountHolderInternal(accountHolder)) {
+      evictAccountHolderCache(accountHolder);
       auditService.recordAuditLog(userId, AuditAction.ACCOUNT_FROZEN, AuditTargetType.ACCOUNT,
           accountHolder.getId().toString(), null);
     }
@@ -108,6 +114,7 @@ public class AccountHolderService {
   public void unfreezeMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getOrThrowByUserId(userId);
     if (unfreezeMyAccountHolderInternal(accountHolder)) {
+      evictAccountHolderCache(accountHolder);
       auditService.recordAuditLog(userId, AuditAction.ACCOUNT_ACTIVATED, AuditTargetType.ACCOUNT,
           accountHolder.getId().toString(), null);
     }
@@ -117,6 +124,7 @@ public class AccountHolderService {
   public void deactivateMyAccountHolder(Long userId) {
     AccountHolder accountHolder = getOrThrowByUserId(userId);
     if (deactivateMyAccountHolderInternal(accountHolder)) {
+      evictAccountHolderCache(accountHolder);
       auditService.recordAuditLog(userId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
           accountHolder.getId().toString(), null);
     }
@@ -164,9 +172,8 @@ public class AccountHolderService {
     if (userId == null) {
       throw new IllegalArgumentException("User id is required");
     }
-    return accountHolderRepository.findByUserId(userId)
-        .orElseThrow(
-            () -> new ResourceNotFoundException("Account holder not found for user: " + userId));
+    return accountHolderRepository.findByUserId(userId).orElseThrow(
+        () -> new ResourceNotFoundException("Account holder not found for user: " + userId));
   }
 
   private String generateUniqueAccountNumber() {
@@ -176,5 +183,12 @@ public class AccountHolderService {
           "RB" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
     } while (accountHolderRepository.existsByAccountNumber(candidate));
     return candidate;
+  }
+
+  private void evictAccountHolderCache(AccountHolder accountHolder) {
+    Cache cache = cacheManager.getCache("account-holder-by-number");
+    if (cache != null) {
+      cache.evict(accountHolder.getAccountNumber());
+    }
   }
 }

@@ -2,6 +2,7 @@ package com.redmath.redbank.account;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,8 +17,11 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +39,17 @@ class AccountHolderServiceTest {
 
   @Autowired
   private AccountHolderRepository accountHolderRepository;
+
+  @Autowired
+  private CacheManager cacheManager;
+
+  @BeforeEach
+  void clearAccountHolderCache() {
+    Cache cache = cacheManager.getCache("account-holder-by-number");
+    if (cache != null) {
+      cache.clear();
+    }
+  }
 
   @Test
   @DisplayName("getAccountHolderByUserId validates input and throws ResourceNotFoundException when missing")
@@ -109,6 +124,33 @@ class AccountHolderServiceTest {
 
     assertTrue(accountHolderService.findByUser(created.getUser()).isPresent());
     assertTrue(accountHolderService.findByAccountNumber("RB-AH-SVC-004").isPresent());
+  }
+
+  @Test
+  @DisplayName("findByAccountNumber caches the account holder after the first lookup")
+  void findByAccountNumberCachesResult() {
+    AccountHolder created = createAccountHolder("svc.cache@example.com", "RB-AH-CACHE-001");
+    Cache cache = cacheManager.getCache("account-holder-by-number");
+
+    accountHolderService.findByAccountNumber(created.getAccountNumber());
+
+    assertNotNull(cache);
+    assertNotNull(cache.get(created.getAccountNumber()));
+  }
+
+  @Test
+  @DisplayName("account-holder cache is evicted after freezing an account")
+  void accountHolderCacheIsEvictedAfterFreeze() {
+    AccountHolder created = createAccountHolder("svc.cache2@example.com", "RB-AH-CACHE-002");
+    Cache cache = cacheManager.getCache("account-holder-by-number");
+
+    accountHolderService.findByAccountNumber(created.getAccountNumber());
+    assertNotNull(cache);
+    assertNotNull(cache.get(created.getAccountNumber()));
+
+    accountHolderService.freezeMyAccountHolder(created.getUser().getId());
+
+    assertNull(cache.get(created.getAccountNumber()));
   }
 
   @Test

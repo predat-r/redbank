@@ -35,22 +35,23 @@
 
   <properties>
     <cucumber.version>7.34.5</cucumber.version>
+    <datasource-micrometer.version>2.2.1</datasource-micrometer.version>
     <findsecbugs.version>1.14.0</findsecbugs.version>
     <jacoco.version>0.8.15</jacoco.version>
     <java.version>25</java.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
+    <opentelemetry-instrumentation.version>2.28.1-alpha</opentelemetry-instrumentation.version>
     <pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
     <pitest.version>1.25.3</pitest.version>
-    <spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
-    <springdoc-openapi-starter-webmvc-ui.version>3.0.2</springdoc-openapi-starter-webmvc-ui.version>
-    <opentelemetry-instrumentation.version>2.28.1-alpha</opentelemetry-instrumentation.version>
-    <datasource-micrometer.version>2.2.1</datasource-micrometer.version>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.organization>predat-r</sonar.organization>
     <sonar.projectKey>predat-r_redbank</sonar.projectKey>
     <sonar.projectName>redbank</sonar.projectName>
-    <sonar.organization>predat-r</sonar.organization>
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
+    <springdoc-openapi-starter-webmvc-ui.version>3.0.2</springdoc-openapi-starter-webmvc-ui.version>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.cucumber</groupId>
@@ -66,6 +67,21 @@
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-spring</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.instrumentation</groupId>
+      <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+      <version>${opentelemetry-instrumentation.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.ttddyy.observation</groupId>
+      <artifactId>datasource-micrometer-opentelemetry</artifactId>
+      <version>${datasource-micrometer.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.ttddyy.observation</groupId>
+      <artifactId>datasource-micrometer-spring-boot</artifactId>
+      <version>${datasource-micrometer.version}</version>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -96,6 +112,23 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.hazelcast</groupId>
+      <artifactId>hazelcast-spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-hazelcast-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-hazelcast</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -145,21 +178,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry.instrumentation</groupId>
-      <artifactId>opentelemetry-logback-appender-1.0</artifactId>
-      <version>${opentelemetry-instrumentation.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.ttddyy.observation</groupId>
-      <artifactId>datasource-micrometer-spring-boot</artifactId>
-      <version>${datasource-micrometer.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.ttddyy.observation</groupId>
-      <artifactId>datasource-micrometer-opentelemetry</artifactId>
-      <version>${datasource-micrometer.version}</version>
     </dependency>
   </dependencies>
 
@@ -274,19 +292,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.sonarsource.scanner.maven</groupId>
-        <artifactId>sonar-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default-cli</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sonar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
@@ -375,6 +380,19 @@
             <param>com.redmath.redbank.RedbankApplicationTests</param>
           </excludedTestClasses>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sonar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
