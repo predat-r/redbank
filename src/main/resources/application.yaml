@@ -49,3 +49,7 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+ip-geolocation:
+  base-url: https://api.ipgeolocation.io
+  api-key: ${IP_GEOLOCATION_API_KEY:}
