@@ -19,6 +19,7 @@ import com.redmath.redbank.auth.dto.RegisterRequest;
 import com.redmath.redbank.user.UserRepository;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +27,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -118,8 +120,11 @@ class AuthEndpointTests {
 
   @Test
   void registeredUserCanLogin() throws Exception {
-    RegisterRequest registration = validRegistration();
+    RegisterRequest registration = uniqueRegistration("registered-login");
     register(registration).andExpect(status().isCreated());
+    TestTransaction.flagForCommit();
+    TestTransaction.end();
+    TestTransaction.start();
 
     LoginRequest request = new LoginRequest(registration.email(), registration.password());
 
@@ -134,8 +139,11 @@ class AuthEndpointTests {
 
   @Test
   void loginWithIncorrectPasswordReturnsUnauthorized() throws Exception {
-    RegisterRequest registration = validRegistration();
+    RegisterRequest registration = uniqueRegistration("incorrect-password");
     register(registration).andExpect(status().isCreated());
+    TestTransaction.flagForCommit();
+    TestTransaction.end();
+    TestTransaction.start();
 
     LoginRequest request = new LoginRequest(registration.email(), "incorrect-password");
 
@@ -243,7 +251,10 @@ class AuthEndpointTests {
 
   @Test
   void activeUserCanChangePassword() throws Exception {
-    RegisteredUser registeredUser = registerAndActivateUser();
+    RegisteredUser registeredUser = registerAndActivateUser(
+        uniqueRegistration("change-password"),
+        true
+    );
     String newPassword = "new-password-456";
     ChangePasswordRequest request = new ChangePasswordRequest(PASSWORD, newPassword);
 
@@ -312,7 +323,11 @@ class AuthEndpointTests {
   }
 
   private RegisteredUser registerAndActivateUser() throws Exception {
-    RegisterRequest registration = validRegistration();
+    return registerAndActivateUser(validRegistration(), false);
+  }
+
+  private RegisteredUser registerAndActivateUser(
+      RegisterRequest registration, boolean commitBeforeLogin) throws Exception {
     MvcResult result = register(registration)
         .andExpect(status().isCreated())
         .andReturn();
@@ -324,6 +339,12 @@ class AuthEndpointTests {
     mockMvc.perform(post("/api/admin/registrations/{userId}/approve", userId.longValue())
             .with(withAdmin(adminUserId)))
         .andExpect(status().isNoContent());
+
+    if (commitBeforeLogin) {
+      TestTransaction.flagForCommit();
+      TestTransaction.end();
+      TestTransaction.start();
+    }
 
     MvcResult loginResult = login(registration.email(), registration.password())
         .andExpect(status().isOk())
@@ -339,6 +360,18 @@ class AuthEndpointTests {
         "03001234567",
         PASSWORD,
         "New User",
+        "123 Test Street"
+    );
+  }
+
+  private RegisterRequest uniqueRegistration(String label) {
+    String suffix = UUID.randomUUID().toString().replace("-", "");
+    int phoneSuffix = Math.floorMod(suffix.hashCode(), 10_000_000);
+    return new RegisterRequest(
+        label + "." + suffix + "@example.com",
+        String.format("0300%07d", phoneSuffix),
+        PASSWORD,
+        label,
         "123 Test Street"
     );
   }
