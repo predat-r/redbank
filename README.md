@@ -203,6 +203,22 @@ HTTP `404 Not Found`.
 - **Observability**: OpenTelemetry, Micrometer, Grafana LGTM (Grafana, Loki, Tempo, Mimir)
 - **Code Quality Tools**: SonarCloud, PMD 7, Checkstyle (Google Java Style), SpotBugs, JaCoCo, Pitest
 
+### Hazelcast Caching
+
+Hazelcast is used as the Spring cache manager for two read-heavy lookups:
+
+- `account-holder-by-number`
+- `role-by-name`
+
+Both caches use a 15-minute time-to-live. Account-holder entries are evicted by account number
+when the account is frozen, unfrozen, or deactivated. Roles are treated as immutable seed data and
+do not require eviction.
+
+The caches use explicit Compact serializers. Account-holder cache entries contain only `id`,
+`accountNumber`, `currency`, and `accountStatus`; role entries contain only `id` and `name`.
+These entries are partial cache representations, not complete JPA entities, so cached values should
+not be used for nested `User` or timestamp fields.
+
 ---
 
 ## Repository Structure
