@@ -14,6 +14,7 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -42,6 +43,19 @@ public class SecurityConfig {
   };
 
   @Bean
+  SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
+      JwtAuthenticationConverter jwtAuthenticationConverter,
+      SecurityErrorResponseHandler securityErrorResponseHandler
+  ) throws Exception {
+    configureBasicSecurity(http);
+    configureAuthorization(http);
+    configureExceptionHandling(http, securityErrorResponseHandler);
+    configureJwtAuthentication(http, jwtAuthenticationConverter, securityErrorResponseHandler);
+
+    return http.build();
+  }
+  @Bean
   PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
@@ -60,30 +74,22 @@ public class SecurityConfig {
     return converter;
   }
 
-  @Bean
-  SecurityFilterChain securityFilterChain(
-      HttpSecurity http,
-      JwtAuthenticationConverter jwtAuthenticationConverter,
-      SecurityErrorResponseHandler securityErrorResponseHandler
-  ) throws Exception {
-    configureBasicSecurity(http);
-    configureAuthorization(http);
-    configureExceptionHandling(http, securityErrorResponseHandler);
-    configureJwtAuthentication(http, jwtAuthenticationConverter, securityErrorResponseHandler);
-
-    return http.build();
-  }
-
   private void configureBasicSecurity(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf
             .csrfTokenRepository(csrfTokenRepository())
+            .csrfTokenRequestHandler(csrfTokenRequestHandler())
             .ignoringRequestMatchers(
                 "/api/auth/register",
                 "/api/auth/login"))
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .cors(Customizer.withDefaults());
+  }
+
+  @Bean
+  CsrfTokenRequestAttributeHandler csrfTokenRequestHandler() {
+    return new CsrfTokenRequestAttributeHandler();
   }
 
   @Bean
