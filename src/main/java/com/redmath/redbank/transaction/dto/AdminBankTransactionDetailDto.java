@@ -46,19 +46,7 @@ public class AdminBankTransactionDetailDto {
 
   public static AdminBankTransactionDetailDto from(BankTransaction transaction) {
     AdminBankTransactionDetailDto dto = new AdminBankTransactionDetailDto();
-    dto.setId(transaction.getId());
-    dto.setTransactionReference(transaction.getTransactionReference());
-    if (transaction.getReversedTransaction() != null) {
-      dto.setReversedTransactionReference(transaction.getReversedTransaction().getTransactionReference());
-    }
-    dto.setType(transaction.getType());
-    dto.setDescription(transaction.getDescription());
-    dto.setCategory(transaction.getCategory());
-    dto.setAmount(transaction.getAmount());
-    dto.setStatus(transaction.getStatus());
-    dto.setAnomalyFlag(transaction.getAnomalyFlag());
-    dto.setCreatedAt(transaction.getCreatedAt());
-    dto.setCompletedAt(transaction.getCompletedAt());
+    populateBasicFields(transaction, dto);
 
     if (transaction.getSourceAccountHolder() != null) {
       AccountHolder source = transaction.getSourceAccountHolder();
@@ -85,5 +73,23 @@ public class AdminBankTransactionDetailDto {
     }
 
     return dto;
+  }
+
+  private static void populateBasicFields(BankTransaction transaction,
+      AdminBankTransactionDetailDto dto) {
+    dto.setId(transaction.getId());
+    dto.setTransactionReference(transaction.getTransactionReference());
+    dto.setAmount(transaction.getAmount());
+    dto.setType(transaction.getType());
+    dto.setStatus(transaction.getStatus());
+    dto.setAnomalyFlag(transaction.getAnomalyFlag());
+    dto.setCategory(transaction.getCategory());
+    dto.setDescription(transaction.getDescription());
+    dto.setCreatedAt(transaction.getCreatedAt());
+    dto.setCompletedAt(transaction.getCompletedAt());
+    if (transaction.getReversedTransaction() != null) {
+      dto.setReversedTransactionReference(
+          transaction.getReversedTransaction().getTransactionReference());
+    }
   }
 }

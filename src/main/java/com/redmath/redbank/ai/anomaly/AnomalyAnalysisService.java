@@ -45,19 +45,25 @@ public class AnomalyAnalysisService {
       String behavioralContext = buildBehavioralContext(transaction);
       String userPrompt = buildPrompt(transaction, ruleResult, reasoning, behavioralContext);
 
-      log.info("Initiating Spring AI LLM anomaly analysis for transaction {}",
-          transaction.getTransactionReference());
+      if (log.isInfoEnabled()) {
+        log.info("Initiating Spring AI LLM anomaly analysis for transaction {}",
+            transaction.getTransactionReference());
+      }
 
       String aiResponse = chatClient.prompt().user(userPrompt).call().content();
 
       if (aiResponse != null && !aiResponse.isBlank()) {
-        log.info("Spring AI LLM anomaly analysis completed successfully for transaction {}",
-            transaction.getTransactionReference());
+        if (log.isInfoEnabled()) {
+          log.info("Spring AI LLM anomaly analysis completed successfully for transaction {}",
+              transaction.getTransactionReference());
+        }
         reasoning = (reasoning.isEmpty() ? "" : reasoning + " | AI Analysis: ")
             + aiResponse.trim();
       } else {
-        log.warn("Spring AI LLM returned empty response for transaction {}",
-            transaction.getTransactionReference());
+        if (log.isWarnEnabled()) {
+          log.warn("Spring AI LLM returned empty response for transaction {}",
+              transaction.getTransactionReference());
+        }
       }
     } catch (Exception e) {
       if (log.isWarnEnabled()) {
@@ -139,14 +145,14 @@ public class AnomalyAnalysisService {
     double weeklyFrequency = recentTransactions.size()
         / Math.max(1.0, BEHAVIORAL_HISTORY_DAYS / 7.0);
 
-    return String.format("""
-        User Behavioral Profile (last %d days):
-        - Total transactions: %d
-        - Average transaction amount: $%s
-        - Largest single transaction: $%s
-        - Weekly frequency: %.1f transactions/week
-        - Top categories: %s
-        - Most active hour: %d:00 UTC""",
+    return String.format(
+        "User Behavioral Profile (last %d days):%n"
+            + "- Total transactions: %d%n"
+            + "- Average transaction amount: $%s%n"
+            + "- Largest single transaction: $%s%n"
+            + "- Weekly frequency: %.1f transactions/week%n"
+            + "- Top categories: %s%n"
+            + "- Most active hour: %d:00 UTC",
         BEHAVIORAL_HISTORY_DAYS,
         recentTransactions.size(),
         avgAmount,
@@ -158,23 +164,20 @@ public class AnomalyAnalysisService {
 
   private String buildPrompt(BankTransaction transaction, RuleEvaluationResult ruleResult,
       String reasoning, String behavioralContext) {
-    return String.format("""
-        You are a financial fraud and transaction anomaly analyst for RedBank.
-        
-        %s
-        
-        Current Transaction Under Review:
-        - Reference: %s
-        - Type: %s
-        - Category: %s
-        - Amount: $%s
-        - Rule Risk Score: %d
-        - Rule Flags: %s
-        
-        Compare the current transaction against the user's established behavioral pattern. \
-        Provide a brief 2-3 sentence assessment of whether this transaction is suspicious \
-        or consistent with the user's habits, and give a clear recommendation \
-        (APPROVE, MANUAL_REVIEW, or REJECT).""",
+    return String.format(
+        "You are a financial fraud and transaction anomaly analyst for RedBank.%n%n"
+            + "%s%n%n"
+            + "Current Transaction Under Review:%n"
+            + "- Reference: %s%n"
+            + "- Type: %s%n"
+            + "- Category: %s%n"
+            + "- Amount: $%s%n"
+            + "- Rule Risk Score: %d%n"
+            + "- Rule Flags: %s%n%n"
+            + "Compare the current transaction against the user's established behavioral pattern. "
+            + "Provide a brief 2-3 sentence assessment of whether this transaction is suspicious "
+            + "or consistent with the user's habits, and give a clear recommendation "
+            + "(APPROVE, MANUAL_REVIEW, or REJECT).",
         behavioralContext,
         transaction.getTransactionReference(),
         transaction.getType(),
