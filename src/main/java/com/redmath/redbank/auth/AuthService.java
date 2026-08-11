@@ -127,13 +127,14 @@ public class AuthService {
     loginEventService.recordSuccessfulLogin(
         user.getId(),
         context,
-        accessJwt.getId()
+        accessJwt.getId(),
+        accessJwt.getExpiresAt()
     );
 
     return new AuthenticationResult(
         new LoginResponse(accessToken, BEARER_PREFIX),
         refreshToken);
-    
+
   }
 
   @Transactional

@@ -38,7 +38,8 @@ public class LoginEventService {
         savedEvent.getUserId(),
         savedEvent.getIpAddress(),
         savedEvent.getAccessTokenJti(),
-        savedEvent.getSuccessful()
+        savedEvent.getSuccessful(),
+        dto.expiresAt()
     ));
 
     return savedEvent;
@@ -47,15 +48,15 @@ public class LoginEventService {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public LoginEvent recordFailedLogin(Long userId, LoginContext context, String failureReason) {
     LoginEventDto dto = new LoginEventDto(userId, context.ipAddress(), context.userAgent(),
-        context.deviceIdentifier(), false, failureReason, null, null, null);
+        context.deviceIdentifier(), false, failureReason, null, null, null, null);
 
     return createLoginEvent(dto);
   }
 
   public LoginEvent recordSuccessfulLogin(Long userId, LoginContext context,
-      String accessTokenJti) {
+      String accessTokenJti, Instant expiresAt) {
     LoginEventDto dto = new LoginEventDto(userId, context.ipAddress(), context.userAgent(),
-        context.deviceIdentifier(), true, null, null, null, accessTokenJti);
+        context.deviceIdentifier(), true, null, null, null, accessTokenJti, expiresAt);
 
     return createLoginEvent(dto);
   }

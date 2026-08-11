@@ -1,5 +1,7 @@
 package com.redmath.redbank.locationrisk.login.dto;
 
+import java.time.Instant;
+
 public record LoginEventDto(
     Long userId,
     String ipAddress,
@@ -9,7 +11,8 @@ public record LoginEventDto(
     String failureReason,
     String city,
     String country,
-    String accessTokenJti
+    String accessTokenJti,
+    Instant expiresAt
 ) {
 
 }

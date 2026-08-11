@@ -62,6 +62,7 @@ public class LoginEvent {
   @Column(name = "access_token_jti", length = 255)
   private String accessTokenJti;
 
+
   @NotNull
   @Column(name = "occurred_at", nullable = false)
   private Instant occurredAt;
