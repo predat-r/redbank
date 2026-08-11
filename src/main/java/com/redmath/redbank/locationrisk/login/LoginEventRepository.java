@@ -11,4 +11,6 @@ public interface LoginEventRepository extends JpaRepository<LoginEvent, Long> {
   boolean existsByUserIdAndIpAddressAndSuccessfulTrue(Long userId, String ipAddress);
 
   List<LoginEvent> findTop20ByUserIdOrderByOccurredAtDesc(Long userId);
+
+  List<LoginEvent> findTop20ByUserIdAndIpAddress(Long userId, String ipAddress);
 }

@@ -13,12 +13,11 @@ spring:
       genai:
         api-key: ${GEMINI_API_KEY}
         chat:
-          options:
-            model: gemini-3.5-flash-lite
+          model: gemini-3.5-flash-lite
         embedding:
           api-key: ${GEMINI_API_KEY}
-          options:
-            model: gemini-embedding-001
+          model: gemini-embedding-002
+
     vectorstore:
       pgvector:
         dimensions: 768
