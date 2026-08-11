@@ -233,6 +233,7 @@ class AdminUserEndpointTests {
     RegisteredUser registration = registerPendingUser();
 
     mockMvc.perform(get("/api/admin/users")
+            .param("size", "1000")
             .with(withAdmin(adminUserId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())

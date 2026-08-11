@@ -1,11 +1,16 @@
 package com.redmath.redbank.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
+@SuppressFBWarnings(
+    value = "EI_EXPOSE_REP2",
+    justification = "Constructor receives framework-managed converter and service dependencies"
+)
 public class DenyListJwtAuthenticationConverter implements
     Converter<Jwt, AbstractAuthenticationToken> {
 

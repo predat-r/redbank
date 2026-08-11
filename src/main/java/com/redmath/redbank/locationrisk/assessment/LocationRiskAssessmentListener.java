@@ -51,14 +51,16 @@ public class LocationRiskAssessmentListener {
         triggerResult.currentLocation()
     );
 
-    log.info(
-        "Location risk assessment completed for login event {}: riskLevel={}, confidence={}, action={}, reason={}",
-        event.loginEventId(),
-        assessment.riskLevel(),
-        assessment.confidence(),
-        assessment.recommendedAction(),
-        assessment.reason()
-    );
+    if (log.isInfoEnabled()) {
+      log.info(
+          "Location risk assessment completed for login event {}: riskLevel={}, confidence={}, action={}, reason={}",
+          event.loginEventId(),
+          assessment.riskLevel(),
+          assessment.confidence(),
+          assessment.recommendedAction(),
+          assessment.reason()
+      );
+    }
 
     String details = "riskLevel=" + assessment.riskLevel()
         + ", confidence=" + assessment.confidence()

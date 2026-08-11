@@ -61,15 +61,13 @@ public class LocationRiskAssessmentService {
         - recommendedAction: ALLOW, FLAG, CHALLENGE, or REVOKE_SESSION
         """;
 
-    String userPrompt = """
-        Assess this login origin.
-        
-        Current IP: %s
-        Current city: %s
-        Current country: %s
-        Geolocation successful: %s
-        """.formatted(currentIp, geolocationResult.city(), geolocationResult.country(),
-        geolocationResult.successful());
+    String userPrompt = ("Assess this login origin.%n%n"
+        + "Current IP: %s%n"
+        + "Current city: %s%n"
+        + "Current country: %s%n"
+        + "Geolocation successful: %s%n")
+        .formatted(currentIp, geolocationResult.city(), geolocationResult.country(),
+            geolocationResult.successful());
 
     return chatClient.prompt().system(systemPrompt).user(userPrompt)
         .tools(loginHistoryTools, ipReputationTools).call()

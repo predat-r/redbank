@@ -3,6 +3,7 @@ package com.redmath.redbank.common.idempotency;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,13 +34,33 @@ public final class IdempotencyService {
   private final HazelcastInstance hazelcastInstance;
   private final Map<String, IdempotencyKey> fallbackMap = new ConcurrentHashMap<>();
 
+  @SuppressFBWarnings(
+      value = "CT_CONSTRUCTOR_THROW",
+      justification = "Optional ObjectProvider lookups intentionally support Hazelcast fallback"
+  )
   @Autowired
   public IdempotencyService(
       ObjectProvider<ObjectMapper> objectMapperProvider,
       ObjectProvider<HazelcastInstance> hazelcastProvider) {
-    ObjectMapper mapper = objectMapperProvider != null ? objectMapperProvider.getIfAvailable() : null;
+    ObjectMapper mapper =
+        objectMapperProvider != null ? objectMapperProvider.getIfAvailable() : null;
     this.objectMapper = mapper != null ? mapper.copy() : new ObjectMapper();
-    this.hazelcastInstance = hazelcastProvider != null ? hazelcastProvider.getIfAvailable() : null;
+    this.hazelcastInstance =
+        hazelcastProvider != null ? hazelcastProvider.getIfAvailable() : null;
+  }
+
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification = "Constructor receives framework-managed shared dependencies"
+  )
+  public IdempotencyService(HazelcastInstance hazelcastInstance, ObjectMapper objectMapper) {
+    this.hazelcastInstance = hazelcastInstance;
+    this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
+  }
+
+  public IdempotencyService() {
+    this.hazelcastInstance = null;
+    this.objectMapper = new ObjectMapper();
   }
 
   private Map<String, IdempotencyKey> getIdempotencyMap() {

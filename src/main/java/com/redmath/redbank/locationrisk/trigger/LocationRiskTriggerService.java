@@ -29,14 +29,14 @@ public class LocationRiskTriggerService {
     IpGeolocationResult ipGeolocationResult = ipGeolocationProvider.resolve(ip);
 
     if (!ipGeolocationResult.successful()) {
-      return new LocationRiskTriggerResult(ipGeolocationResult, null, false, false);
+      return new LocationRiskTriggerResult(ipGeolocationResult, false, false);
     }
 
     Optional<LoginEvent> loginEvent = loginHistoryService
         .getLatestSuccessfulLoginExcluding(userId, currentLoginEventId);
 
     if (loginEvent.isEmpty()) {
-      return new LocationRiskTriggerResult(ipGeolocationResult, null, false, false);
+      return new LocationRiskTriggerResult(ipGeolocationResult, false, false);
     }
 
     boolean hasUsedIpBefore = loginHistoryService.hasUsedIpBeforeExcluding(
@@ -46,9 +46,9 @@ public class LocationRiskTriggerService {
     );
     if (hasUsedIpBefore || Objects.equals(loginEvent.get().getCity(), ipGeolocationResult.city())) {
       return new LocationRiskTriggerResult(
-          ipGeolocationResult, loginEvent.get(), hasUsedIpBefore, false);
+          ipGeolocationResult, hasUsedIpBefore, false);
     }
 
-    return new LocationRiskTriggerResult(ipGeolocationResult, loginEvent.get(), false, true);
+    return new LocationRiskTriggerResult(ipGeolocationResult, false, true);
   }
 }

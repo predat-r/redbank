@@ -9,4 +9,7 @@ public record ReputationLookupResult(
     Instant lastReportedTimestamp, List<String> abuseCategories, String isp, String providerName,
     boolean lookupSuccessful) {
 
+  public ReputationLookupResult {
+    abuseCategories = abuseCategories == null ? List.of() : List.copyOf(abuseCategories);
+  }
 }
