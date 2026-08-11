@@ -167,7 +167,7 @@ public class BankTransactionService {
   public BankTransaction transfer(Long userId, TransferRequest request) {
     AccountHolder myAccount = getAndValidateInitiatorAccount(userId);
     lockAccount(myAccount.getId());
-    BankTransaction transaction = buildBaseTransaction(TransactionType.TRANSFER,
+    BankTransaction transaction = buildPendingTransaction(TransactionType.TRANSFER,
         request.getAmount(), request.getDescription());
     transaction.setCategory(request.getCategory());
     processTransferRules(transaction, myAccount, request.getDestinationAccountNumber());
@@ -176,8 +176,6 @@ public class BankTransactionService {
 
     balanceService.recordLedgerEntry(transaction.getSourceAccountHolder(), transaction,
         BalanceIndicator.DEBIT);
-    balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction,
-        BalanceIndicator.CREDIT);
 
     return transaction;
   }
@@ -195,7 +193,7 @@ public class BankTransactionService {
 
     lockAccount(targetAccount.getId());
 
-    BankTransaction transaction = buildBaseTransaction(TransactionType.DEPOSIT, request.getAmount(),
+    BankTransaction transaction = buildCompletedTransaction(TransactionType.DEPOSIT, request.getAmount(),
         request.getDescription());
     transaction.setDestinationAccountHolder(targetAccount);
 
@@ -213,7 +211,7 @@ public class BankTransactionService {
     AccountHolder sourceAccount = getAndValidateInitiatorAccount(userId);
     lockAccount(sourceAccount.getId());
 
-    BankTransaction transaction = buildBaseTransaction(TransactionType.WITHDRAWAL,
+    BankTransaction transaction = buildPendingTransaction(TransactionType.WITHDRAWAL,
         request.getAmount(), request.getDescription());
     transaction.setCategory(request.getCategory());
     transaction.setSourceAccountHolder(sourceAccount);
@@ -223,6 +221,64 @@ public class BankTransactionService {
     balanceService.recordLedgerEntry(sourceAccount, transaction, BalanceIndicator.DEBIT);
 
     return transaction;
+  }
+
+  @Transactional
+  public BankTransaction completePendingTransaction(Long transactionId) {
+    BankTransaction transaction = getTransactionById(transactionId);
+    if (transaction.getStatus() != TransactionStatus.PENDING) {
+      throw new IllegalStateException("Transaction is not PENDING (current status: " + transaction.getStatus() + ")");
+    }
+
+    transaction.setStatus(TransactionStatus.COMPLETED);
+    transaction.setCompletedAt(OffsetDateTime.now());
+    transaction = bankTransactionRepository.save(transaction);
+
+    if (transaction.getType() == TransactionType.TRANSFER && transaction.getDestinationAccountHolder() != null) {
+      balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction,
+          BalanceIndicator.CREDIT);
+    }
+
+    return transaction;
+  }
+
+  @Transactional
+  public BankTransaction reverseTransaction(Long adminUserId, Long transactionId, String reason) {
+    BankTransaction original = getTransactionById(transactionId);
+
+    if (original.getStatus() == TransactionStatus.REVERSED
+        || original.getStatus() == TransactionStatus.CANCELLED) {
+      throw new IllegalStateException("Transaction is already " + original.getStatus());
+    }
+
+    original.setStatus(TransactionStatus.REVERSED);
+    bankTransactionRepository.save(original);
+
+    BankTransaction reversal = new BankTransaction();
+    reversal.setTransactionReference(generateTransactionReference());
+    reversal.setType(TransactionType.REVERSAL);
+    reversal.setAmount(original.getAmount());
+    reversal.setDescription(reason != null && !reason.isBlank() ? reason : "Reversal of " + original.getTransactionReference());
+    reversal.setCategory(original.getCategory());
+    reversal.setStatus(TransactionStatus.COMPLETED);
+    reversal.setCreatedAt(OffsetDateTime.now());
+    reversal.setCompletedAt(OffsetDateTime.now());
+    reversal.setReversedTransaction(original);
+
+    if (original.getSourceAccountHolder() != null) {
+      reversal.setSourceAccountHolder(original.getSourceAccountHolder());
+      reversal = bankTransactionRepository.save(reversal);
+      balanceService.recordLedgerEntry(original.getSourceAccountHolder(), reversal, BalanceIndicator.CREDIT);
+    } else {
+      reversal = bankTransactionRepository.save(reversal);
+    }
+
+    if (adminUserId != null) {
+      auditService.recordAuditLog(adminUserId, AuditAction.TRANSACTION_REVERSED,
+          AuditTargetType.TRANSACTION, original.getId().toString(), reason);
+    }
+
+    return reversal;
   }
 
   private AccountHolder getAndValidateInitiatorAccount(Long userId) {
@@ -238,7 +294,19 @@ public class BankTransactionService {
     accountHolderService.lockById(accountHolderId);
   }
 
-  private BankTransaction buildBaseTransaction(TransactionType type, BigDecimal amount,
+  private BankTransaction buildPendingTransaction(TransactionType type, BigDecimal amount,
+      String description) {
+    BankTransaction transaction = new BankTransaction();
+    transaction.setTransactionReference(generateTransactionReference());
+    transaction.setType(type);
+    transaction.setAmount(amount);
+    transaction.setDescription(description);
+    transaction.setCreatedAt(OffsetDateTime.now());
+    transaction.setStatus(TransactionStatus.PENDING);
+    return transaction;
+  }
+
+  private BankTransaction buildCompletedTransaction(TransactionType type, BigDecimal amount,
       String description) {
     BankTransaction transaction = new BankTransaction();
     transaction.setTransactionReference(generateTransactionReference());
