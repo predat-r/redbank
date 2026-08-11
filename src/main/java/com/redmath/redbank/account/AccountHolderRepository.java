@@ -36,5 +36,17 @@ public interface AccountHolderRepository extends JpaRepository<AccountHolder, Lo
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT a FROM AccountHolder a WHERE a.id = :id")
   Optional<AccountHolder> findByIdWithLock(Long id);
+
+  @EntityGraph(attributePaths = {"user"})
+  java.util.List<AccountHolder> findByUserNameContainingIgnoreCase(String name);
+
+  @Query("""
+      SELECT DISTINCT ah FROM AccountHolder ah 
+      JOIN BankTransaction t ON (t.sourceAccountHolder = ah OR t.destinationAccountHolder = ah)
+      WHERE (t.sourceAccountHolder.id = :myId OR t.destinationAccountHolder.id = :myId)
+      AND ah.id != :myId
+      AND LOWER(ah.user.name) LIKE LOWER(CONCAT('%', :name, '%'))
+      """)
+  java.util.List<AccountHolder> findTransactedCounterparties(@org.springframework.data.repository.query.Param("myId") Long myId, @org.springframework.data.repository.query.Param("name") String name);
 }
 

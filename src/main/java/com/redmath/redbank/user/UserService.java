@@ -1,8 +1,8 @@
 package com.redmath.redbank.user;
 
+import com.redmath.redbank.common.exception.DuplicateUserException;
 import com.redmath.redbank.common.exception.InvalidUserStatusTransitionException;
 import com.redmath.redbank.common.exception.UserNotFoundException;
-import com.redmath.redbank.common.exception.DuplicateUserException;
 import com.redmath.redbank.user.dto.UpdateMyProfileRequest;
 import java.time.Instant;
 import java.util.Locale;
@@ -77,7 +77,8 @@ public class UserService {
         throw new DuplicateUserException("Email is already registered");
       }
     });
-    if (!user.getPhoneNumber().equals(phoneNumber) && userRepository.existsByPhoneNumber(phoneNumber)) {
+    if (!user.getPhoneNumber().equals(phoneNumber) && userRepository.existsByPhoneNumber(
+        phoneNumber)) {
       throw new DuplicateUserException("Phone number is already registered");
     }
 

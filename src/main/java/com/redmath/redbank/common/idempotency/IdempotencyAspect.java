@@ -30,7 +30,8 @@ public class IdempotencyAspect {
   }
 
   @Around("@annotation(requireIdempotency)")
-  public Object handleIdempotency(ProceedingJoinPoint joinPoint, RequireIdempotency requireIdempotency) throws Throwable {
+  public Object handleIdempotency(ProceedingJoinPoint joinPoint,
+      RequireIdempotency requireIdempotency) throws Throwable {
     HttpServletRequest request = getCurrentHttpRequest();
     if (request == null) {
       return joinPoint.proceed();
@@ -53,7 +54,8 @@ public class IdempotencyAspect {
     String requestPath = request.getRequestURI();
     String requestHash = idempotencyService.computeHash(joinPoint.getArgs());
 
-    Optional<IdempotencyKey> existingRecord = idempotencyService.findExistingKey(idempotencyKey, userId);
+    Optional<IdempotencyKey> existingRecord = idempotencyService.findExistingKey(idempotencyKey,
+        userId);
 
     if (existingRecord.isPresent()) {
       IdempotencyKey record = existingRecord.get();
@@ -66,7 +68,8 @@ public class IdempotencyAspect {
       if (record.getStatus() == IdempotencyStatus.COMPLETED) {
         if (!record.getRequestHash().equals(requestHash)) {
           throw new ConflictException(
-              "Idempotency key '" + idempotencyKey + "' was previously used with a different request payload");
+              "Idempotency key '" + idempotencyKey
+                  + "' was previously used with a different request payload");
         }
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();

@@ -1,5 +1,7 @@
 package com.redmath.redbank.balance;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,4 +48,12 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
       WHERE b.accountHolder.id = :accountHolderId
       """)
   Page<Balance> findAllByAccountHolderId(Long accountHolderId, Pageable pageable);
+
+  Optional<Balance> findTopByAccountHolderIdAndEntryDateLessThanEqualOrderByEntryDateDesc(
+      Long accountHolderId, OffsetDateTime entryDate);
+
+  List<Balance> findByAccountHolderIdAndEntryDateAfter(
+      Long accountHolderId, OffsetDateTime entryDate);
+
+  Optional<Balance> findTopByAccountHolderIdOrderByEntryDateDesc(Long accountHolderId);
 }
