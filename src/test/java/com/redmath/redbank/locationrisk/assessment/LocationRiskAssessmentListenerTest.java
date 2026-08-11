@@ -9,6 +9,7 @@ import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.locationrisk.ai.LocationRiskAssessment;
 import com.redmath.redbank.locationrisk.ai.LocationRiskAssessmentService;
 import com.redmath.redbank.locationrisk.geolocation.IpGeolocationResult;
+import com.redmath.redbank.locationrisk.login.LoginEventService;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerResult;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerService;
 import com.redmath.redbank.security.TokenDenylistService;
@@ -34,12 +35,15 @@ class LocationRiskAssessmentListenerTest {
   @Mock
   private TokenDenylistService tokenDenylistService;
 
-  private LocationRiskAssessmentListener listener;
+  @Mock
+  private LoginEventService loginEventService;
 
+  private LocationRiskAssessmentListener listener;
+  
   @BeforeEach
   void setUp() {
     listener = new LocationRiskAssessmentListener(
-        triggerService, assessmentService, auditService, tokenDenylistService);
+        triggerService, loginEventService, assessmentService, auditService, tokenDenylistService);
   }
 
   @Test
@@ -59,6 +63,7 @@ class LocationRiskAssessmentListenerTest {
 
     listener.handle(event);
 
+    verify(loginEventService).updateLocation(99L, "Karachi", "Pakistan");
     verify(assessmentService, never()).assess(any(), any(), any(), any());
     verifyNoAssessmentSideEffects();
   }
@@ -75,6 +80,7 @@ class LocationRiskAssessmentListenerTest {
 
     listener.handle(event);
 
+    verify(loginEventService).updateLocation(99L, "Karachi", "Pakistan");
     verify(tokenDenylistService).deny(any(), any());
     verify(auditService).recordAuditLog(any(), any(), any(), any(), any());
   }

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -94,4 +95,18 @@ class LoginEventServiceTest {
     assertEquals("access-token-jti-123", savedEvent.getAccessTokenJti());
     assertNotNull(savedEvent.getOccurredAt());
 }
+
+  @Test
+  void updateLocationUpdatesExistingLoginEvent() {
+    LoginEvent event = new LoginEvent();
+    event.setId(99L);
+    event.setCity(null);
+    event.setCountry(null);
+    when(loginEventRepository.findById(99L)).thenReturn(Optional.of(event));
+
+    loginEventService.updateLocation(99L, "Karachi", "Pakistan");
+
+    assertEquals("Karachi", event.getCity());
+    assertEquals("Pakistan", event.getCountry());
+  }
 }
