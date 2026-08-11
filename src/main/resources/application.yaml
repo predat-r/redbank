@@ -52,3 +52,7 @@ management:
 ip-geolocation:
   base-url: https://api.ipgeolocation.io
   api-key: ${IP_GEOLOCATION_API_KEY:}
+
+reputation-lookup:
+  base-url: https://api.abuseipdb.com/api/v2
+  api-key: ${ABUSE_IPDB_API_KEY:}
