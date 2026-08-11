@@ -94,7 +94,7 @@ class BankTransactionServiceTest {
 
     Page<BankTransaction> result = bankTransactionService.getTransactionsForUser(
         10L, "RB12345", TransactionType.DEPOSIT, TransactionStatus.COMPLETED,
-        java.time.OffsetDateTime.now().minusDays(1), java.time.OffsetDateTime.now(),
+        null, java.time.OffsetDateTime.now().minusDays(1), java.time.OffsetDateTime.now(),
         Pageable.unpaged());
 
     assertNotNull(result);
@@ -120,7 +120,7 @@ class BankTransactionServiceTest {
 
     Page<BankTransaction> result = bankTransactionService.getAllTransactions(
         "TXN", "RB12345", TransactionType.DEPOSIT, TransactionStatus.COMPLETED,
-        java.time.OffsetDateTime.now().minusDays(1), java.time.OffsetDateTime.now(),
+        null, null, java.time.OffsetDateTime.now().minusDays(1), java.time.OffsetDateTime.now(),
         Pageable.unpaged());
 
     assertNotNull(result);

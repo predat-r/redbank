@@ -47,20 +47,7 @@ public class BankTransactionService {
   }
 
   public Page<BankTransaction> getTransactionsForUser(Long userId, Pageable pageable) {
-    AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(userId);
-    return bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(
-        accountHolder.getId(), accountHolder.getId(), pageable);
-  }
-
-  public Page<BankTransaction> getTransactionsForUser(
-      Long userId,
-      String accountNumber,
-      TransactionType type,
-      TransactionStatus status,
-      OffsetDateTime fromDate,
-      OffsetDateTime toDate,
-      Pageable pageable) {
-    return getTransactionsForUser(userId, accountNumber, type, status, null, fromDate, toDate, pageable);
+    return getTransactionsForUser(userId, null, null, null, null, null, null, pageable);
   }
 
   public Page<BankTransaction> getTransactionsForUser(
@@ -69,54 +56,18 @@ public class BankTransactionService {
       TransactionType type,
       TransactionStatus status,
       TransactionCategory category,
-      OffsetDateTime fromDate,
-      OffsetDateTime toDate,
-      Pageable pageable) {
-    return getTransactionsForUser(userId, accountNumber, type, status, category, null, fromDate, toDate, pageable);
-  }
-
-  public Page<BankTransaction> getTransactionsForUser(
-      Long userId,
-      String accountNumber,
-      TransactionType type,
-      TransactionStatus status,
-      TransactionCategory category,
-      AnomalyFlag anomalyFlag,
       OffsetDateTime fromDate,
       OffsetDateTime toDate,
       Pageable pageable) {
     AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(userId);
     return bankTransactionRepository.findAll(
         BankTransactionSpecification.filterForUser(
-            accountHolder.getId(), accountNumber, type, status, category, anomalyFlag, fromDate, toDate),
+            accountHolder.getId(), accountNumber, type, status, category, fromDate, toDate),
         pageable);
   }
 
   public Page<BankTransaction> getAllTransactions(Pageable pageable) {
     return bankTransactionRepository.findAll(pageable);
-  }
-
-  public Page<BankTransaction> getAllTransactions(
-      String reference,
-      String accountNumber,
-      TransactionType type,
-      TransactionStatus status,
-      OffsetDateTime fromDate,
-      OffsetDateTime toDate,
-      Pageable pageable) {
-    return getAllTransactions(reference, accountNumber, type, status, null, null, fromDate, toDate, pageable);
-  }
-
-  public Page<BankTransaction> getAllTransactions(
-      String reference,
-      String accountNumber,
-      TransactionType type,
-      TransactionStatus status,
-      TransactionCategory category,
-      OffsetDateTime fromDate,
-      OffsetDateTime toDate,
-      Pageable pageable) {
-    return getAllTransactions(reference, accountNumber, type, status, category, null, fromDate, toDate, pageable);
   }
 
   public Page<BankTransaction> getAllTransactions(
@@ -159,6 +110,11 @@ public class BankTransactionService {
     if (!isSource && !isDestination) {
       throw new ResourceNotFoundException("Transaction not found with ID: " + transactionId);
     }
+
+    if (isDestination && !isSource && transaction.getStatus() != TransactionStatus.COMPLETED) {
+      throw new ResourceNotFoundException("Transaction not found with ID: " + transactionId);
+    }
+
     return transaction;
   }
 

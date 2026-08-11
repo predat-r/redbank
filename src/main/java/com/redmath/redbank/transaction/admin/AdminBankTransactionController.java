@@ -10,7 +10,7 @@ import com.redmath.redbank.common.idempotency.RequireIdempotency;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionService;
 import com.redmath.redbank.transaction.dto.AdminBankTransactionDetailDto;
-import com.redmath.redbank.transaction.dto.BankTransactionDto;
+import com.redmath.redbank.transaction.dto.AdminBankTransactionDto;
 import com.redmath.redbank.transaction.request.DepositRequest;
 import com.redmath.redbank.transaction.request.RejectTransactionRequest;
 import com.redmath.redbank.transaction.request.TransactionFilterRequest;
@@ -50,33 +50,33 @@ public class AdminBankTransactionController {
 
   @GetMapping("/transactions")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<Page<BankTransactionDto>> getAllTransactions(
+  public ResponseEntity<Page<AdminBankTransactionDto>> getAllTransactions(
       @ModelAttribute TransactionFilterRequest filter,
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<BankTransaction> transactions = bankTransactionService.getAllTransactions(
         filter.getReference(), filter.getAccountNumber(), filter.getType(), filter.getStatus(),
         filter.getCategory(), filter.getAnomalyFlag(), filter.getFromDate(), filter.getToDate(), pageable);
-    return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
+    return ResponseEntity.ok(transactions.map(AdminBankTransactionDto::from));
   }
 
   @PostMapping("/deposits")
   @PreAuthorize("hasRole('ADMIN')")
   @RequireIdempotency(required = false)
-  public ResponseEntity<BankTransactionDto> createDeposit(
+  public ResponseEntity<AdminBankTransactionDto> createDeposit(
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody DepositRequest request) {
     BankTransaction transaction = bankTransactionService.deposit(extractUserId(jwt), request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
+    return ResponseEntity.status(HttpStatus.CREATED).body(AdminBankTransactionDto.from(transaction));
   }
 
   @GetMapping("/accounts/{accountNumber}/transactions")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<Page<BankTransactionDto>> getTransactionsByAccountNumber(
+  public ResponseEntity<Page<AdminBankTransactionDto>> getTransactionsByAccountNumber(
       @PathVariable String accountNumber,
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<BankTransaction> transactions = bankTransactionService.getTransactionsByAccountNumber(
         accountNumber, pageable);
-    return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
+    return ResponseEntity.ok(transactions.map(AdminBankTransactionDto::from));
   }
 
   @GetMapping("/transactions/{id}")
@@ -96,19 +96,19 @@ public class AdminBankTransactionController {
 
   @PostMapping("/transactions/{id}/approve")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<BankTransactionDto> approveTransaction(
+  public ResponseEntity<AdminBankTransactionDto> approveTransaction(
       @AuthenticationPrincipal Jwt jwt,
       @PathVariable Long id) {
     Long adminUserId = extractUserId(jwt);
     BankTransaction completed = bankTransactionService.completePendingTransaction(id);
     auditService.recordAuditLog(adminUserId, AuditAction.TRANSACTION_APPROVED,
         AuditTargetType.TRANSACTION, id.toString(), null);
-    return ResponseEntity.ok(BankTransactionDto.from(completed));
+    return ResponseEntity.ok(AdminBankTransactionDto.from(completed));
   }
 
   @PostMapping("/transactions/{id}/reject")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<BankTransactionDto> rejectTransaction(
+  public ResponseEntity<AdminBankTransactionDto> rejectTransaction(
       @AuthenticationPrincipal Jwt jwt,
       @PathVariable Long id,
       @RequestBody(required = false) RejectTransactionRequest request) {
@@ -118,7 +118,7 @@ public class AdminBankTransactionController {
     BankTransaction reversal = bankTransactionService.reverseTransaction(adminUserId, id, reason);
     auditService.recordAuditLog(adminUserId, AuditAction.TRANSACTION_REJECTED,
         AuditTargetType.TRANSACTION, id.toString(), reason);
-    return ResponseEntity.ok(BankTransactionDto.from(reversal));
+    return ResponseEntity.ok(AdminBankTransactionDto.from(reversal));
   }
 
   @GetMapping("/transactions/{id}/anomaly-report")

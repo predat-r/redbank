@@ -1,5 +1,6 @@
 package com.redmath.redbank.transaction.dto;
 
+import com.redmath.redbank.ai.anomaly.AnomalyFlag;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
@@ -11,7 +12,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BankTransactionDto {
+public class AdminBankTransactionDto {
 
   private Long id;
   private String transactionReference;
@@ -23,11 +24,15 @@ public class BankTransactionDto {
   private TransactionCategory category;
   private BigDecimal amount;
   private TransactionStatus status;
+  private AnomalyFlag anomalyFlag;
   private OffsetDateTime createdAt;
   private OffsetDateTime completedAt;
 
-  public static BankTransactionDto from(BankTransaction transaction) {
-    BankTransactionDto dto = new BankTransactionDto();
+  public static AdminBankTransactionDto from(BankTransaction transaction) {
+    if (transaction == null) {
+      return null;
+    }
+    AdminBankTransactionDto dto = new AdminBankTransactionDto();
     dto.setId(transaction.getId());
     dto.setTransactionReference(transaction.getTransactionReference());
     if (transaction.getSourceAccountHolder() != null) {
@@ -45,6 +50,7 @@ public class BankTransactionDto {
     dto.setCategory(transaction.getCategory());
     dto.setAmount(transaction.getAmount());
     dto.setStatus(transaction.getStatus());
+    dto.setAnomalyFlag(transaction.getAnomalyFlag());
     dto.setCreatedAt(transaction.getCreatedAt());
     dto.setCompletedAt(transaction.getCompletedAt());
     return dto;

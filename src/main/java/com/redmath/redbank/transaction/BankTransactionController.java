@@ -44,7 +44,7 @@ public class BankTransactionController {
     Long userId = extractUserId(jwt);
     Page<BankTransaction> transactions = bankTransactionService.getTransactionsForUser(
         userId, filter.getAccountNumber(), filter.getType(), filter.getStatus(),
-        filter.getCategory(), filter.getAnomalyFlag(), filter.getFromDate(), filter.getToDate(), pageable);
+        filter.getCategory(), filter.getFromDate(), filter.getToDate(), pageable);
     return ResponseEntity.ok(transactions.map(BankTransactionDto::from));
   }
 
