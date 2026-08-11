@@ -45,11 +45,19 @@ public class AnomalyAnalysisService {
       String behavioralContext = buildBehavioralContext(transaction);
       String userPrompt = buildPrompt(transaction, ruleResult, reasoning, behavioralContext);
 
+      log.info("Initiating Spring AI LLM anomaly analysis for transaction {}",
+          transaction.getTransactionReference());
+
       String aiResponse = chatClient.prompt().user(userPrompt).call().content();
 
       if (aiResponse != null && !aiResponse.isBlank()) {
+        log.info("Spring AI LLM anomaly analysis completed successfully for transaction {}",
+            transaction.getTransactionReference());
         reasoning = (reasoning.isEmpty() ? "" : reasoning + " | AI Analysis: ")
             + aiResponse.trim();
+      } else {
+        log.warn("Spring AI LLM returned empty response for transaction {}",
+            transaction.getTransactionReference());
       }
     } catch (Exception e) {
       if (log.isWarnEnabled()) {

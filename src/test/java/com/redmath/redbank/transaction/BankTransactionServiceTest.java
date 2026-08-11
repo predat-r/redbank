@@ -33,6 +33,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 @ExtendWith(MockitoExtension.class)
 class BankTransactionServiceTest {
 
@@ -48,6 +50,9 @@ class BankTransactionServiceTest {
   @Mock
   private BalanceService balanceService;
 
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
+
   private BankTransactionService bankTransactionService;
 
   @BeforeEach
@@ -56,7 +61,8 @@ class BankTransactionServiceTest {
         bankTransactionRepository,
         accountHolderService,
         auditService,
-        balanceService
+        balanceService,
+        eventPublisher
     );
   }
 
@@ -245,11 +251,13 @@ class BankTransactionServiceTest {
     assertEquals(TransactionType.WITHDRAWAL, result.getType());
     assertEquals(new BigDecimal("100.00"), result.getAmount());
     assertEquals(TransactionCategory.FOOD, result.getCategory());
+    assertEquals(TransactionStatus.PENDING, result.getStatus());
     verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class), eq(BalanceIndicator.DEBIT));
+    verify(eventPublisher).publishEvent(any(com.redmath.redbank.transaction.event.TransactionSubmittedEvent.class));
   }
 
   @Test
-  @DisplayName("transfer creates transfer transaction between source and destination")
+  @DisplayName("transfer creates transfer transaction between source and destination in PENDING status")
   void transferSuccess() {
     AccountHolder source = new AccountHolder();
     source.setId(1L);
@@ -276,7 +284,8 @@ class BankTransactionServiceTest {
     assertNotNull(result);
     assertEquals(TransactionType.TRANSFER, result.getType());
     assertEquals(TransactionCategory.GROCERY, result.getCategory());
+    assertEquals(TransactionStatus.PENDING, result.getStatus());
     verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class), eq(BalanceIndicator.DEBIT));
-    verify(balanceService).recordLedgerEntry(eq(dest), any(BankTransaction.class), eq(BalanceIndicator.CREDIT));
+    verify(eventPublisher).publishEvent(any(com.redmath.redbank.transaction.event.TransactionSubmittedEvent.class));
   }
 }
