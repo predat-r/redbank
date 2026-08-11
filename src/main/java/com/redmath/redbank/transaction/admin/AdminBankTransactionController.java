@@ -1,10 +1,17 @@
 package com.redmath.redbank.transaction.admin;
 
+import com.redmath.redbank.ai.anomaly.AnomalyAnalysisService;
+import com.redmath.redbank.ai.anomaly.AnomalyReport;
+import com.redmath.redbank.ai.anomaly.AnomalyReportDto;
+import com.redmath.redbank.audit.AuditAction;
+import com.redmath.redbank.audit.AuditService;
+import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionService;
 import com.redmath.redbank.transaction.dto.AdminBankTransactionDetailDto;
 import com.redmath.redbank.transaction.dto.BankTransactionDto;
 import com.redmath.redbank.transaction.request.DepositRequest;
+import com.redmath.redbank.transaction.request.RejectTransactionRequest;
 import com.redmath.redbank.transaction.request.TransactionFilterRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -29,9 +36,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminBankTransactionController {
 
   private final BankTransactionService bankTransactionService;
+  private final AnomalyAnalysisService anomalyAnalysisService;
+  private final AuditService auditService;
 
-  public AdminBankTransactionController(BankTransactionService bankTransactionService) {
+  public AdminBankTransactionController(BankTransactionService bankTransactionService,
+      AnomalyAnalysisService anomalyAnalysisService,
+      AuditService auditService) {
     this.bankTransactionService = bankTransactionService;
+    this.anomalyAnalysisService = anomalyAnalysisService;
+    this.auditService = auditService;
   }
 
   @GetMapping("/transactions")
@@ -79,6 +92,40 @@ public class AdminBankTransactionController {
     return ResponseEntity.ok(AdminBankTransactionDetailDto.from(transaction));
   }
 
+  @PostMapping("/transactions/{id}/approve")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<BankTransactionDto> approveTransaction(
+      @AuthenticationPrincipal Jwt jwt,
+      @PathVariable Long id) {
+    Long adminUserId = extractUserId(jwt);
+    BankTransaction completed = bankTransactionService.completePendingTransaction(id);
+    auditService.recordAuditLog(adminUserId, AuditAction.TRANSACTION_APPROVED,
+        AuditTargetType.TRANSACTION, id.toString(), null);
+    return ResponseEntity.ok(BankTransactionDto.from(completed));
+  }
+
+  @PostMapping("/transactions/{id}/reject")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<BankTransactionDto> rejectTransaction(
+      @AuthenticationPrincipal Jwt jwt,
+      @PathVariable Long id,
+      @RequestBody(required = false) RejectTransactionRequest request) {
+    Long adminUserId = extractUserId(jwt);
+    String reason = request != null && request.getReason() != null
+        ? request.getReason() : "Rejected by admin";
+    BankTransaction reversal = bankTransactionService.reverseTransaction(adminUserId, id, reason);
+    auditService.recordAuditLog(adminUserId, AuditAction.TRANSACTION_REJECTED,
+        AuditTargetType.TRANSACTION, id.toString(), reason);
+    return ResponseEntity.ok(BankTransactionDto.from(reversal));
+  }
+
+  @GetMapping("/transactions/{id}/anomaly-report")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<AnomalyReportDto> getAnomalyReport(@PathVariable Long id) {
+    AnomalyReport report = anomalyAnalysisService.getAnomalyReportByTransactionId(id);
+    return ResponseEntity.ok(AnomalyReportDto.from(report));
+  }
+
   private Long extractUserId(Jwt jwt) {
     Number userId = jwt.getClaim("userId");
     if (userId == null) {
@@ -87,3 +134,4 @@ public class AdminBankTransactionController {
     return userId.longValue();
   }
 }
+
