@@ -1,0 +1,100 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-login-events
+      author: haris
+
+      changes:
+        - createTable:
+            tableName: login_events
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_login_events
+                    nullable: false
+
+              - column:
+                  name: user_id
+                  type: BIGINT
+
+              - column:
+                  name: ip_address
+                  type: VARCHAR(45)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: user_agent
+                  type: VARCHAR(1000)
+
+              - column:
+                  name: device_identifier
+                  type: VARCHAR(255)
+
+              - column:
+                  name: successful
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: failure_reason
+                  type: VARCHAR(255)
+
+              - column:
+                  name: city
+                  type: VARCHAR(150)
+
+              - column:
+                  name: country
+                  type: VARCHAR(100)
+
+              - column:
+                  name: access_token_jti
+                  type: VARCHAR(255)
+
+              - column:
+                  name: occurred_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+
+
+
+        - addForeignKeyConstraint:
+            baseTableName: login_events
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_login_events_user
+            onDelete: SET NULL
+
+        - createIndex:
+            tableName: login_events
+            indexName: idx_login_events_user_occurred_at
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: occurred_at
+
+        - createIndex:
+            tableName: login_events
+            indexName: idx_login_events_ip_address
+            columns:
+              - column:
+                  name: ip_address
+
+        - createIndex:
+            tableName: login_events
+            indexName: idx_login_events_access_token_jti
+            columns:
+              - column:
+                  name: access_token_jti
+
+      rollback:
+        - dropTable:
+            tableName: login_events

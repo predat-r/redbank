@@ -22,17 +22,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.redmath.redbank.transaction.BankTransactionService;
+
 @ExtendWith(MockitoExtension.class)
 class StalePendingTransactionSchedulerTest {
 
   @Mock
   private BankTransactionRepository bankTransactionRepository;
 
+  @Mock
+  private BankTransactionService bankTransactionService;
+
   private StalePendingTransactionScheduler scheduler;
 
   @BeforeEach
   void setUp() {
-    scheduler = new StalePendingTransactionScheduler(bankTransactionRepository);
+    scheduler = new StalePendingTransactionScheduler(bankTransactionRepository, bankTransactionService);
   }
 
   @Test
@@ -62,7 +67,7 @@ class StalePendingTransactionSchedulerTest {
 
     scheduler.cancelStalePendingTransactions();
 
-    assertEquals(TransactionStatus.CANCELLED, staleTxn.getStatus());
-    assertNotNull(staleTxn.getCompletedAt());
+    verify(bankTransactionService).reverseTransaction(null, 1L,
+        "Auto-cancelled stale pending transaction after timeout");
   }
 }

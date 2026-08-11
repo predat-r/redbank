@@ -13,6 +13,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ChatClientConfig {
 
+  @Bean
+  public ChatClient chatClient(ChatClient.Builder builder) {
+    return builder.build();
+  }
+
+  @Bean("locationRiskChatClient")
+  ChatClient locationRiskChatClient(ChatClient.Builder builder) {
+    return builder.build();
+  }
+
   /**
    * Lean client for intent parsing — no advisors, no RAG, no memory overhead. Returns deterministic
    * JSON; conversation history is irrelevant for this call.
@@ -27,13 +37,12 @@ public class ChatClientConfig {
    * contextually aware of the user's history.
    */
   @Bean("conversationChatClient")
-  ChatClient conversationChatClient(ChatClient.Builder builder, VectorStore vectorStore) {
+  ChatClient conversationChatClient(ChatClient.Builder builder) {
     ChatMemory chatMemory = MessageWindowChatMemory.builder().build();
     Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
-    Advisor ragAdvisor = QuestionAnswerAdvisor.builder(vectorStore).build();
 
     return builder
-        .defaultAdvisors(memoryAdvisor, ragAdvisor)
+        .defaultAdvisors(memoryAdvisor)
         .build();
   }
 }

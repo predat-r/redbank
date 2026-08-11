@@ -1,6 +1,7 @@
 package com.redmath.redbank.scheduler;
 
 import com.redmath.redbank.transaction.BankTransactionRepository;
+import com.redmath.redbank.transaction.BankTransactionService;
 import com.redmath.redbank.transaction.TransactionStatus;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -18,11 +19,14 @@ public class StalePendingTransactionScheduler {
   private static final int PENDING_TIMEOUT_MINUTES = 30;
 
   private final BankTransactionRepository bankTransactionRepository;
+  private final BankTransactionService bankTransactionService;
 
   @Scheduled(cron = "${scheduler.stale-transaction.cron:0 */15 * * * *}")
   @Transactional
   public void cancelStalePendingTransactions() {
-    log.info("Stale pending transaction cleanup job started");
+    if (log.isInfoEnabled()) {
+      log.info("Stale pending transaction cleanup job started");
+    }
 
     OffsetDateTime cutoff = OffsetDateTime.now(ZoneOffset.UTC)
         .minusMinutes(PENDING_TIMEOUT_MINUTES);
@@ -30,15 +34,24 @@ public class StalePendingTransactionScheduler {
     int[] count = {0};
     bankTransactionRepository.findAllByStatusAndCreatedAtBefore(TransactionStatus.PENDING, cutoff)
         .forEach(transaction -> {
-          transaction.setStatus(TransactionStatus.CANCELLED);
-          transaction.setCompletedAt(OffsetDateTime.now(ZoneOffset.UTC));
-          count[0]++;
-          if (log.isWarnEnabled()) {
-            log.warn("Auto-cancelled stale transaction: ref={}, createdAt={}",
-                transaction.getTransactionReference(), transaction.getCreatedAt());
+          try {
+            bankTransactionService.reverseTransaction(null, transaction.getId(),
+                "Auto-cancelled stale pending transaction after timeout");
+            count[0]++;
+            if (log.isWarnEnabled()) {
+              log.warn("Auto-cancelled and reversed stale transaction: ref={}, createdAt={}",
+                  transaction.getTransactionReference(), transaction.getCreatedAt());
+            }
+          } catch (Exception e) {
+            if (log.isErrorEnabled()) {
+              log.error("Failed to cancel stale transaction {}: {}",
+                  transaction.getTransactionReference(), e.getMessage(), e);
+            }
           }
         });
 
-    log.info("Stale pending transaction cleanup completed: {} transactions cancelled", count[0]);
+    if (log.isInfoEnabled()) {
+      log.info("Stale pending transaction cleanup completed: {} transactions cancelled and reversed", count[0]);
+    }
   }
 }

@@ -17,6 +17,7 @@ public class BankTransactionDto {
   private String transactionReference;
   private String sourceAccountNumber;
   private String destinationAccountNumber;
+  private String reversedTransactionReference;
   private TransactionType type;
   private String description;
   private TransactionCategory category;
@@ -34,6 +35,10 @@ public class BankTransactionDto {
     }
     if (transaction.getDestinationAccountHolder() != null) {
       dto.setDestinationAccountNumber(transaction.getDestinationAccountHolder().getAccountNumber());
+    }
+    if (transaction.getReversedTransaction() != null) {
+      dto.setReversedTransactionReference(
+          transaction.getReversedTransaction().getTransactionReference());
     }
     dto.setType(transaction.getType());
     dto.setDescription(transaction.getDescription());

@@ -60,7 +60,9 @@ class OpenApiContractTest {
     assertResponse(openApi, "/api/accounts/freeze/me", "patch", "204");
     assertResponse(openApi, "/api/accounts/unfreeze/me", "patch", "204");
     assertResponse(openApi, "/api/accounts/me/transactions/{id}", "get", "200");
-    assertResponse(openApi, "/api/users/me", "patch", "200");
+    assertResponse(openApi, "/api/admin/transactions/{id}/approve", "post", "200");
+    assertResponse(openApi, "/api/admin/transactions/{id}/reject", "post", "200");
+    assertResponse(openApi, "/api/admin/transactions/{id}/anomaly-report", "get", "200");
 
     assertEveryOperationHasSuccessAndStandardErrors(openApi);
     assertFalse(document.contains("\"*/*\""));
@@ -77,7 +79,8 @@ class OpenApiContractTest {
 
     JsonNode badRequest = openApi.path("components").path("responses").path("BadRequest");
     assertEquals("#/components/schemas/ApiError",
-        badRequest.path("content").path("application/json").path("schema").path("$ref").asText());
+        badRequest.path("content").path("application/json").path("schema").path("$ref")
+            .textValue());
   }
 
   private void assertEveryOperationHasSuccessAndStandardErrors(JsonNode openApi) {
@@ -98,7 +101,7 @@ class OpenApiContractTest {
         assertJsonResponseMediaTypes(responses, pathEntry.getKey(), methodEntry.getKey());
       }
     }
-    assertEquals(45, operationCount);
+    assertEquals(47, operationCount);
   }
 
   private boolean hasSuccessfulResponse(JsonNode responses) {
@@ -134,7 +137,7 @@ class OpenApiContractTest {
 
   private void assertRequiredFields(JsonNode schema, String... fields) {
     Set<String> required = new HashSet<>();
-    schema.path("required").forEach(node -> required.add(node.asText()));
+    schema.path("required").forEach(node -> required.add(node.textValue()));
     assertTrue(required.containsAll(Set.of(fields)));
   }
 }

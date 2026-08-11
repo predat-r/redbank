@@ -348,6 +348,72 @@ class AdminBankTransactionControllerTest {
         .andExpect(jsonPath("$.message").value("Transaction not found with reference: TXN-NON-EXISTENT"));
   }
 
+  // --- POST /api/admin/transactions/{id}/approve & reject ---
+
+  @Test
+  @DisplayName("POST /api/admin/transactions/{id}/approve - Approves pending transaction")
+  void approveTransactionAsAdminReturnsCompleted() throws Exception {
+    User janeUser = createOrGetAccountHolder("jane.approve.test@example.com", "Jane Approve", "03009998855");
+    AccountHolder janeAccount = accountHolderRepository.findByUserId(janeUser.getId()).orElseThrow();
+
+    createDeposit(johnAccount.getAccountNumber(), new BigDecimal("500.00"));
+
+    TransferRequest transferRequest = new TransferRequest();
+    transferRequest.setAmount(new BigDecimal("100.00"));
+    transferRequest.setDestinationAccountNumber(janeAccount.getAccountNumber());
+    transferRequest.setDescription("Transfer to approve");
+
+    MvcResult transferResult = mockMvc.perform(post("/api/accounts/me/transfers")
+            .with(withAccountHolder(johnUser.getId()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(transferRequest)))
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    Number transferId = readJson(transferResult, "$.id");
+
+    mockMvc.perform(post("/api/admin/transactions/{id}/approve", transferId.longValue())
+            .with(withAdmin(adminUser.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(transferId.longValue()))
+        .andExpect(jsonPath("$.status").value("COMPLETED"));
+  }
+
+  @Test
+  @DisplayName("POST /api/admin/transactions/{id}/reject - Rejects pending transaction")
+  void rejectTransactionAsAdminReturnsCancelled() throws Exception {
+    User janeUser = createOrGetAccountHolder("jane.reject.test@example.com", "Jane Reject", "03009998844");
+    AccountHolder janeAccount = accountHolderRepository.findByUserId(janeUser.getId()).orElseThrow();
+
+    createDeposit(johnAccount.getAccountNumber(), new BigDecimal("500.00"));
+
+    TransferRequest transferRequest = new TransferRequest();
+    transferRequest.setAmount(new BigDecimal("100.00"));
+    transferRequest.setDestinationAccountNumber(janeAccount.getAccountNumber());
+    transferRequest.setDescription("Transfer to reject");
+
+    MvcResult transferResult = mockMvc.perform(post("/api/accounts/me/transfers")
+            .with(withAccountHolder(johnUser.getId()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(transferRequest)))
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    Number transferId = readJson(transferResult, "$.id");
+
+    com.redmath.redbank.transaction.request.RejectTransactionRequest rejectRequest =
+        new com.redmath.redbank.transaction.request.RejectTransactionRequest();
+    rejectRequest.setReason("Suspicious velocity");
+
+    mockMvc.perform(post("/api/admin/transactions/{id}/reject", transferId.longValue())
+            .with(withAdmin(adminUser.getId()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(rejectRequest)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("REVERSAL"))
+        .andExpect(jsonPath("$.status").value("COMPLETED"));
+  }
+
   // --- Helper methods ---
 
   private MvcResult createDeposit(String accountNumber, BigDecimal amount) throws Exception {

@@ -38,6 +38,12 @@ databaseChangeLog:
                     nullable: true
 
               - column:
+                  name: reversed_transaction_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+
+              - column:
                   name: type
                   type: VARCHAR(20)
                   constraints:
@@ -58,6 +64,13 @@ databaseChangeLog:
               - column:
                   name: status
                   type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: anomaly_flag
+                  type: VARCHAR(20)
+                  defaultValue: NONE
                   constraints:
                     nullable: false
 
@@ -90,6 +103,14 @@ databaseChangeLog:
             referencedColumnNames: id
             onDelete: RESTRICT
 
+        - addForeignKeyConstraint:
+            constraintName: fk_bank_txn_reversed_transaction
+            baseTableName: bank_transactions
+            baseColumnNames: reversed_transaction_id
+            referencedTableName: bank_transactions
+            referencedColumnNames: id
+            onDelete: RESTRICT
+
         - sql:
             sql: >
               ALTER TABLE bank_transactions
@@ -100,10 +121,16 @@ databaseChangeLog:
             sql: >
               ALTER TABLE bank_transactions
                 ADD CONSTRAINT chk_bank_transactions_type
-                  CHECK (type IN ('DEPOSIT', 'WITHDRAWAL', 'TRANSFER'));
+                  CHECK (type IN ('DEPOSIT', 'WITHDRAWAL', 'TRANSFER', 'REVERSAL'));
 
         - sql:
             sql: >
               ALTER TABLE bank_transactions
                 ADD CONSTRAINT chk_bank_transactions_status
-                  CHECK (status IN ('PENDING', 'COMPLETED', 'CANCELLED'));
+                  CHECK (status IN ('PENDING', 'COMPLETED', 'CANCELLED', 'REVERSED'));
+
+        - sql:
+            sql: >
+              ALTER TABLE bank_transactions
+                ADD CONSTRAINT chk_bank_transactions_anomaly_flag
+                  CHECK (anomaly_flag IN ('NONE', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'));
