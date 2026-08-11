@@ -73,13 +73,13 @@ class BankTransactionServiceTest {
     accountHolder.setId(10L);
 
     when(accountHolderService.getAccountHolderByUserId(10L)).thenReturn(accountHolder);
-    when(bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(eq(10L), eq(10L), any(Pageable.class)))
+    when(bankTransactionRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
         .thenReturn(new PageImpl<>(List.of()));
 
     Page<BankTransaction> result = bankTransactionService.getTransactionsForUser(10L, Pageable.unpaged());
 
     assertNotNull(result);
-    verify(bankTransactionRepository).findBySourceAccountHolderIdOrDestinationAccountHolderId(10L, 10L, Pageable.unpaged());
+    verify(bankTransactionRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), eq(Pageable.unpaged()));
   }
 
   @Test
