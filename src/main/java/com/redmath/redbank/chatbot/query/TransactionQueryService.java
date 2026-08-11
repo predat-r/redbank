@@ -5,9 +5,9 @@ import com.redmath.redbank.chatbot.enums.Direction;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;
 import com.redmath.redbank.transaction.TransactionStatus;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import java.util.Optional;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -24,8 +24,8 @@ public class TransactionQueryService {
     this.transactionRepository = transactionRepository;
   }
 
-  public AggregateResult execute(FinancialQueryIntent intent, String myAccountNumber) {
-    Specification<BankTransaction> spec = buildSpec(intent, myAccountNumber);
+  public AggregateResult execute(FinancialQueryIntent intent, Long myAccountHolderId) {
+    Specification<BankTransaction> spec = buildSpec(intent, myAccountHolderId);
     List<BankTransaction> matches = transactionRepository.findAll(spec);
 
     BigDecimal sum = matches.stream()
@@ -39,23 +39,19 @@ public class TransactionQueryService {
     return new AggregateResult(sum, matches.size(), average, matches);
   }
 
-  private Specification<BankTransaction> buildSpec(FinancialQueryIntent intent, String myAccountNumber) {
+  private Specification<BankTransaction> buildSpec(FinancialQueryIntent intent, Long myAccountHolderId) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
 
       // Only count completed transactions
       predicates.add(cb.equal(root.get("status"), TransactionStatus.COMPLETED));
 
-      // Join to AccountHolder for source and destination
-      Join<Object, Object> sourceJoin = root.join("sourceAccountHolder", JoinType.LEFT);
-      Join<Object, Object> destJoin = root.join("destinationAccountHolder", JoinType.LEFT);
+      // Filter directly on the FK column — no JOIN needed
+      Predicate iAmSource = cb.equal(root.get("sourceAccountHolder").get("id"), myAccountHolderId);
+      Predicate iAmDestination = cb.equal(root.get("destinationAccountHolder").get("id"), myAccountHolderId);
 
-      // Direction, derived from whether "my account" is source or destination
       Direction direction = intent.getDirection() == null ? Direction.BOTH : intent.getDirection();
-      String counterparty = intent.getCounterpartyAccountNumber();
-
-      Predicate iAmSource = cb.equal(sourceJoin.get("accountNumber"), myAccountNumber);
-      Predicate iAmDestination = cb.equal(destJoin.get("accountNumber"), myAccountNumber);
+      Long counterpartyId = intent.getCounterpartyAccountHolderId();
 
       if (intent.getTransactionType() != null) {
         predicates.add(cb.equal(root.get("type"), intent.getTransactionType()));
@@ -63,20 +59,20 @@ public class TransactionQueryService {
 
       if (direction == Direction.DEBIT) {
         predicates.add(iAmSource);
-        if (counterparty != null) {
-          predicates.add(cb.equal(destJoin.get("accountNumber"), counterparty));
+        if (counterpartyId != null) {
+          predicates.add(cb.equal(root.get("destinationAccountHolder").get("id"), counterpartyId));
         }
       } else if (direction == Direction.CREDIT) {
         predicates.add(iAmDestination);
-        if (counterparty != null) {
-          predicates.add(cb.equal(sourceJoin.get("accountNumber"), counterparty));
+        if (counterpartyId != null) {
+          predicates.add(cb.equal(root.get("sourceAccountHolder").get("id"), counterpartyId));
         }
       } else { // BOTH
         predicates.add(cb.or(iAmSource, iAmDestination));
 
-        if (counterparty != null) {
-          Predicate theyAreDestination = cb.equal(destJoin.get("accountNumber"), counterparty);
-          Predicate theyAreSource = cb.equal(sourceJoin.get("accountNumber"), counterparty);
+        if (counterpartyId != null) {
+          Predicate theyAreDestination = cb.equal(root.get("destinationAccountHolder").get("id"), counterpartyId);
+          Predicate theyAreSource = cb.equal(root.get("sourceAccountHolder").get("id"), counterpartyId);
           predicates.add(cb.or(
               cb.and(iAmSource, theyAreDestination),
               cb.and(iAmDestination, theyAreSource)
@@ -94,6 +90,37 @@ public class TransactionQueryService {
       if (intent.getEndDate() != null) {
         predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"),
             intent.getEndDate().atTime(23, 59, 59).atOffset(java.time.ZoneOffset.UTC)));
+      }
+
+      return cb.and(predicates.toArray(new Predicate[0]));
+    };
+  }
+
+  public Optional<BankTransaction> findLatestOrEarliest(FinancialQueryIntent intent, Long myAccountHolderId) {
+    Specification<BankTransaction> spec = buildLookupSpec(intent, myAccountHolderId);
+    Sort sort = "EARLIEST".equals(intent.getSortOrder())
+        ? Sort.by("createdAt").ascending()
+        : Sort.by("createdAt").descending();
+
+    return transactionRepository.findAll(spec, sort).stream().findFirst();
+  }
+
+  private Specification<BankTransaction> buildLookupSpec(FinancialQueryIntent intent, Long myAccountHolderId) {
+    return (root, query, cb) -> {
+      List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.equal(root.get("status"), TransactionStatus.COMPLETED));
+
+      if (intent.getTransactionType() != null) {
+        predicates.add(cb.equal(root.get("type"), intent.getTransactionType()));
+      }
+
+      // Scope to "my" transactions via FK ID — no JOIN needed
+      Predicate iAmSource = cb.equal(root.get("sourceAccountHolder").get("id"), myAccountHolderId);
+      Predicate iAmDestination = cb.equal(root.get("destinationAccountHolder").get("id"), myAccountHolderId);
+      predicates.add(cb.or(iAmSource, iAmDestination));
+
+      if (intent.getCategory() != null) {
+        predicates.add(cb.equal(root.get("category"), intent.getCategory()));
       }
 
       return cb.and(predicates.toArray(new Predicate[0]));

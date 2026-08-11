@@ -27,6 +27,10 @@ public class IntentPromptBuilder {
             - Today's date is %s. Resolve relative phrases ("last month", "this year", "June") into real dates.
             - "How much did I spend/receive", "count of transactions", category totals, "did I send money to X"
               -> queryType TRANSACTION_AGGREGATE. Use direction=DEBIT for spend/sent, CREDIT for received/income.
+              - "When was my last/most recent deposit/withdrawal/transfer" -> queryType TRANSACTION_LOOKUP,
+            sortOrder=LATEST, transactionType set accordingly.
+          - "When was my first deposit" -> queryType TRANSACTION_LOOKUP, sortOrder=EARLIEST.
+          - transactionType: DEPOSIT | WITHDRAWAL | TRANSFER | null
             - "What was my balance on <date>" -> queryType BALANCE_AT_DATE, fill asOfDate.
             - "withdrew" / "withdrawal" -> transactionType=WITHDRAWAL, direction=DEBIT
             - "deposited" / "deposit"   -> transactionType=DEPOSIT, direction=CREDIT

@@ -9,6 +9,7 @@ import com.redmath.redbank.chatbot.llm.LlmClient;
 import com.redmath.redbank.chatbot.query.BalanceQueryService;
 import com.redmath.redbank.chatbot.query.CounterpartyResolver;
 import com.redmath.redbank.chatbot.query.TransactionQueryService;
+import com.redmath.redbank.transaction.BankTransaction;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 
@@ -45,7 +46,9 @@ public class ChatbotService {
 
     String myAccountNumber = accountHolder.getAccountNumber();
     Long accountHolderId = accountHolder.getId();
-    FinancialQueryIntent intent = llmClient.parseIntent(message, LocalDate.now(), String.valueOf(accountHolderId));
+    String conversationId = String.valueOf(accountHolderId);
+
+    FinancialQueryIntent intent = llmClient.parseIntent(message, LocalDate.now(), conversationId);
 
     if (intent.isNeedsClarification()) {
       return new ChatResponse(intent.getClarificationQuestion(), true);
@@ -73,37 +76,52 @@ public class ChatbotService {
           return new ChatResponse("I found multiple people named \"" + intent.getCounterpartyName()
               + "\". Could you give me more detail (e.g. full name)?", true);
         case RESOLVED:
-          intent.setCounterpartyAccountNumber(resolution.accountNumber);
+          intent.setCounterpartyAccountHolderId(resolution.accountHolderId);
       }
     }
 
     return switch (intent.getQueryType()) {
-      case TRANSACTION_AGGREGATE -> handleTransactionAggregate(intent, myAccountNumber);
+      case TRANSACTION_AGGREGATE -> handleTransactionAggregate(intent, accountHolderId, message, conversationId);
       case BALANCE_AT_DATE -> handleBalanceAtDate(intent, accountHolderId);
-      case PROJECTION -> handleProjection(accountHolderId);
+      case PROJECTION -> handleProjection(accountHolderId, message, conversationId);
+      case TRANSACTION_LOOKUP -> handleTransactionLookup(intent, accountHolderId);
       default -> new ChatResponse("Sorry, I couldn't process that question.", false);
     };
   }
 
-  private ChatResponse handleTransactionAggregate(FinancialQueryIntent intent, String myAccountNumber) {
-    var result = transactionQueryService.execute(intent, myAccountNumber);
+  /**
+   * Transaction aggregates (e.g. "how much did I spend on food last month?", "did I send money to Jane?")
+   * involve rich query results — hand to LLM for natural phrasing.
+   */
+  private ChatResponse handleTransactionAggregate(FinancialQueryIntent intent, Long myAccountHolderId,
+      String originalMessage, String conversationId) {
+    var result = transactionQueryService.execute(intent, myAccountHolderId);
 
-    String categoryPart = intent.getCategory() != null ? " on " + intent.getCategory() : "";
+    if (result.count() == 0) {
+      return new ChatResponse("I didn't find any matching transactions for your question.", false);
+    }
+
+    // Build a compact factual summary to pass to the phrasing LLM
+    String categoryPart = intent.getCategory() != null ? ", category: " + intent.getCategory() : "";
     String periodPart = (intent.getStartDate() != null && intent.getEndDate() != null)
-        ? " between " + intent.getStartDate() + " and " + intent.getEndDate() : "";
+        ? ", period: " + intent.getStartDate() + " to " + intent.getEndDate() : "";
+    String counterpartyPart = intent.getCounterpartyName() != null
+        ? ", counterparty: " + intent.getCounterpartyName() : "";
+    String directionPart = intent.getDirection() != null ? ", direction: " + intent.getDirection() : "";
 
-    String reply = switch (intent.getDirection()) {
-      case DEBIT -> "You spent $" + result.sum() + categoryPart + periodPart
-          + " across " + result.count() + " transaction(s).";
-      case CREDIT -> "You received $" + result.sum() + categoryPart + periodPart
-          + " across " + result.count() + " transaction(s).";
-      default -> "Total movement" + categoryPart + periodPart + ": $" + result.sum()
-          + " across " + result.count() + " transaction(s).";
-    };
+    String rawFacts = "Transaction aggregate result -"
+        + directionPart + categoryPart + periodPart + counterpartyPart
+        + ". Total amount: $" + result.sum()
+        + ", number of transactions: " + result.count()
+        + ", average per transaction: $" + result.average() + ".";
 
-    return new ChatResponse(reply, false);
+    String naturalReply = llmClient.phraseAnswer(originalMessage, rawFacts, conversationId);
+    return new ChatResponse(naturalReply, false);
   }
 
+  /**
+   * Simple balance lookup — pre-formatted, no need for LLM phrasing.
+   */
   private ChatResponse handleBalanceAtDate(FinancialQueryIntent intent, Long accountHolderId) {
     return balanceQueryService.getBalanceAsOf(accountHolderId, intent.getAsOfDate())
         .map(balance -> new ChatResponse(
@@ -112,10 +130,36 @@ public class ChatbotService {
             "I don't have a balance record on or before " + intent.getAsOfDate() + ".", false));
   }
 
-  private ChatResponse handleProjection(Long accountHolderId) {
+  /**
+   * Projection involves a computed estimate — hand to LLM for natural phrasing since context matters.
+   */
+  private ChatResponse handleProjection(Long accountHolderId, String originalMessage, String conversationId) {
     var projected = balanceQueryService.projectMonthEndBalance(accountHolderId);
-    return new ChatResponse(
-        "Based on your spending pattern over the last 30 days, your projected balance at month-end " +
-            "is approximately $" + projected + ". This is an estimate, not a guarantee.", false);
+
+    String rawFacts = "Projected month-end balance based on the last 30 days of spending patterns: $"
+        + projected + ". This is an estimate, not a guarantee.";
+
+    String naturalReply = llmClient.phraseAnswer(originalMessage, rawFacts, conversationId);
+    return new ChatResponse(naturalReply, false);
+  }
+
+  private ChatResponse handleTransactionLookup(FinancialQueryIntent intent, Long myAccountHolderId) {
+    var result = transactionQueryService.findLatestOrEarliest(intent, myAccountHolderId);
+
+    if (result.isEmpty()) {
+      String typeLabel = intent.getTransactionType() != null
+          ? intent.getTransactionType().name().toLowerCase() : "transaction";
+      return new ChatResponse("I couldn't find any " + typeLabel + " on your account.", false);
+    }
+
+    BankTransaction txn = result.get();
+    String typeLabel = intent.getTransactionType() != null
+        ? intent.getTransactionType().name().toLowerCase() : "transaction";
+    String when = intent.getSortOrder().equals("EARLIEST") ? "first" : "most recent";
+
+    String reply = String.format("Your %s %s was $%s on %s (ref: %s).",
+        when, typeLabel, txn.getAmount(), txn.getCreatedAt().toLocalDate(), txn.getTransactionReference());
+
+    return new ChatResponse(reply, false);
   }
 }

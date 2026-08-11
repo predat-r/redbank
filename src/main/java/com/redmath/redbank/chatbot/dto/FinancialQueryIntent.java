@@ -20,7 +20,7 @@ public class FinancialQueryIntent {
   private LocalDate endDate;
   private LocalDate asOfDate;
   private String counterpartyName;
-  private String counterpartyAccountNumber;
+  private Long counterpartyAccountHolderId;  // resolved from counterpartyName
   private boolean needsClarification;
   private String clarificationQuestion;
   private TransactionType transactionType;

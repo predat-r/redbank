@@ -15,7 +15,6 @@ public class CounterpartyResolver {
   }
 
   public ResolutionResult resolve(String rawName) {
-    // Adjust query to however your User/AccountHolder name field is structured
     List<AccountHolder> matches = accountHolderRepository.findByUserNameContainingIgnoreCase(rawName);
 
     if (matches.isEmpty()) {
@@ -24,13 +23,13 @@ public class CounterpartyResolver {
     if (matches.size() > 1) {
       return ResolutionResult.ambiguous(matches);
     }
-    return ResolutionResult.resolved(matches.get(0).getAccountNumber());
+    return ResolutionResult.resolved(matches.get(0).getId());
   }
 
   public static class ResolutionResult {
     public enum Status { NOT_FOUND, AMBIGUOUS, RESOLVED }
     public Status status;
-    public String accountNumber;
+    public Long accountHolderId;
     public List<AccountHolder> candidates;
 
     static ResolutionResult notFound(String name) {
@@ -39,8 +38,8 @@ public class CounterpartyResolver {
     static ResolutionResult ambiguous(List<AccountHolder> candidates) {
       var r = new ResolutionResult(); r.status = Status.AMBIGUOUS; r.candidates = candidates; return r;
     }
-    static ResolutionResult resolved(String accountNumber) {
-      var r = new ResolutionResult(); r.status = Status.RESOLVED; r.accountNumber = accountNumber; return r;
+    static ResolutionResult resolved(Long accountHolderId) {
+      var r = new ResolutionResult(); r.status = Status.RESOLVED; r.accountHolderId = accountHolderId; return r;
     }
   }
 }
