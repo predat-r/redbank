@@ -49,6 +49,14 @@ public class LocationRiskAssessmentService {
         - Recent login timestamps and locations.
         - Repeated attempts from the current IP.
         - Unusual movement between distant locations.
+
+        Treat impossible travel as a decisive security signal. If the current login is from a
+        geographically distant location and the previous successful login occurred only minutes
+        earlier, classify the event as EXTREME with HIGH confidence and recommend REVOKE_SESSION.
+        Do not downgrade this decision merely because the current IP has a clean reputation; a
+        clean reputation does not make impossible travel plausible. Be decisive when the evidence
+        supports revocation and do not default to CHALLENGE for a clear, immediate impossible-travel
+        event.
         
         Do not analyze transactions, balances, or spending.
         
@@ -71,6 +79,8 @@ public class LocationRiskAssessmentService {
 
     return chatClient.prompt().system(systemPrompt).user(userPrompt)
         .tools(loginHistoryTools, ipReputationTools).call()
-        .entity(LocationRiskAssessment.class);
+        .entity(LocationRiskAssessment.class, spec -> spec
+            .useProviderStructuredOutput()
+            .validateSchema());
   }
 }
