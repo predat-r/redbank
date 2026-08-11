@@ -1,6 +1,7 @@
 package com.redmath.redbank.transaction.spec;
 
 import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.ai.anomaly.AnomalyFlag;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
@@ -24,30 +25,11 @@ public final class BankTransactionSpecification {
       String accountNumber,
       TransactionType type,
       TransactionStatus status,
-      OffsetDateTime fromDate,
-      OffsetDateTime toDate) {
-    return filterInternal(null, reference, accountNumber, type, status, null, fromDate, toDate);
-  }
-
-  public static Specification<BankTransaction> filter(
-      String reference,
-      String accountNumber,
-      TransactionType type,
-      TransactionStatus status,
       TransactionCategory category,
+      AnomalyFlag anomalyFlag,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return filterInternal(null, reference, accountNumber, type, status, category, fromDate, toDate);
-  }
-
-  public static Specification<BankTransaction> filterForUser(
-      Long accountHolderId,
-      String accountNumber,
-      TransactionType type,
-      TransactionStatus status,
-      OffsetDateTime fromDate,
-      OffsetDateTime toDate) {
-    return filterInternal(accountHolderId, null, accountNumber, type, status, null, fromDate, toDate);
+    return filterInternal(null, reference, accountNumber, type, status, category, anomalyFlag, fromDate, toDate);
   }
 
   public static Specification<BankTransaction> filterForUser(
@@ -58,7 +40,7 @@ public final class BankTransactionSpecification {
       TransactionCategory category,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return filterInternal(accountHolderId, null, accountNumber, type, status, category, fromDate, toDate);
+    return filterInternal(accountHolderId, null, accountNumber, type, status, category, null, fromDate, toDate);
   }
 
   private static Specification<BankTransaction> filterInternal(
@@ -68,6 +50,7 @@ public final class BankTransactionSpecification {
       TransactionType type,
       TransactionStatus status,
       TransactionCategory category,
+      AnomalyFlag anomalyFlag,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
     return (root, query, cb) -> {
@@ -79,10 +62,14 @@ public final class BankTransactionSpecification {
       if (accountHolderId != null) {
         sourceJoin = root.join("sourceAccountHolder", JoinType.LEFT);
         destJoin = root.join("destinationAccountHolder", JoinType.LEFT);
-        predicates.add(cb.or(
-            cb.equal(sourceJoin.get("id"), accountHolderId),
-            cb.equal(destJoin.get("id"), accountHolderId)
-        ));
+
+        Predicate isSender = cb.equal(sourceJoin.get("id"), accountHolderId);
+        Predicate isReceiverAndCompleted = cb.and(
+            cb.equal(destJoin.get("id"), accountHolderId),
+            cb.equal(root.get("status"), TransactionStatus.COMPLETED)
+        );
+
+        predicates.add(cb.or(isSender, isReceiverAndCompleted));
       }
 
       if (reference != null && !reference.isBlank()) {
@@ -115,6 +102,10 @@ public final class BankTransactionSpecification {
 
       if (category != null) {
         predicates.add(cb.equal(root.get("category"), category));
+      }
+
+      if (anomalyFlag != null) {
+        predicates.add(cb.equal(root.get("anomalyFlag"), anomalyFlag));
       }
 
       if (fromDate != null) {

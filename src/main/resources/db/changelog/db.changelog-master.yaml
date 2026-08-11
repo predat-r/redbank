@@ -27,6 +27,9 @@ databaseChangeLog:
       file: db/changelog/tables/010-add-transaction-category.yaml
 
   - include:
+      file: db/changelog/tables/012-create-anomaly-reports-table.yaml
+
+  - include:
       file: db/changelog/seed/011-seed-roles.yaml
 
   - include:

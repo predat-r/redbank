@@ -1,5 +1,6 @@
 package com.redmath.redbank.transaction.request;
 
+import com.redmath.redbank.ai.anomaly.AnomalyFlag;
 import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
 import com.redmath.redbank.transaction.TransactionType;
@@ -16,6 +17,7 @@ public class TransactionFilterRequest {
   private TransactionType type;
   private TransactionStatus status;
   private TransactionCategory category;
+  private AnomalyFlag anomalyFlag;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private OffsetDateTime fromDate;

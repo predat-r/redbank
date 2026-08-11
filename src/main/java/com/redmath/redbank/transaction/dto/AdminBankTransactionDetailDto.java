@@ -2,6 +2,7 @@ package com.redmath.redbank.transaction.dto;
 
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountStatus;
+import com.redmath.redbank.ai.anomaly.AnomalyFlag;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
@@ -17,11 +18,13 @@ public class AdminBankTransactionDetailDto {
 
   private Long id;
   private String transactionReference;
+  private String reversedTransactionReference;
   private TransactionType type;
   private String description;
   private TransactionCategory category;
   private BigDecimal amount;
   private TransactionStatus status;
+  private AnomalyFlag anomalyFlag;
   private OffsetDateTime createdAt;
   private OffsetDateTime completedAt;
 
@@ -42,16 +45,11 @@ public class AdminBankTransactionDetailDto {
   private String destinationUserPhoneNumber;
 
   public static AdminBankTransactionDetailDto from(BankTransaction transaction) {
+    if (transaction == null) {
+      return null;
+    }
     AdminBankTransactionDetailDto dto = new AdminBankTransactionDetailDto();
-    dto.setId(transaction.getId());
-    dto.setTransactionReference(transaction.getTransactionReference());
-    dto.setType(transaction.getType());
-    dto.setDescription(transaction.getDescription());
-    dto.setCategory(transaction.getCategory());
-    dto.setAmount(transaction.getAmount());
-    dto.setStatus(transaction.getStatus());
-    dto.setCreatedAt(transaction.getCreatedAt());
-    dto.setCompletedAt(transaction.getCompletedAt());
+    populateBasicFields(transaction, dto);
 
     if (transaction.getSourceAccountHolder() != null) {
       AccountHolder source = transaction.getSourceAccountHolder();
@@ -78,5 +76,23 @@ public class AdminBankTransactionDetailDto {
     }
 
     return dto;
+  }
+
+  private static void populateBasicFields(BankTransaction transaction,
+      AdminBankTransactionDetailDto dto) {
+    dto.setId(transaction.getId());
+    dto.setTransactionReference(transaction.getTransactionReference());
+    dto.setAmount(transaction.getAmount());
+    dto.setType(transaction.getType());
+    dto.setStatus(transaction.getStatus());
+    dto.setAnomalyFlag(transaction.getAnomalyFlag());
+    dto.setCategory(transaction.getCategory());
+    dto.setDescription(transaction.getDescription());
+    dto.setCreatedAt(transaction.getCreatedAt());
+    dto.setCompletedAt(transaction.getCompletedAt());
+    if (transaction.getReversedTransaction() != null) {
+      dto.setReversedTransactionReference(
+          transaction.getReversedTransaction().getTransactionReference());
+    }
   }
 }

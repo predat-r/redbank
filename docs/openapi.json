@@ -410,6 +410,101 @@
         }
       }
     },
+    "/api/admin/transactions/{id}/reject": {
+      "post": {
+        "tags": [
+          "admin-bank-transaction-controller"
+        ],
+        "operationId": "rejectTransaction",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectTransactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/admin/transactions/{id}/approve": {
+      "post": {
+        "tags": [
+          "admin-bank-transaction-controller"
+        ],
+        "operationId": "approveTransaction",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankTransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
     "/api/admin/registrations/{userId}/reject": {
       "post": {
         "tags": [
@@ -1156,84 +1251,11 @@
         "operationId": "getAllTransactions",
         "parameters": [
           {
-            "name": "reference",
+            "name": "filter",
             "in": "query",
-            "required": false,
+            "required": true,
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountNumber",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "DEPOSIT",
-                "WITHDRAWAL",
-                "TRANSFER"
-              ]
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "PENDING",
-                "COMPLETED",
-                "CANCELLED"
-              ]
-            }
-          },
-          {
-            "name": "category",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "FOOD",
-                "GROCERY",
-                "DONATION",
-                "BILLS",
-                "ENTERTAINMENT",
-                "SHOPPING",
-                "HEALTH",
-                "TRANSPORT",
-                "EDUCATION",
-                "INVESTMENT",
-                "OTHER"
-              ]
-            }
-          },
-          {
-            "name": "fromDate",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "toDate",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
+              "$ref": "#/components/schemas/TransactionFilterRequest"
             }
           },
           {
@@ -1313,6 +1335,49 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/admin/transactions/{id}/anomaly-report": {
+      "get": {
+        "tags": [
+          "admin-bank-transaction-controller"
+        ],
+        "operationId": "getAnomalyReport",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnomalyReportDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -1868,76 +1933,11 @@
         "operationId": "getMyTransactions",
         "parameters": [
           {
-            "name": "accountNumber",
+            "name": "filter",
             "in": "query",
-            "required": false,
+            "required": true,
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "DEPOSIT",
-                "WITHDRAWAL",
-                "TRANSFER"
-              ]
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "PENDING",
-                "COMPLETED",
-                "CANCELLED"
-              ]
-            }
-          },
-          {
-            "name": "category",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "FOOD",
-                "GROCERY",
-                "DONATION",
-                "BILLS",
-                "ENTERTAINMENT",
-                "SHOPPING",
-                "HEALTH",
-                "TRANSPORT",
-                "EDUCATION",
-                "INVESTMENT",
-                "OTHER"
-              ]
-            }
-          },
-          {
-            "name": "fromDate",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "toDate",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
+              "$ref": "#/components/schemas/TransactionFilterRequest"
             }
           },
           {
@@ -2369,6 +2369,101 @@
           "updatedAt"
         ]
       },
+      "RejectTransactionRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "BankTransactionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionReference": {
+            "type": "string"
+          },
+          "sourceAccountNumber": {
+            "type": "string"
+          },
+          "destinationAccountNumber": {
+            "type": "string"
+          },
+          "reversedTransactionReference": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT",
+              "WITHDRAWAL",
+              "TRANSFER",
+              "REVERSAL"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "FOOD",
+              "GROCERY",
+              "DONATION",
+              "BILLS",
+              "ENTERTAINMENT",
+              "SHOPPING",
+              "HEALTH",
+              "TRANSPORT",
+              "EDUCATION",
+              "INVESTMENT",
+              "OTHER"
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "CANCELLED",
+              "REVERSED"
+            ]
+          },
+          "anomalyFlag": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "amount",
+          "createdAt",
+          "id",
+          "status",
+          "transactionReference",
+          "type"
+        ]
+      },
       "RejectRegistrationRequest": {
         "type": "object",
         "properties": {
@@ -2399,78 +2494,6 @@
         "required": [
           "accountNumber",
           "amount"
-        ]
-      },
-      "BankTransactionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "transactionReference": {
-            "type": "string"
-          },
-          "sourceAccountNumber": {
-            "type": "string"
-          },
-          "destinationAccountNumber": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "DEPOSIT",
-              "WITHDRAWAL",
-              "TRANSFER"
-            ]
-          },
-          "description": {
-            "type": "string"
-          },
-          "category": {
-            "type": "string",
-            "enum": [
-              "FOOD",
-              "GROCERY",
-              "DONATION",
-              "BILLS",
-              "ENTERTAINMENT",
-              "SHOPPING",
-              "HEALTH",
-              "TRANSPORT",
-              "EDUCATION",
-              "INVESTMENT",
-              "OTHER"
-            ]
-          },
-          "amount": {
-            "type": "number"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "COMPLETED",
-              "CANCELLED"
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "completedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "amount",
-          "createdAt",
-          "id",
-          "status",
-          "transactionReference",
-          "type"
         ]
       },
       "WithdrawalRequest": {
@@ -2718,6 +2741,69 @@
           "page"
         ]
       },
+      "TransactionFilterRequest": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string"
+          },
+          "accountNumber": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT",
+              "WITHDRAWAL",
+              "TRANSFER",
+              "REVERSAL"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "COMPLETED",
+              "CANCELLED",
+              "REVERSED"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "FOOD",
+              "GROCERY",
+              "DONATION",
+              "BILLS",
+              "ENTERTAINMENT",
+              "SHOPPING",
+              "HEALTH",
+              "TRANSPORT",
+              "EDUCATION",
+              "INVESTMENT",
+              "OTHER"
+            ]
+          },
+          "anomalyFlag": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          },
+          "fromDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "toDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "PagedModelBankTransactionDto": {
         "type": "object",
         "properties": {
@@ -2746,12 +2832,16 @@
           "transactionReference": {
             "type": "string"
           },
+          "reversedTransactionReference": {
+            "type": "string"
+          },
           "type": {
             "type": "string",
             "enum": [
               "DEPOSIT",
               "WITHDRAWAL",
-              "TRANSFER"
+              "TRANSFER",
+              "REVERSAL"
             ]
           },
           "description": {
@@ -2781,7 +2871,18 @@
             "enum": [
               "PENDING",
               "COMPLETED",
-              "CANCELLED"
+              "CANCELLED",
+              "REVERSED"
+            ]
+          },
+          "anomalyFlag": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
             ]
           },
           "createdAt": {
@@ -2847,6 +2948,36 @@
           "transactionReference",
           "type"
         ]
+      },
+      "AnomalyReportDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionReference": {
+            "type": "string"
+          },
+          "riskScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
       },
       "PagedModelPendingRegistrationResponse": {
         "type": "object",
@@ -2955,6 +3086,8 @@
               "ACCOUNT_FROZEN",
               "ACCOUNT_CLOSED",
               "TRANSACTION_REVERSED",
+              "TRANSACTION_APPROVED",
+              "TRANSACTION_REJECTED",
               "ADMIN_DEPOSIT_RECORDED"
             ]
           },
@@ -3039,12 +3172,16 @@
           "destinationAccountNumber": {
             "type": "string"
           },
+          "reversedTransactionReference": {
+            "type": "string"
+          },
           "type": {
             "type": "string",
             "enum": [
               "DEPOSIT",
               "WITHDRAWAL",
-              "TRANSFER"
+              "TRANSFER",
+              "REVERSAL"
             ]
           },
           "description": {
@@ -3074,7 +3211,18 @@
             "enum": [
               "PENDING",
               "COMPLETED",
-              "CANCELLED"
+              "CANCELLED",
+              "REVERSED"
+            ]
+          },
+          "anomalyFlag": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
             ]
           },
           "createdAt": {

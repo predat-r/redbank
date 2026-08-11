@@ -267,7 +267,7 @@ class BankTransactionControllerTest {
         .andExpect(jsonPath("$.id").isNotEmpty())
         .andExpect(jsonPath("$.type").value("WITHDRAWAL"))
         .andExpect(jsonPath("$.amount").value(100.00))
-        .andExpect(jsonPath("$.status").value("COMPLETED"))
+        .andExpect(jsonPath("$.status").value("PENDING"))
         .andExpect(jsonPath("$.sourceAccountNumber").value(johnAccount.getAccountNumber()));
   }
 
@@ -319,7 +319,7 @@ class BankTransactionControllerTest {
         .andExpect(jsonPath("$.id").isNotEmpty())
         .andExpect(jsonPath("$.type").value("TRANSFER"))
         .andExpect(jsonPath("$.amount").value(200.00))
-        .andExpect(jsonPath("$.status").value("COMPLETED"))
+        .andExpect(jsonPath("$.status").value("PENDING"))
         .andExpect(jsonPath("$.sourceAccountNumber").value(johnAccount.getAccountNumber()))
         .andExpect(jsonPath("$.destinationAccountNumber").value(janeAccount.getAccountNumber()));
   }
