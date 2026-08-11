@@ -34,4 +34,9 @@ public interface BankTransactionRepository extends JpaRepository<BankTransaction
 
   List<BankTransaction> findAllByStatusAndCreatedAtBefore(TransactionStatus status,
       OffsetDateTime cutoff);
+
+  long countBySourceAccountHolderIdAndCreatedAtAfter(Long sourceId, OffsetDateTime cutoff);
+
+  List<BankTransaction> findBySourceAccountHolderIdAndCreatedAtAfterOrderByCreatedAtDesc(
+      Long sourceId, OffsetDateTime cutoff);
 }

@@ -16,6 +16,8 @@ import com.redmath.redbank.transaction.request.WithdrawalRequest;
 import com.redmath.redbank.transaction.spec.BankTransactionSpecification;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import com.redmath.redbank.transaction.event.TransactionSubmittedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,16 +31,19 @@ public class BankTransactionService {
   private final AccountHolderService accountHolderService;
   private final AuditService auditService;
   private final BalanceService balanceService;
+  private final ApplicationEventPublisher eventPublisher;
 
   public BankTransactionService(
       BankTransactionRepository bankTransactionRepository,
       AccountHolderService accountHolderService,
       AuditService auditService,
-      BalanceService balanceService) {
+      BalanceService balanceService,
+      ApplicationEventPublisher eventPublisher) {
     this.bankTransactionRepository = bankTransactionRepository;
     this.accountHolderService = accountHolderService;
     this.auditService = auditService;
     this.balanceService = balanceService;
+    this.eventPublisher = eventPublisher;
   }
 
   public Page<BankTransaction> getTransactionsForUser(Long userId, Pageable pageable) {
@@ -177,6 +182,8 @@ public class BankTransactionService {
     balanceService.recordLedgerEntry(transaction.getSourceAccountHolder(), transaction,
         BalanceIndicator.DEBIT);
 
+    eventPublisher.publishEvent(new TransactionSubmittedEvent(transaction.getId()));
+
     return transaction;
   }
 
@@ -219,6 +226,8 @@ public class BankTransactionService {
     transaction = bankTransactionRepository.save(transaction);
 
     balanceService.recordLedgerEntry(sourceAccount, transaction, BalanceIndicator.DEBIT);
+
+    eventPublisher.publishEvent(new TransactionSubmittedEvent(transaction.getId()));
 
     return transaction;
   }
