@@ -27,32 +27,28 @@ public class LocationRiskTriggerService {
       Long currentLoginEventId
   ) {
     IpGeolocationResult ipGeolocationResult = ipGeolocationProvider.resolve(ip);
+
+    if (!ipGeolocationResult.successful()) {
+      return new LocationRiskTriggerResult(ipGeolocationResult, null, false, false);
+    }
+
     Optional<LoginEvent> loginEvent = loginHistoryService
         .getLatestSuccessfulLoginExcluding(userId, currentLoginEventId);
 
-    if (!ipGeolocationResult.successful()) {
-
-      return new LocationRiskTriggerResult(ipGeolocationResult, null, false, false);
-
-    }
     if (loginEvent.isEmpty()) {
       return new LocationRiskTriggerResult(ipGeolocationResult, null, false, false);
-
-    } else {
-      boolean hasUsedIpBefore = loginHistoryService.hasUsedIpBeforeExcluding(
-          userId,
-          ip,
-          currentLoginEventId
-      );
-      if (hasUsedIpBefore || Objects.equals(loginEvent.get().getCity(),
-          ipGeolocationResult.city())) {
-        return new LocationRiskTriggerResult(ipGeolocationResult, loginEvent.get(), hasUsedIpBefore,
-            false);
-      } else {
-        return new LocationRiskTriggerResult(ipGeolocationResult, loginEvent.get(), false,
-            true);
-      }
     }
 
+    boolean hasUsedIpBefore = loginHistoryService.hasUsedIpBeforeExcluding(
+        userId,
+        ip,
+        currentLoginEventId
+    );
+    if (hasUsedIpBefore || Objects.equals(loginEvent.get().getCity(), ipGeolocationResult.city())) {
+      return new LocationRiskTriggerResult(
+          ipGeolocationResult, loginEvent.get(), hasUsedIpBefore, false);
+    }
+
+    return new LocationRiskTriggerResult(ipGeolocationResult, loginEvent.get(), false, true);
   }
 }

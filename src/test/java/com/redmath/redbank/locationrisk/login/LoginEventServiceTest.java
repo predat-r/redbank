@@ -7,12 +7,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class LoginEventServiceTest {
@@ -20,11 +22,14 @@ class LoginEventServiceTest {
   @Mock
   private LoginEventRepository loginEventRepository;
 
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
+
   private LoginEventService loginEventService;
 
   @BeforeEach
   void setUp() {
-    loginEventService = new LoginEventService(loginEventRepository);
+    loginEventService = new LoginEventService(loginEventRepository, eventPublisher);
   }
 
   @Test
@@ -72,7 +77,8 @@ class LoginEventServiceTest {
     LoginEvent result = loginEventService.recordSuccessfulLogin(
         84L,
         context,
-        "access-token-jti-123"
+        "access-token-jti-123",
+        Instant.now().plusSeconds(900)
     );
 
     ArgumentCaptor<LoginEvent> captor = ArgumentCaptor.forClass(LoginEvent.class);
