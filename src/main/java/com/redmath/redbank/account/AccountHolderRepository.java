@@ -36,5 +36,8 @@ public interface AccountHolderRepository extends JpaRepository<AccountHolder, Lo
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT a FROM AccountHolder a WHERE a.id = :id")
   Optional<AccountHolder> findByIdWithLock(Long id);
+
+  @EntityGraph(attributePaths = {"user"})
+  java.util.List<AccountHolder> findByUserNameContainingIgnoreCase(String name);
 }
 
