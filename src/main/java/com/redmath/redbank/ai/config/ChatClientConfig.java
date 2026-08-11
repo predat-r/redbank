@@ -11,4 +11,9 @@ public class ChatClientConfig {
   public ChatClient chatClient(ChatClient.Builder builder) {
     return builder.build();
   }
+
+  @Bean("locationRiskChatClient")
+  ChatClient locationRiskChatClient(ChatClient.Builder builder) {
+    return builder.build();
+  }
 }

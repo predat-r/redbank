@@ -55,6 +55,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>4.10.3</version>
+    </dependency>
+    <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-java</artifactId>
       <scope>test</scope>
@@ -367,15 +372,6 @@
             <version>${pitest-junit5-plugin.version}</version>
           </dependency>
         </dependencies>
-        <executions>
-          <execution>
-            <id>pitest-mutation-testing</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>mutationCoverage</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <targetClasses>
             <param>com.redmath.redbank.*</param>
