@@ -43,7 +43,13 @@ authentication, transaction execution, and background reconciliation.
    credentials enabled. The server reads and rotates the refresh-token cookie and returns a new
    access token without requiring the user to re-enter credentials.
 
-### 3. Funding and Transaction Execution
+### 3. Location Risk Assessment
+
+After a successful login, RedBank records the login IP and asynchronously resolves its location.
+The resolved city and country are stored with the login event. New login locations can trigger an
+additional risk assessment; high-risk results may challenge the login or revoke the session.
+
+### 4. Funding and Transaction Execution
 
 1. **Admin Deposit**: An admin seeds or credits funds to an account holder's account via
    `POST /api/admin/deposits`.
@@ -58,14 +64,14 @@ authentication, transaction execution, and background reconciliation.
         5. Corresponding credit and debit entries are recorded in the `Balance` ledger table,
            calculating new running balances.
 
-### 4. Balance and Ledger Monitoring
+### 5. Balance and Ledger Monitoring
 
 1. Account holders query their current balance and latest ledger entry using
    `GET /api/balance/me/latest`.
 2. Administrators inspect complete ledger history and audit records for any account via
    `GET /api/admin/balance/{accountId}/ledger`.
 
-### 5. Automated Schedulers and Audit
+### 6. Automated Schedulers and Audit
 
 - **Balance Reconciliation**: Cron job calculates account totals from ledger entries and flags any
   balance discrepancies.

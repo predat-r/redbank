@@ -13,12 +13,12 @@ spring:
       genai:
         api-key: ${GEMINI_API_KEY}
         chat:
-          options:
-            model: gemini-3.5-flash-lite
+          model: gemini-3.5-flash-lite
+          response-mime-type: application/json
         embedding:
           api-key: ${GEMINI_API_KEY}
-          options:
-            model: gemini-embedding-001
+          model: gemini-embedding-002
+
     vectorstore:
       pgvector:
         dimensions: 768
@@ -49,3 +49,11 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+ip-geolocation:
+  base-url: https://api.ipgeolocation.io
+  api-key: ${IP_GEOLOCATION_API_KEY:}
+
+reputation-lookup:
+  base-url: https://api.abuseipdb.com/api/v2
+  api-key: ${ABUSE_IPDB_API_KEY:}

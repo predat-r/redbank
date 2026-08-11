@@ -25,4 +25,9 @@ public class ChatClientConfig {
         .defaultAdvisors(chatMemoryAdvisor, ragAdvisor)
         .build();
   }
+
+  @Bean("locationRiskChatClient")
+  ChatClient locationRiskChatClient(ChatClient.Builder builder) {
+    return builder.build();
+  }
 }

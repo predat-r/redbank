@@ -77,7 +77,8 @@ class OpenApiContractTest {
 
     JsonNode badRequest = openApi.path("components").path("responses").path("BadRequest");
     assertEquals("#/components/schemas/ApiError",
-        badRequest.path("content").path("application/json").path("schema").path("$ref").asText());
+        badRequest.path("content").path("application/json").path("schema").path("$ref")
+            .textValue());
   }
 
   private void assertEveryOperationHasSuccessAndStandardErrors(JsonNode openApi) {
@@ -134,7 +135,7 @@ class OpenApiContractTest {
 
   private void assertRequiredFields(JsonNode schema, String... fields) {
     Set<String> required = new HashSet<>();
-    schema.path("required").forEach(node -> required.add(node.asText()));
+    schema.path("required").forEach(node -> required.add(node.textValue()));
     assertTrue(required.containsAll(Set.of(fields)));
   }
 }
