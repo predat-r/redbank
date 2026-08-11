@@ -39,7 +39,8 @@ public class BankTransactionDto {
       dto.setDestinationAccountNumber(transaction.getDestinationAccountHolder().getAccountNumber());
     }
     if (transaction.getReversedTransaction() != null) {
-      dto.setReversedTransactionReference(transaction.getReversedTransaction().getTransactionReference());
+      dto.setReversedTransactionReference(
+          transaction.getReversedTransaction().getTransactionReference());
     }
     dto.setType(transaction.getType());
     dto.setDescription(transaction.getDescription());
@@ -49,6 +50,7 @@ public class BankTransactionDto {
     dto.setAnomalyFlag(transaction.getAnomalyFlag());
     dto.setCreatedAt(transaction.getCreatedAt());
     dto.setCompletedAt(transaction.getCompletedAt());
+    dto.setAnomalyFlag(transaction.getAnomalyFlag());
     return dto;
   }
 }
