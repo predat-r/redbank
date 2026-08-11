@@ -10,4 +10,5 @@ public record UpdateMyProfileRequest(
     @NotBlank @Size(min = 2, max = 150) String name,
     @NotBlank @Size(min = 5, max = 500) String address
 ) {
+
 }

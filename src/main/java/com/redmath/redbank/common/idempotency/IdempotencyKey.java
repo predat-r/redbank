@@ -15,6 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class IdempotencyKey implements Serializable {
+
   private static final long serialVersionUID = 1L;
 
   private String idempotencyKey;

@@ -1,6 +1,7 @@
 package com.redmath.redbank.chatbot.llm;
 
 import com.redmath.redbank.chatbot.dto.FinancialQueryIntent;
+import com.redmath.redbank.chatbot.dto.LlmIntentOutput;
 import java.time.LocalDate;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,10 +21,14 @@ public class SpringAiLlmClient implements LlmClient {
       - Do NOT add disclaimers, suggestions, or advice unless directly relevant.
       """;
 
-  /** No advisors — purely for fast, deterministic JSON intent extraction. */
+  /**
+   * No advisors — purely for fast, deterministic JSON intent extraction.
+   */
   private final ChatClient intentChatClient;
 
-  /** Memory + RAG advisors — for contextual, conversational answer phrasing. */
+  /**
+   * Memory + RAG advisors — for contextual, conversational answer phrasing.
+   */
   private final ChatClient conversationChatClient;
 
   public SpringAiLlmClient(
@@ -34,15 +39,35 @@ public class SpringAiLlmClient implements LlmClient {
   }
 
   @Override
-  public FinancialQueryIntent parseIntent(String userMessage, LocalDate today, String conversationId) {
+  public FinancialQueryIntent parseIntent(String userMessage, LocalDate today,
+      String conversationId) {
     String systemPrompt = IntentPromptBuilder.buildSystemPrompt(today);
 
     // intentChatClient has no advisors — conversationId is intentionally not passed
-    return intentChatClient.prompt()
+    LlmIntentOutput output = intentChatClient.prompt()
         .system(systemPrompt)
         .user(userMessage)
         .call()
-        .entity(FinancialQueryIntent.class);
+        .entity(LlmIntentOutput.class);
+
+    return mapToFinancialQueryIntent(output);
+  }
+
+  private FinancialQueryIntent mapToFinancialQueryIntent(LlmIntentOutput output) {
+    FinancialQueryIntent intent = new FinancialQueryIntent();
+    intent.setQueryType(output.getQueryType());
+    intent.setMetric(output.getMetric());
+    intent.setDirection(output.getDirection());
+    intent.setCategory(output.getCategory());
+    intent.setStartDate(output.getStartDate());
+    intent.setEndDate(output.getEndDate());
+    intent.setAsOfDate(output.getAsOfDate());
+    intent.setCounterpartyName(output.getCounterpartyName());
+    intent.setNeedsClarification(output.isNeedsClarification());
+    intent.setClarificationQuestion(output.getClarificationQuestion());
+    intent.setTransactionType(output.getTransactionType());
+    intent.setSortOrder(output.getSortOrder());
+    return intent;
   }
 
   @Override
@@ -52,14 +77,15 @@ public class SpringAiLlmClient implements LlmClient {
 
   @Override
   public String phraseAnswer(String userMessage, String rawFactualAnswer, String conversationId) {
-    String convId = (conversationId != null && !conversationId.isBlank()) ? conversationId : "default";
+    String convId =
+        (conversationId != null && !conversationId.isBlank()) ? conversationId : "default";
 
     String userPrompt = """
         User's original question: %s
-
+        
         Raw factual data fetched from the database:
         %s
-
+        
         Please rephrase this into a natural, friendly response.
         """.formatted(userMessage, rawFactualAnswer);
 

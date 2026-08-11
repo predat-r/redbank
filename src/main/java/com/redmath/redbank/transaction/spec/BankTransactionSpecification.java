@@ -47,7 +47,8 @@ public final class BankTransactionSpecification {
       TransactionStatus status,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return filterInternal(accountHolderId, null, accountNumber, type, status, null, fromDate, toDate);
+    return filterInternal(accountHolderId, null, accountNumber, type, status, null, fromDate,
+        toDate);
   }
 
   public static Specification<BankTransaction> filterForUser(
@@ -58,7 +59,8 @@ public final class BankTransactionSpecification {
       TransactionCategory category,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return filterInternal(accountHolderId, null, accountNumber, type, status, category, fromDate, toDate);
+    return filterInternal(accountHolderId, null, accountNumber, type, status, category, fromDate,
+        toDate);
   }
 
   private static Specification<BankTransaction> filterInternal(

@@ -54,7 +54,8 @@ public class BankTransactionService {
       OffsetDateTime fromDate,
       OffsetDateTime toDate,
       Pageable pageable) {
-    return getTransactionsForUser(userId, accountNumber, type, status, null, fromDate, toDate, pageable);
+    return getTransactionsForUser(userId, accountNumber, type, status, null, fromDate, toDate,
+        pageable);
   }
 
   public Page<BankTransaction> getTransactionsForUser(
@@ -85,7 +86,8 @@ public class BankTransactionService {
       OffsetDateTime fromDate,
       OffsetDateTime toDate,
       Pageable pageable) {
-    return getAllTransactions(reference, accountNumber, type, status, null, fromDate, toDate, pageable);
+    return getAllTransactions(reference, accountNumber, type, status, null, fromDate, toDate,
+        pageable);
   }
 
   public Page<BankTransaction> getAllTransactions(
@@ -98,7 +100,8 @@ public class BankTransactionService {
       OffsetDateTime toDate,
       Pageable pageable) {
     return bankTransactionRepository.findAll(
-        BankTransactionSpecification.filter(reference, accountNumber, type, status, category, fromDate, toDate),
+        BankTransactionSpecification.filter(reference, accountNumber, type, status, category,
+            fromDate, toDate),
         pageable);
   }
 

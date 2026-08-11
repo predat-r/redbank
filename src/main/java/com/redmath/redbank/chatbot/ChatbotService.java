@@ -10,8 +10,8 @@ import com.redmath.redbank.chatbot.query.BalanceQueryService;
 import com.redmath.redbank.chatbot.query.CounterpartyResolver;
 import com.redmath.redbank.chatbot.query.TransactionQueryService;
 import com.redmath.redbank.transaction.BankTransaction;
-import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ChatbotService {
@@ -34,14 +34,16 @@ public class ChatbotService {
 
   public ChatResponse handle(String message, Long userId) {
     if (userId == null) {
-      return new ChatResponse("I couldn't identify your account. Please sign in again and try once more.", false);
+      return new ChatResponse(
+          "I couldn't identify your account. Please sign in again and try once more.", false);
     }
 
     final AccountHolder accountHolder;
     try {
       accountHolder = accountHolderService.getAccountHolderByUserId(userId);
     } catch (RuntimeException e) {
-      return new ChatResponse("I couldn't load your account details right now. Please try again later.", false);
+      return new ChatResponse(
+          "I couldn't load your account details right now. Please try again later.", false);
     }
 
     String myAccountNumber = accountHolder.getAccountNumber();
@@ -62,12 +64,13 @@ public class ChatbotService {
     }
 
     if (intent.getQueryType() == QueryType.UNSUPPORTED) {
-      return new ChatResponse("I can only answer questions about your own transactions and balance.", false);
+      return new ChatResponse(
+          "I can only answer questions about your own transactions and balance.", false);
     }
 
     // Resolve counterparty name -> account number, if the question mentioned a person
     if (intent.getCounterpartyName() != null) {
-      var resolution = counterpartyResolver.resolve(intent.getCounterpartyName());
+      var resolution = counterpartyResolver.resolve(intent.getCounterpartyName(), accountHolderId);
       switch (resolution.status) {
         case NOT_FOUND:
           return new ChatResponse("I couldn't find anyone named \"" + intent.getCounterpartyName()
@@ -81,7 +84,8 @@ public class ChatbotService {
     }
 
     return switch (intent.getQueryType()) {
-      case TRANSACTION_AGGREGATE -> handleTransactionAggregate(intent, accountHolderId, message, conversationId);
+      case TRANSACTION_AGGREGATE ->
+          handleTransactionAggregate(intent, accountHolderId, message, conversationId);
       case BALANCE_AT_DATE -> handleBalanceAtDate(intent, accountHolderId);
       case PROJECTION -> handleProjection(accountHolderId, message, conversationId);
       case TRANSACTION_LOOKUP -> handleTransactionLookup(intent, accountHolderId);
@@ -89,11 +93,8 @@ public class ChatbotService {
     };
   }
 
-  /**
-   * Transaction aggregates (e.g. "how much did I spend on food last month?", "did I send money to Jane?")
-   * involve rich query results — hand to LLM for natural phrasing.
-   */
-  private ChatResponse handleTransactionAggregate(FinancialQueryIntent intent, Long myAccountHolderId,
+  private ChatResponse handleTransactionAggregate(FinancialQueryIntent intent,
+      Long myAccountHolderId,
       String originalMessage, String conversationId) {
     var result = transactionQueryService.execute(intent, myAccountHolderId);
 
@@ -107,7 +108,8 @@ public class ChatbotService {
         ? ", period: " + intent.getStartDate() + " to " + intent.getEndDate() : "";
     String counterpartyPart = intent.getCounterpartyName() != null
         ? ", counterparty: " + intent.getCounterpartyName() : "";
-    String directionPart = intent.getDirection() != null ? ", direction: " + intent.getDirection() : "";
+    String directionPart =
+        intent.getDirection() != null ? ", direction: " + intent.getDirection() : "";
 
     String rawFacts = "Transaction aggregate result -"
         + directionPart + categoryPart + periodPart + counterpartyPart
@@ -119,9 +121,6 @@ public class ChatbotService {
     return new ChatResponse(naturalReply, false);
   }
 
-  /**
-   * Simple balance lookup — pre-formatted, no need for LLM phrasing.
-   */
   private ChatResponse handleBalanceAtDate(FinancialQueryIntent intent, Long accountHolderId) {
     return balanceQueryService.getBalanceAsOf(accountHolderId, intent.getAsOfDate())
         .map(balance -> new ChatResponse(
@@ -130,20 +129,20 @@ public class ChatbotService {
             "I don't have a balance record on or before " + intent.getAsOfDate() + ".", false));
   }
 
-  /**
-   * Projection involves a computed estimate — hand to LLM for natural phrasing since context matters.
-   */
-  private ChatResponse handleProjection(Long accountHolderId, String originalMessage, String conversationId) {
+  private ChatResponse handleProjection(Long accountHolderId, String originalMessage,
+      String conversationId) {
     var projected = balanceQueryService.projectMonthEndBalance(accountHolderId);
 
-    String rawFacts = "Projected month-end balance based on the last 30 days of spending patterns: $"
-        + projected + ". This is an estimate, not a guarantee.";
+    String rawFacts =
+        "Projected month-end balance based on the last 30 days of spending patterns: $"
+            + projected + ". This is an estimate, not a guarantee.";
 
     String naturalReply = llmClient.phraseAnswer(originalMessage, rawFacts, conversationId);
     return new ChatResponse(naturalReply, false);
   }
 
-  private ChatResponse handleTransactionLookup(FinancialQueryIntent intent, Long myAccountHolderId) {
+  private ChatResponse handleTransactionLookup(FinancialQueryIntent intent,
+      Long myAccountHolderId) {
     var result = transactionQueryService.findLatestOrEarliest(intent, myAccountHolderId);
 
     if (result.isEmpty()) {
@@ -158,7 +157,8 @@ public class ChatbotService {
     String when = intent.getSortOrder().equals("EARLIEST") ? "first" : "most recent";
 
     String reply = String.format("Your %s %s was $%s on %s (ref: %s).",
-        when, typeLabel, txn.getAmount(), txn.getCreatedAt().toLocalDate(), txn.getTransactionReference());
+        when, typeLabel, txn.getAmount(), txn.getCreatedAt().toLocalDate(),
+        txn.getTransactionReference());
 
     return new ChatResponse(reply, false);
   }

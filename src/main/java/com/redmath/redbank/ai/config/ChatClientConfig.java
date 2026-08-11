@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 public class ChatClientConfig {
 
   /**
-   * Lean client for intent parsing — no advisors, no RAG, no memory overhead.
-   * Returns deterministic JSON; conversation history is irrelevant for this call.
+   * Lean client for intent parsing — no advisors, no RAG, no memory overhead. Returns deterministic
+   * JSON; conversation history is irrelevant for this call.
    */
   @Bean("intentChatClient")
   ChatClient intentChatClient(ChatClient.Builder builder) {
@@ -23,14 +23,14 @@ public class ChatClientConfig {
   }
 
   /**
-   * Conversational client for natural-language answer phrasing.
-   * Carries memory + RAG so replies are contextually aware of the user's history.
+   * Conversational client for natural-language answer phrasing. Carries memory + RAG so replies are
+   * contextually aware of the user's history.
    */
   @Bean("conversationChatClient")
   ChatClient conversationChatClient(ChatClient.Builder builder, VectorStore vectorStore) {
     ChatMemory chatMemory = MessageWindowChatMemory.builder().build();
     Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
-    Advisor ragAdvisor    = QuestionAnswerAdvisor.builder(vectorStore).build();
+    Advisor ragAdvisor = QuestionAnswerAdvisor.builder(vectorStore).build();
 
     return builder
         .defaultAdvisors(memoryAdvisor, ragAdvisor)

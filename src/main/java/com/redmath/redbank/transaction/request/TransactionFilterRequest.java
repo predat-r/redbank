@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Getter
 @Setter
 public class TransactionFilterRequest {
+
   private String reference;
   private String accountNumber;
   private TransactionType type;

@@ -6,14 +6,14 @@ import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;
 import com.redmath.redbank.transaction.TransactionStatus;
 import jakarta.persistence.criteria.Predicate;
-import java.util.Optional;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 
 @Service
 public class TransactionQueryService {
@@ -39,16 +39,16 @@ public class TransactionQueryService {
     return new AggregateResult(sum, matches.size(), average, matches);
   }
 
-  private Specification<BankTransaction> buildSpec(FinancialQueryIntent intent, Long myAccountHolderId) {
+  private Specification<BankTransaction> buildSpec(FinancialQueryIntent intent,
+      Long myAccountHolderId) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
 
-      // Only count completed transactions
       predicates.add(cb.equal(root.get("status"), TransactionStatus.COMPLETED));
 
-      // Filter directly on the FK column — no JOIN needed
       Predicate iAmSource = cb.equal(root.get("sourceAccountHolder").get("id"), myAccountHolderId);
-      Predicate iAmDestination = cb.equal(root.get("destinationAccountHolder").get("id"), myAccountHolderId);
+      Predicate iAmDestination = cb.equal(root.get("destinationAccountHolder").get("id"),
+          myAccountHolderId);
 
       Direction direction = intent.getDirection() == null ? Direction.BOTH : intent.getDirection();
       Long counterpartyId = intent.getCounterpartyAccountHolderId();
@@ -71,8 +71,10 @@ public class TransactionQueryService {
         predicates.add(cb.or(iAmSource, iAmDestination));
 
         if (counterpartyId != null) {
-          Predicate theyAreDestination = cb.equal(root.get("destinationAccountHolder").get("id"), counterpartyId);
-          Predicate theyAreSource = cb.equal(root.get("sourceAccountHolder").get("id"), counterpartyId);
+          Predicate theyAreDestination = cb.equal(root.get("destinationAccountHolder").get("id"),
+              counterpartyId);
+          Predicate theyAreSource = cb.equal(root.get("sourceAccountHolder").get("id"),
+              counterpartyId);
           predicates.add(cb.or(
               cb.and(iAmSource, theyAreDestination),
               cb.and(iAmDestination, theyAreSource)
@@ -96,7 +98,8 @@ public class TransactionQueryService {
     };
   }
 
-  public Optional<BankTransaction> findLatestOrEarliest(FinancialQueryIntent intent, Long myAccountHolderId) {
+  public Optional<BankTransaction> findLatestOrEarliest(FinancialQueryIntent intent,
+      Long myAccountHolderId) {
     Specification<BankTransaction> spec = buildLookupSpec(intent, myAccountHolderId);
     Sort sort = "EARLIEST".equals(intent.getSortOrder())
         ? Sort.by("createdAt").ascending()
@@ -105,7 +108,8 @@ public class TransactionQueryService {
     return transactionRepository.findAll(spec, sort).stream().findFirst();
   }
 
-  private Specification<BankTransaction> buildLookupSpec(FinancialQueryIntent intent, Long myAccountHolderId) {
+  private Specification<BankTransaction> buildLookupSpec(FinancialQueryIntent intent,
+      Long myAccountHolderId) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
       predicates.add(cb.equal(root.get("status"), TransactionStatus.COMPLETED));
@@ -114,9 +118,9 @@ public class TransactionQueryService {
         predicates.add(cb.equal(root.get("type"), intent.getTransactionType()));
       }
 
-      // Scope to "my" transactions via FK ID — no JOIN needed
       Predicate iAmSource = cb.equal(root.get("sourceAccountHolder").get("id"), myAccountHolderId);
-      Predicate iAmDestination = cb.equal(root.get("destinationAccountHolder").get("id"), myAccountHolderId);
+      Predicate iAmDestination = cb.equal(root.get("destinationAccountHolder").get("id"),
+          myAccountHolderId);
       predicates.add(cb.or(iAmSource, iAmDestination));
 
       if (intent.getCategory() != null) {
@@ -127,5 +131,8 @@ public class TransactionQueryService {
     };
   }
 
-  public record AggregateResult(BigDecimal sum, long count, BigDecimal average, List<BankTransaction> matches) {}
+  public record AggregateResult(BigDecimal sum, long count, BigDecimal average,
+                                List<BankTransaction> matches) {
+
+  }
 }
