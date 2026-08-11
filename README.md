@@ -43,20 +43,27 @@ authentication, transaction execution, and background reconciliation.
    credentials enabled. The server reads and rotates the refresh-token cookie and returns a new
    access token without requiring the user to re-enter credentials.
 
-### 3. Funding and Transaction Execution
+### 3. Funding and Transaction Execution & Anomaly Detection
 
 1. **Admin Deposit**: An admin seeds or credits funds to an account holder's account via
    `POST /api/admin/deposits`.
-2. **Transaction Processing**:
+2. **Transaction Processing (Async State Machine & Anomaly Detection)**:
     - For **withdrawals** (`POST /api/accounts/me/withdrawals`) or **transfers**
       (`POST /api/accounts/me/transfers`):
-        1. The system validates request parameters, including an optional `category` (predefined values: `FOOD`, `GROCERY`, `DONATION`, `BILLS`, `ENTERTAINMENT`, `SHOPPING`, `HEALTH`, `TRANSPORT`, `EDUCATION`, `INVESTMENT`, `OTHER`), and verifies that initiating/destination accounts are `ACTIVE`.
-        2. A database pessimistic write lock (`PESSIMISTIC_WRITE`) is acquired on the account holder
-           entity to guarantee atomic execution under concurrent requests.
-        3. The system queries `BalanceService` to confirm sufficient funds before deducting.
-        4. The `BankTransaction` record is saved with status `COMPLETED`.
-        5. Corresponding credit and debit entries are recorded in the `Balance` ledger table,
-           calculating new running balances.
+        1. Request parameter validation occurs, including optional `category` classification.
+        2. A database pessimistic write lock (`PESSIMISTIC_WRITE`) is acquired on the source account.
+        3. `BalanceService` verifies sufficient funds and immediately records a debit ledger entry while creating the `BankTransaction` record in `PENDING` status.
+        4. An asynchronous `TransactionSubmittedEvent` is published to trigger decoupled risk evaluation.
+3. **Async Risk Evaluation & AI Assessment**:
+    - **Rule Engine**: Evaluates configurable rules for amount thresholds (High >= $100, Very High >= $500), off-peak transaction hours, and velocity (multiple transactions within a 5-minute window). Assigns risk scores and flags (`NONE`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`).
+    - **AI Behavioral Context (Spring AI)**: Analyzes qualitative risk by querying the account holder's historical transaction profile (average/max amount, weekly frequency, top categories, peak hours excluding the current transaction) and generating a risk reasoning summary via `ChatClient`.
+    - **Auto-Settlement vs. Admin Review**:
+        - Transactions with low/medium risk (`NONE`, `LOW`, `MEDIUM`) are automatically approved and completed.
+        - High-risk transactions (`HIGH`, `CRITICAL`) remain `PENDING` for manual administrative review.
+4. **Admin Anomaly Review & Settlement Workflows**:
+    - Admins review pending transactions and their associated AI anomaly reports via `GET /api/admin/transactions/{id}/anomaly-report`.
+    - **Approval**: Calling `POST /api/admin/transactions/{id}/approve` completes the pending transaction and credits destination accounts (if a transfer).
+    - **Rejection & Reversal**: Calling `POST /api/admin/transactions/{id}/reject` cancels the transaction and automatically reverses the debited funds back to the source account ledger.
 
 ### 4. Balance and Ledger Monitoring
 
@@ -181,6 +188,9 @@ HTTP `404 Not Found`.
 | `GET`  | `/api/admin/transactions/{id}`                     | None                                                                                                 | Retrieves detailed transaction information by ID (includes source/destination owner details). |
 | `GET`  | `/api/admin/transactions/reference/{reference}`    | None                                                                                                 | Fetches transaction details by transaction reference string (e.g. `TXN-XXXXXXXXXXXX`).        |
 | `GET`  | `/api/admin/accounts/{accountNumber}/transactions` | `page`, `size`, `sort`                                                                               | Retrieves transaction history for a specific account number.                                  |
+| `POST` | `/api/admin/transactions/{id}/approve`             | None                                                                                                 | Manually approves a flagged pending transaction and completes settlement.                     |
+| `POST` | `/api/admin/transactions/{id}/reject`              | None                                                                                                 | Rejects a flagged pending transaction and reverses debited funds to the source account.       |
+| `GET`  | `/api/admin/transactions/{id}/anomaly-report`      | None                                                                                                 | Retrieves the AI anomaly assessment report and reasoning for a transaction.                   |
 
 #### Balance & Audit Logs
 
@@ -226,6 +236,9 @@ not be used for nested `User` or timestamp fields.
 com.redmath.redbank
 ├── account         # Account holder domain, service, and admin approval controllers
 │   └── admin
+├── ai              # Spring AI anomaly detection engine, rule evaluation, and prompt enrichment
+│   ├── anomaly
+│   └── config
 ├── audit           # Audit logging service, repository, and action targets
 ├── auth            # User registration, login, token refresh, and security filters
 ├── balance         # Balance entity, running balance ledger, and balance controllers
