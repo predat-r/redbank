@@ -2,12 +2,14 @@ package com.redmath.redbank.locationrisk.geolocation;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 @Service
+@Slf4j
 public class IpGeolocationIoProvider implements IpGeolocationProvider {
 
   private final RestClient restClient;
@@ -39,6 +41,8 @@ public class IpGeolocationIoProvider implements IpGeolocationProvider {
               .build())
           .retrieve()
           .body(IpGeolocationResponse.class);
+
+      log.info("ipgeolocation.io response for IP {}: {}", ipAddress, response);
 
       if (response == null
           || response.location() == null

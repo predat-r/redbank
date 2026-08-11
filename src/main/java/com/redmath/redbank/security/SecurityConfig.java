@@ -122,8 +122,10 @@ public class SecurityConfig {
     configuration.setAllowedOrigins(trustedOriginService.allowedOrigins());
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(
-        List.of("Authorization", "Content-Type", "X-XSRF-TOKEN", "X-Idempotency-Key"));
-    configuration.setExposedHeaders(List.of("X-Idempotent-Replayed", "X-Idempotency-Key"));
+        List.of("Authorization", "Content-Type", "X-XSRF-TOKEN", "X-Idempotency-Key",
+            "ngrok-skip-browser-warning"));
+    configuration.setExposedHeaders(
+        List.of("X-Idempotent-Replayed", "X-Idempotency-Key"));
     configuration.setAllowCredentials(true);
     configuration.setMaxAge(3600L);
 

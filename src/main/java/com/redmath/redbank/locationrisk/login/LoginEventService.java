@@ -46,6 +46,15 @@ public class LoginEventService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void updateLocation(Long loginEventId, String city, String country) {
+    LoginEvent event = loginEventRepository.findById(loginEventId)
+        .orElseThrow(() -> new IllegalArgumentException(
+            "Login event not found: " + loginEventId));
+    event.setCity(city);
+    event.setCountry(country);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public LoginEvent recordFailedLogin(Long userId, LoginContext context, String failureReason) {
     LoginEventDto dto = new LoginEventDto(userId, context.ipAddress(), context.userAgent(),
         context.deviceIdentifier(), false, failureReason, null, null, null, null);

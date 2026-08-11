@@ -5,6 +5,7 @@ import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
 import com.redmath.redbank.locationrisk.ai.LocationRiskAssessment;
 import com.redmath.redbank.locationrisk.ai.LocationRiskAssessmentService;
+import com.redmath.redbank.locationrisk.login.LoginEventService;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerResult;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerService;
 import com.redmath.redbank.security.TokenDenylistService;
@@ -23,6 +24,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class LocationRiskAssessmentListener {
 
   private final LocationRiskTriggerService locationRiskTriggerService;
+  private final LoginEventService loginEventService;
   private final LocationRiskAssessmentService locationRiskAssessmentService;
   private final AuditService auditService;
   private final TokenDenylistService tokenDenylistService;
@@ -39,6 +41,14 @@ public class LocationRiskAssessmentListener {
         event.ipAddress(),
         event.loginEventId()
     );
+
+    if (triggerResult.currentLocation().successful()) {
+      loginEventService.updateLocation(
+          event.loginEventId(),
+          triggerResult.currentLocation().city(),
+          triggerResult.currentLocation().country()
+      );
+    }
 
     if (!triggerResult.requiresAiAssessment()) {
       return;
