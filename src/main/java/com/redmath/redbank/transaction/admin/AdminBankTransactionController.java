@@ -6,6 +6,7 @@ import com.redmath.redbank.ai.anomaly.AnomalyReportDto;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
+import com.redmath.redbank.common.idempotency.RequireIdempotency;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionService;
 import com.redmath.redbank.transaction.dto.AdminBankTransactionDetailDto;
@@ -60,6 +61,7 @@ public class AdminBankTransactionController {
 
   @PostMapping("/deposits")
   @PreAuthorize("hasRole('ADMIN')")
+  @RequireIdempotency(required = false)
   public ResponseEntity<BankTransactionDto> createDeposit(
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody DepositRequest request) {
