@@ -15,21 +15,21 @@ import org.springframework.stereotype.Repository;
 public interface BankTransactionRepository extends JpaRepository<BankTransaction, Long>,
     JpaSpecificationExecutor<BankTransaction> {
 
-  @EntityGraph(attributePaths = {"sourceAccountHolder", "destinationAccountHolder"})
+  @EntityGraph(attributePaths = {"sourceAccountHolder", "destinationAccountHolder", "reversedTransaction"})
   Page<BankTransaction> findBySourceAccountHolderIdOrDestinationAccountHolderId(
       Long sourceId, Long destinationId, Pageable pageable);
 
-  @EntityGraph(attributePaths = {"sourceAccountHolder", "destinationAccountHolder"})
+  @EntityGraph(attributePaths = {"sourceAccountHolder", "destinationAccountHolder", "reversedTransaction"})
   Page<BankTransaction> findAll(Pageable pageable);
 
   @Override
-  @EntityGraph(attributePaths = {"sourceAccountHolder", "destinationAccountHolder"})
+  @EntityGraph(attributePaths = {"sourceAccountHolder", "destinationAccountHolder", "reversedTransaction"})
   Page<BankTransaction> findAll(Specification<BankTransaction> spec, Pageable pageable);
 
-  @EntityGraph(attributePaths = {"sourceAccountHolder.user", "destinationAccountHolder.user"})
+  @EntityGraph(attributePaths = {"sourceAccountHolder.user", "destinationAccountHolder.user", "reversedTransaction"})
   Optional<BankTransaction> findById(Long id);
 
-  @EntityGraph(attributePaths = {"sourceAccountHolder.user", "destinationAccountHolder.user"})
+  @EntityGraph(attributePaths = {"sourceAccountHolder.user", "destinationAccountHolder.user", "reversedTransaction"})
   Optional<BankTransaction> findByTransactionReference(String transactionReference);
 
   List<BankTransaction> findAllByStatusAndCreatedAtBefore(TransactionStatus status,
