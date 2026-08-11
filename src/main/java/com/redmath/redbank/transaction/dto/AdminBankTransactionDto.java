@@ -15,6 +15,8 @@ public class AdminBankTransactionDto {
 
   private Long id;
   private String transactionReference;
+  private String sourceAccountNumber;
+  private String destinationAccountNumber;
   private TransactionType type;
   private BigDecimal amount;
   private AnomalyFlag anomalyFlag;
@@ -28,6 +30,12 @@ public class AdminBankTransactionDto {
     AdminBankTransactionDto dto = new AdminBankTransactionDto();
     dto.setId(transaction.getId());
     dto.setTransactionReference(transaction.getTransactionReference());
+    if (transaction.getSourceAccountHolder() != null) {
+      dto.setSourceAccountNumber(transaction.getSourceAccountHolder().getAccountNumber());
+    }
+    if (transaction.getDestinationAccountHolder() != null) {
+      dto.setDestinationAccountNumber(transaction.getDestinationAccountHolder().getAccountNumber());
+    }
     dto.setType(transaction.getType());
     dto.setAmount(transaction.getAmount());
     dto.setAnomalyFlag(transaction.getAnomalyFlag());

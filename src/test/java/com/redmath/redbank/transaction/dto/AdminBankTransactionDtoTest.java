@@ -24,10 +24,18 @@ class AdminBankTransactionDtoTest {
   @Test
   @DisplayName("from maps transaction to AdminBankTransactionDto correctly")
   void fromTransactionSuccess() {
+    com.redmath.redbank.account.AccountHolder source = new com.redmath.redbank.account.AccountHolder();
+    source.setAccountNumber("SRC-123");
+
+    com.redmath.redbank.account.AccountHolder dest = new com.redmath.redbank.account.AccountHolder();
+    dest.setAccountNumber("DEST-456");
+
     OffsetDateTime now = OffsetDateTime.now();
     BankTransaction transaction = new BankTransaction();
     transaction.setId(100L);
     transaction.setTransactionReference("TXN-ADMIN-001");
+    transaction.setSourceAccountHolder(source);
+    transaction.setDestinationAccountHolder(dest);
     transaction.setType(TransactionType.TRANSFER);
     transaction.setAmount(new BigDecimal("500.00"));
     transaction.setAnomalyFlag(AnomalyFlag.HIGH);
@@ -39,6 +47,8 @@ class AdminBankTransactionDtoTest {
     assertNotNull(dto);
     assertEquals(100L, dto.getId());
     assertEquals("TXN-ADMIN-001", dto.getTransactionReference());
+    assertEquals("SRC-123", dto.getSourceAccountNumber());
+    assertEquals("DEST-456", dto.getDestinationAccountNumber());
     assertEquals(TransactionType.TRANSFER, dto.getType());
     assertEquals(new BigDecimal("500.00"), dto.getAmount());
     assertEquals(AnomalyFlag.HIGH, dto.getAnomalyFlag());
