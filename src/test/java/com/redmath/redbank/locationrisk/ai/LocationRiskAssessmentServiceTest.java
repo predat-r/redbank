@@ -2,6 +2,7 @@ package com.redmath.redbank.locationrisk.ai;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +42,8 @@ class LocationRiskAssessmentServiceTest {
     when(requestSpec.user(any(String.class))).thenReturn(requestSpec);
     when(requestSpec.tools(any(), any())).thenReturn(requestSpec);
     when(requestSpec.call()).thenReturn(responseSpec);
-    when(responseSpec.entity(LocationRiskAssessment.class)).thenReturn(expected);
+    when(responseSpec.entity(eq(LocationRiskAssessment.class), any()))
+        .thenReturn(expected);
 
     LocationRiskAssessmentService service = new LocationRiskAssessmentService(
         loginHistoryService, chatClient, reputationProvider);
@@ -51,6 +53,6 @@ class LocationRiskAssessmentServiceTest {
 
     assertSame(expected, service.assess(42L, "198.51.100.10", 99L, location));
     verify(requestSpec).tools(any(), any());
-    verify(responseSpec).entity(LocationRiskAssessment.class);
+    verify(responseSpec).entity(eq(LocationRiskAssessment.class), any());
   }
 }

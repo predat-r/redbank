@@ -34,10 +34,6 @@ public final class IdempotencyService {
   private final HazelcastInstance hazelcastInstance;
   private final Map<String, IdempotencyKey> fallbackMap = new ConcurrentHashMap<>();
 
-  @SuppressFBWarnings(
-      value = "CT_CONSTRUCTOR_THROW",
-      justification = "Optional ObjectProvider lookups intentionally support Hazelcast fallback"
-  )
   @Autowired
   public IdempotencyService(
       ObjectProvider<ObjectMapper> objectMapperProvider,
