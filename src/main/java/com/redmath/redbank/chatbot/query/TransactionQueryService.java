@@ -133,6 +133,13 @@ public class TransactionQueryService {
 
   public record AggregateResult(BigDecimal sum, long count, BigDecimal average,
                                 List<BankTransaction> matches) {
+    public AggregateResult {
+      matches = matches != null ? List.copyOf(matches) : List.of();
+    }
 
+    @Override
+    public List<BankTransaction> matches() {
+      return matches != null ? List.copyOf(matches) : List.of();
+    }
   }
 }

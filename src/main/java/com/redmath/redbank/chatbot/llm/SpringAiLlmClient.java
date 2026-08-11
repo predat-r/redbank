@@ -50,6 +50,10 @@ public class SpringAiLlmClient implements LlmClient {
         .call()
         .entity(LlmIntentOutput.class);
 
+    if (output == null) {
+      throw new IllegalStateException("Failed to parse intent: LLM returned null output");
+    }
+
     return mapToFinancialQueryIntent(output);
   }
 
@@ -80,14 +84,10 @@ public class SpringAiLlmClient implements LlmClient {
     String convId =
         (conversationId != null && !conversationId.isBlank()) ? conversationId : "default";
 
-    String userPrompt = """
-        User's original question: %s
-        
-        Raw factual data fetched from the database:
-        %s
-        
-        Please rephrase this into a natural, friendly response.
-        """.formatted(userMessage, rawFactualAnswer);
+    String userPrompt = ("User's original question: " + userMessage + "\n\n"
+        + "Raw factual data fetched from the database:\n"
+        + rawFactualAnswer + "\n\n"
+        + "Please rephrase this into a natural, friendly response.");
 
     return conversationChatClient.prompt()
         .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", convId))

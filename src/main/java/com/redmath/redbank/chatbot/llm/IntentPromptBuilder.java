@@ -45,6 +45,6 @@ public class IntentPromptBuilder {
           - If the date range is ambiguous or missing and cannot be reasonably inferred, set
             needsClarification=true and write a short clarificationQuestion.
           - If the question doesn't relate to the user's own financial data at all, use UNSUPPORTED.
-        """.formatted(today);
+        """.replace("%s", today.toString());
   }
 }

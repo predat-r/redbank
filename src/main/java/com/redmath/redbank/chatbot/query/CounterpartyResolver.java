@@ -54,5 +54,9 @@ public class CounterpartyResolver {
       r.accountHolderId = accountHolderId;
       return r;
     }
+
+    public List<AccountHolder> getCandidates() {
+      return candidates != null ? List.copyOf(candidates) : List.of();
+    }
   }
 }

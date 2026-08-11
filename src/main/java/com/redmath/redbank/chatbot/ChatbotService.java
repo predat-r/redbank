@@ -46,7 +46,6 @@ public class ChatbotService {
           "I couldn't load your account details right now. Please try again later.", false);
     }
 
-    String myAccountNumber = accountHolder.getAccountNumber();
     Long accountHolderId = accountHolder.getId();
     String conversationId = String.valueOf(accountHolderId);
 
