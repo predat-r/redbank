@@ -18,9 +18,33 @@ public class LoginHistoryService {
         .findTopByUserIdAndSuccessfulTrueOrderByOccurredAtDesc(userId);
   }
 
+  public Optional<LoginEvent> getLatestSuccessfulLoginExcluding(
+      Long userId,
+      Long excludedLoginEventId
+  ) {
+    return loginEventRepository
+        .findTopByUserIdAndSuccessfulTrueAndIdNotOrderByOccurredAtDesc(
+            userId,
+            excludedLoginEventId
+        );
+  }
+
   public boolean hasUsedIpBefore(Long userId, String ipAddress) {
     return loginEventRepository
         .existsByUserIdAndIpAddressAndSuccessfulTrue(userId, ipAddress);
+  }
+
+  public boolean hasUsedIpBeforeExcluding(
+      Long userId,
+      String ipAddress,
+      Long excludedLoginEventId
+  ) {
+    return loginEventRepository
+        .existsByUserIdAndIpAddressAndIdNotAndSuccessfulTrue(
+            userId,
+            ipAddress,
+            excludedLoginEventId
+        );
   }
 
   public List<LoginEvent> getAttemptsByIpAddress(
@@ -34,5 +58,29 @@ public class LoginHistoryService {
   public List<LoginEvent> getLatestLoginAttempts(Long userId) {
     return loginEventRepository
         .findTop20ByUserIdOrderByOccurredAtDesc(userId);
+  }
+
+  public List<LoginEvent> getLatestLoginAttemptsExcluding(
+      Long userId,
+      Long excludedLoginEventId
+  ) {
+    return loginEventRepository
+        .findTop20ByUserIdAndIdNotOrderByOccurredAtDesc(
+            userId,
+            excludedLoginEventId
+        );
+  }
+
+  public List<LoginEvent> getAttemptsByIpAddressExcluding(
+      Long userId,
+      String ipAddress,
+      Long excludedLoginEventId
+  ) {
+    return loginEventRepository
+        .findTop20ByUserIdAndIpAddressAndIdNotOrderByOccurredAtDesc(
+            userId,
+            ipAddress,
+            excludedLoginEventId
+        );
   }
 }

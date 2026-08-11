@@ -21,9 +21,14 @@ public class LocationRiskTriggerService {
     this.loginHistoryService = loginHistoryService;
   }
 
-  public LocationRiskTriggerResult assessLocationRisk(Long userId, String ip) {
+  public LocationRiskTriggerResult assessLocationRisk(
+      Long userId,
+      String ip,
+      Long currentLoginEventId
+  ) {
     IpGeolocationResult ipGeolocationResult = ipGeolocationProvider.resolve(ip);
-    Optional<LoginEvent> loginEvent = loginHistoryService.getLatestSuccessfulLogin(userId);
+    Optional<LoginEvent> loginEvent = loginHistoryService
+        .getLatestSuccessfulLoginExcluding(userId, currentLoginEventId);
 
     if (!ipGeolocationResult.successful()) {
 
@@ -34,7 +39,11 @@ public class LocationRiskTriggerService {
       return new LocationRiskTriggerResult(ipGeolocationResult, null, false, false);
 
     } else {
-      boolean hasUsedIpBefore = loginHistoryService.hasUsedIpBefore(userId, ip);
+      boolean hasUsedIpBefore = loginHistoryService.hasUsedIpBeforeExcluding(
+          userId,
+          ip,
+          currentLoginEventId
+      );
       if (hasUsedIpBefore || Objects.equals(loginEvent.get().getCity(),
           ipGeolocationResult.city())) {
         return new LocationRiskTriggerResult(ipGeolocationResult, loginEvent.get(), hasUsedIpBefore,

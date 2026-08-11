@@ -1,8 +1,10 @@
 package com.redmath.redbank.locationrisk.login;
 
+import com.redmath.redbank.locationrisk.assessment.LocationRiskAssessmentRequested;
 import com.redmath.redbank.locationrisk.login.dto.LoginEventDto;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ public class LoginEventService {
 
 
   private final LoginEventRepository loginEventRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   public LoginEvent createLoginEvent(LoginEventDto dto) {
     LoginEvent event = new LoginEvent();
@@ -28,7 +31,17 @@ public class LoginEventService {
     event.setAccessTokenJti(dto.accessTokenJti());
     event.setOccurredAt(Instant.now());
 
-    return loginEventRepository.save(event);
+    LoginEvent savedEvent = loginEventRepository.save(event);
+
+    eventPublisher.publishEvent(new LocationRiskAssessmentRequested(
+        savedEvent.getId(),
+        savedEvent.getUserId(),
+        savedEvent.getIpAddress(),
+        savedEvent.getAccessTokenJti(),
+        savedEvent.getSuccessful()
+    ));
+
+    return savedEvent;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)

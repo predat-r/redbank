@@ -9,37 +9,51 @@ public class LoginHistoryTools {
   private final Long userId;
   private final LoginHistoryService loginHistoryService;
   private final String currentIp;
+  private final Long currentLoginEventId;
 
   public LoginHistoryTools(
       Long userId,
       LoginHistoryService loginHistoryService,
-      String currentIp
+      String currentIp,
+      Long currentLoginEventId
   ) {
     this.userId = userId;
     this.loginHistoryService = loginHistoryService;
     this.currentIp = currentIp;
+    this.currentLoginEventId = currentLoginEventId;
   }
 
   @Tool(description = "Retrieve the user's 20 most recent login attempts")
   public List<LoginEvent> getRecentLoginHistory() {
-    return loginHistoryService.getLatestLoginAttempts(userId);
+    return loginHistoryService.getLatestLoginAttemptsExcluding(
+        userId,
+        currentLoginEventId
+    );
   }
 
   @Tool(description = "Retrieve the user's latest successful login")
   public LoginEvent getLatestSuccessfulLogin() {
     return loginHistoryService
-        .getLatestSuccessfulLogin(userId)
+        .getLatestSuccessfulLoginExcluding(userId, currentLoginEventId)
         .orElse(null);
   }
 
   @Tool(description = "Retrieve the user's login attempts from the current IP address")
   public List<LoginEvent> getAttemptsFromCurrentIp() {
     return loginHistoryService
-        .getAttemptsByIpAddress(userId, currentIp);
+        .getAttemptsByIpAddressExcluding(
+            userId,
+            currentIp,
+            currentLoginEventId
+        );
   }
 
   @Tool(description = "Check whether the user has previously used the current IP address")
   public boolean hasUsedCurrentIpBefore() {
-    return loginHistoryService.hasUsedIpBefore(userId, currentIp);
+    return loginHistoryService.hasUsedIpBeforeExcluding(
+        userId,
+        currentIp,
+        currentLoginEventId
+    );
   }
 }

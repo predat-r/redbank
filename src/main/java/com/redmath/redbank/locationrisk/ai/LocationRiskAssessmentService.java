@@ -3,6 +3,8 @@ package com.redmath.redbank.locationrisk.ai;
 import com.redmath.redbank.locationrisk.geolocation.IpGeolocationResult;
 import com.redmath.redbank.locationrisk.loginhistory.LoginHistoryService;
 import com.redmath.redbank.locationrisk.loginhistory.LoginHistoryTools;
+import com.redmath.redbank.locationrisk.reputation.IpReputationProvider;
+import com.redmath.redbank.locationrisk.reputation.IpReputationTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -12,17 +14,21 @@ public class LocationRiskAssessmentService {
 
   private final LoginHistoryService loginHistoryService;
   private final ChatClient chatClient;
+  private final IpReputationProvider ipReputationProvider;
 
   public LocationRiskAssessmentService(LoginHistoryService loginHistoryService,
-      @Qualifier("locationRiskChatClient") ChatClient chatClient) {
+      @Qualifier("locationRiskChatClient") ChatClient chatClient,
+      IpReputationProvider ipReputationProvider) {
     this.loginHistoryService = loginHistoryService;
     this.chatClient = chatClient;
+    this.ipReputationProvider = ipReputationProvider;
   }
 
   public LocationRiskAssessment assess(Long userId, String currentIp,
-      IpGeolocationResult geolocationResult) {
+      Long currentLoginEventId, IpGeolocationResult geolocationResult) {
     LoginHistoryTools loginHistoryTools = new LoginHistoryTools(userId, loginHistoryService,
-        currentIp);
+        currentIp, currentLoginEventId);
+    IpReputationTools ipReputationTools = new IpReputationTools(currentIp, ipReputationProvider);
     String systemPrompt = """
         You are a login-origin security risk assessor for a banking application.
         
@@ -31,6 +37,10 @@ public class LocationRiskAssessmentService {
         
         Use the available login-history tools when historical context is needed.
         The tools are restricted to the current user and current IP.
+        
+        For every assessment, call the current-IP reputation tool and use its result as evidence.
+        Also use the login-history tools to inspect the user's previous access pattern.
+        If either tool returns unavailable data, state that clearly and reduce confidence.
         
         Consider only login-origin evidence:
         - Current IP geolocation.
@@ -61,7 +71,8 @@ public class LocationRiskAssessmentService {
         """.formatted(currentIp, geolocationResult.city(), geolocationResult.country(),
         geolocationResult.successful());
 
-    return chatClient.prompt().system(systemPrompt).user(userPrompt).tools(loginHistoryTools).call()
+    return chatClient.prompt().system(systemPrompt).user(userPrompt)
+        .tools(loginHistoryTools, ipReputationTools).call()
         .entity(LocationRiskAssessment.class);
   }
 }
