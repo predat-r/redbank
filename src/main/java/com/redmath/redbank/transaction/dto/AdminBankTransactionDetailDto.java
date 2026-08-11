@@ -45,6 +45,9 @@ public class AdminBankTransactionDetailDto {
   private String destinationUserPhoneNumber;
 
   public static AdminBankTransactionDetailDto from(BankTransaction transaction) {
+    if (transaction == null) {
+      return null;
+    }
     AdminBankTransactionDetailDto dto = new AdminBankTransactionDetailDto();
     populateBasicFields(transaction, dto);
 

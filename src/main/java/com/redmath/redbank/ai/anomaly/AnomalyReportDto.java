@@ -17,6 +17,9 @@ public class AnomalyReportDto {
   private OffsetDateTime createdAt;
 
   public static AnomalyReportDto from(AnomalyReport report) {
+    if (report == null) {
+      return null;
+    }
     AnomalyReportDto dto = new AnomalyReportDto();
     dto.setId(report.getId());
     if (report.getTransaction() != null) {
