@@ -86,7 +86,9 @@ public class AnomalyAnalysisService {
 
     List<BankTransaction> recentTransactions =
         bankTransactionRepository.findBySourceAccountHolderIdAndCreatedAtAfterOrderByCreatedAtDesc(
-            sourceId, cutoff);
+            sourceId, cutoff).stream()
+        .filter(t -> !t.getId().equals(transaction.getId()))
+        .toList();
 
     if (recentTransactions.isEmpty()) {
       return "No transaction history found in the last " + BEHAVIORAL_HISTORY_DAYS + " days. "
