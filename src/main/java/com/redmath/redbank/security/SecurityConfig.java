@@ -35,13 +35,16 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       DenyListJwtAuthenticationConverter denyListJwtAuthenticationConverter,
-      SecurityErrorResponseHandler securityErrorResponseHandler
+      SecurityErrorResponseHandler securityErrorResponseHandler,
+      RateLimitingFilter rateLimitingFilter
   ) throws Exception {
     configureBasicSecurity(http);
     configureAuthorization(http);
     configureExceptionHandling(http, securityErrorResponseHandler);
     configureJwtAuthentication(http, denyListJwtAuthenticationConverter,
         securityErrorResponseHandler);
+    http.addFilterBefore(rateLimitingFilter,
+        org.springframework.security.web.access.intercept.AuthorizationFilter.class);
 
     return http.build();
   }
