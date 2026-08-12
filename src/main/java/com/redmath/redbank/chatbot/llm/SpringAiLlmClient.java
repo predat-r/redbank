@@ -19,6 +19,7 @@ public class SpringAiLlmClient implements LlmClient {
       - Keep the reply short (1-3 sentences).
       - Use a friendly, professional tone.
       - Do NOT add disclaimers, suggestions, or advice unless directly relevant.
+      - Output ONLY the plain text reply. Do NOT output JSON format.
       """;
 
   /**
@@ -89,12 +90,24 @@ public class SpringAiLlmClient implements LlmClient {
         + rawFactualAnswer + "\n\n"
         + "Please rephrase this into a natural, friendly response.");
 
-    return conversationChatClient.prompt()
+    String response = conversationChatClient.prompt()
         .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", convId))
         .system(PHRASING_SYSTEM_PROMPT)
         .user(userPrompt)
         .call()
         .content();
+
+    try {
+      com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+      com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(response);
+      if (node.has("response")) {
+        return node.get("response").asText();
+      }
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      // Not JSON or no "response" field, proceed to return the raw string
+    }
+
+    return response;
   }
 
   @Override
