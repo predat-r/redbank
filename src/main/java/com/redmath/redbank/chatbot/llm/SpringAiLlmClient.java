@@ -103,7 +103,7 @@ public class SpringAiLlmClient implements LlmClient {
       if (node.has("response")) {
         return node.get("response").asText();
       }
-    } catch (Exception e) {
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
       // Not JSON or no "response" field, proceed to return the raw string
     }
 
