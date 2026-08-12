@@ -1,4 +1,4 @@
-package com.redmath.redbank.ai.anomaly;
+package com.redmath.redbank.anomaly;
 
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;

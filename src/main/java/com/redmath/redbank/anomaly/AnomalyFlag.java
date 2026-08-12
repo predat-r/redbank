@@ -1,4 +1,4 @@
-package com.redmath.redbank.ai.anomaly;
+package com.redmath.redbank.anomaly;
 
 public enum AnomalyFlag {
   NONE,

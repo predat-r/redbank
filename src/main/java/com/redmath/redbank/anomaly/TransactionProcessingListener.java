@@ -1,4 +1,4 @@
-package com.redmath.redbank.ai.anomaly;
+package com.redmath.redbank.anomaly;
 
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;
@@ -57,8 +57,10 @@ public class TransactionProcessingListener {
         bankTransactionService.completePendingTransaction(transaction.getId());
       } else {
         if (log.isWarnEnabled()) {
-          log.warn("Transaction {} flagged as SUSPICIOUS (anomalyFlag: {}, riskScore: {}). Leaving PENDING for admin approval.",
-              transaction.getTransactionReference(), ruleResult.getAnomalyFlag(), ruleResult.getRiskScore());
+          log.warn(
+              "Transaction {} flagged as SUSPICIOUS (anomalyFlag: {}, riskScore: {}). Leaving PENDING for admin approval.",
+              transaction.getTransactionReference(), ruleResult.getAnomalyFlag(),
+              ruleResult.getRiskScore());
         }
         anomalyAnalysisService.analyzeAndReport(transaction, ruleResult);
       }

@@ -1,6 +1,6 @@
 package com.redmath.redbank.transaction.request;
 
-import com.redmath.redbank.ai.anomaly.AnomalyFlag;
+import com.redmath.redbank.anomaly.AnomalyFlag;
 import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
 import com.redmath.redbank.transaction.TransactionType;

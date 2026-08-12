@@ -1,4 +1,4 @@
-package com.redmath.redbank.ai.anomaly;
+package com.redmath.redbank.anomaly;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;

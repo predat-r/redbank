@@ -3,7 +3,7 @@ package com.redmath.redbank.transaction;
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountHolderService;
 import com.redmath.redbank.account.AccountStatus;
-import com.redmath.redbank.ai.anomaly.AnomalyFlag;
+import com.redmath.redbank.anomaly.AnomalyFlag;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
@@ -81,7 +81,8 @@ public class BankTransactionService {
       OffsetDateTime toDate,
       Pageable pageable) {
     return bankTransactionRepository.findAll(
-        BankTransactionSpecification.filter(reference, accountNumber, type, status, category, anomalyFlag, fromDate, toDate),
+        BankTransactionSpecification.filter(reference, accountNumber, type, status, category,
+            anomalyFlag, fromDate, toDate),
         pageable);
   }
 
@@ -156,7 +157,8 @@ public class BankTransactionService {
 
     lockAccount(targetAccount.getId());
 
-    BankTransaction transaction = buildCompletedTransaction(TransactionType.DEPOSIT, request.getAmount(),
+    BankTransaction transaction = buildCompletedTransaction(TransactionType.DEPOSIT,
+        request.getAmount(),
         request.getDescription());
     transaction.setDestinationAccountHolder(targetAccount);
 
@@ -192,14 +194,16 @@ public class BankTransactionService {
   public BankTransaction completePendingTransaction(Long transactionId) {
     BankTransaction transaction = getTransactionById(transactionId);
     if (transaction.getStatus() != TransactionStatus.PENDING) {
-      throw new IllegalStateException("Transaction is not PENDING (current status: " + transaction.getStatus() + ")");
+      throw new IllegalStateException(
+          "Transaction is not PENDING (current status: " + transaction.getStatus() + ")");
     }
 
     transaction.setStatus(TransactionStatus.COMPLETED);
     transaction.setCompletedAt(OffsetDateTime.now());
     transaction = bankTransactionRepository.save(transaction);
 
-    if (transaction.getType() == TransactionType.TRANSFER && transaction.getDestinationAccountHolder() != null) {
+    if (transaction.getType() == TransactionType.TRANSFER
+        && transaction.getDestinationAccountHolder() != null) {
       balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction,
           BalanceIndicator.CREDIT);
     }
@@ -223,7 +227,8 @@ public class BankTransactionService {
     reversal.setTransactionReference(generateTransactionReference());
     reversal.setType(TransactionType.REVERSAL);
     reversal.setAmount(original.getAmount());
-    reversal.setDescription(reason != null && !reason.isBlank() ? reason : "Reversal of " + original.getTransactionReference());
+    reversal.setDescription(reason != null && !reason.isBlank() ? reason
+        : "Reversal of " + original.getTransactionReference());
     reversal.setCategory(original.getCategory());
     reversal.setStatus(TransactionStatus.COMPLETED);
     reversal.setCreatedAt(OffsetDateTime.now());
@@ -233,7 +238,8 @@ public class BankTransactionService {
     if (original.getSourceAccountHolder() != null) {
       reversal.setSourceAccountHolder(original.getSourceAccountHolder());
       reversal = bankTransactionRepository.save(reversal);
-      balanceService.recordLedgerEntry(original.getSourceAccountHolder(), reversal, BalanceIndicator.CREDIT);
+      balanceService.recordLedgerEntry(original.getSourceAccountHolder(), reversal,
+          BalanceIndicator.CREDIT);
     } else {
       reversal = bankTransactionRepository.save(reversal);
     }
