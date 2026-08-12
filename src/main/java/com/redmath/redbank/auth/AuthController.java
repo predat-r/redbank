@@ -1,6 +1,7 @@
 package com.redmath.redbank.auth;
 
 import com.redmath.redbank.auth.dto.ChangePasswordRequest;
+import com.redmath.redbank.auth.dto.CsrfTokenResponse;
 import com.redmath.redbank.auth.dto.LoginRequest;
 import com.redmath.redbank.auth.dto.LoginResponse;
 import com.redmath.redbank.auth.dto.RegisterRequest;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,13 +38,14 @@ public class AuthController {
   private final AuthService authService;
   private final RefreshTokenCookieService refreshTokenCookieService;
   private final TrustedOriginService trustedOriginService;
+  private final CsrfTokenRepository csrfTokenRepository;
 
 
   @GetMapping("/csrf")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void csrfToken(CsrfToken csrfToken) {
-    // Resolving the token causes CookieCsrfTokenRepository to set XSRF-TOKEN.
-    csrfToken.getToken();
+  public CsrfTokenResponse csrfToken(CsrfToken csrfToken, HttpServletRequest request,
+      HttpServletResponse response) {
+    csrfTokenRepository.saveToken(csrfToken, request, response);
+    return new CsrfTokenResponse(csrfToken.getToken());
   }
 
 
