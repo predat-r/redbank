@@ -33,6 +33,7 @@ build/
 .vscode/
 
 .env
+.env.prod
 
 
 # JMeter generated files
