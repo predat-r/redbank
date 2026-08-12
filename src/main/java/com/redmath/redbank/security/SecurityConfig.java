@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -44,7 +45,7 @@ public class SecurityConfig {
     configureJwtAuthentication(http, denyListJwtAuthenticationConverter,
         securityErrorResponseHandler);
     http.addFilterBefore(rateLimitingFilter,
-        org.springframework.security.web.access.intercept.AuthorizationFilter.class);
+        AuthorizationFilter.class);
 
     return http.build();
   }
