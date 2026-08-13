@@ -27,7 +27,12 @@ public class ChatClientConfig {
    */
   @Bean("intentChatClient")
   ChatClient intentChatClient(ChatClient.Builder builder) {
-    return builder.build();
+    ChatMemory chatMemory = MessageWindowChatMemory.builder().build();
+    Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
+
+    return builder
+        .defaultAdvisors(memoryAdvisor)
+        .build();
   }
 
   /**
