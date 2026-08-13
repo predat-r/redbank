@@ -21,7 +21,7 @@ public class BalanceQueryService {
   public Optional<BigDecimal> getBalanceAsOf(Long accountHolderId, LocalDate asOfDate) {
     OffsetDateTime cutoff = asOfDate.atTime(23, 59, 59).atOffset(java.time.ZoneOffset.UTC);
     return balanceRepository
-        .findTopByAccountHolderIdAndEntryDateLessThanEqualOrderByEntryDateDesc(accountHolderId,
+        .findTopByAccountHolderIdAndEntryDateLessThanEqualOrderByEntryDateDescIdDesc(accountHolderId,
             cutoff)
         .map(Balance::getRunningBalance);
   }

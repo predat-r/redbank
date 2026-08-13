@@ -49,8 +49,14 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
       """)
   Page<Balance> findAllByAccountHolderId(Long accountHolderId, Pageable pageable);
 
-  Optional<Balance> findTopByAccountHolderIdAndEntryDateLessThanEqualOrderByEntryDateDesc(
+  Optional<Balance> findTopByAccountHolderIdAndEntryDateLessThanOrderByEntryDateDescIdDesc(
       Long accountHolderId, OffsetDateTime entryDate);
+
+  Optional<Balance> findTopByAccountHolderIdAndEntryDateLessThanEqualOrderByEntryDateDescIdDesc(
+      Long accountHolderId, OffsetDateTime entryDate);
+
+  List<Balance> findByAccountHolderIdAndEntryDateBetweenOrderByEntryDateAscIdAsc(
+      Long accountHolderId, OffsetDateTime from, OffsetDateTime to);
 
   List<Balance> findByAccountHolderIdAndEntryDateAfter(
       Long accountHolderId, OffsetDateTime entryDate);

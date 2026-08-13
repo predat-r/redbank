@@ -1,5 +1,8 @@
 package com.redmath.redbank.chatbot.llm;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redmath.redbank.chatbot.dto.FinancialQueryIntent;
 import com.redmath.redbank.chatbot.dto.LlmIntentOutput;
 import java.time.LocalDate;
@@ -101,12 +104,12 @@ public class SpringAiLlmClient implements LlmClient {
         .content();
 
     try {
-      com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(response);
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode node = mapper.readTree(response);
       if (node.has("response")) {
         return node.get("response").asText();
       }
-    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+    } catch (JsonProcessingException e) {
       // Not JSON or no "response" field, proceed to return the raw string
     }
 
