@@ -1,4 +1,4 @@
-package com.redmath.redbank.ai.anomaly;
+package com.redmath.redbank.anomaly;
 
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.BankTransaction;
@@ -103,9 +103,9 @@ public class AnomalyAnalysisService {
 
     List<BankTransaction> recentTransactions =
         bankTransactionRepository.findBySourceAccountHolderIdAndCreatedAtAfterOrderByCreatedAtDesc(
-            sourceId, cutoff).stream()
-        .filter(t -> !t.getId().equals(transaction.getId()))
-        .toList();
+                sourceId, cutoff).stream()
+            .filter(t -> !t.getId().equals(transaction.getId()))
+            .toList();
 
     if (recentTransactions.isEmpty()) {
       return "No transaction history found in the last " + BEHAVIORAL_HISTORY_DAYS + " days. "

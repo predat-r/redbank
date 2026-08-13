@@ -1,6 +1,7 @@
 package com.redmath.redbank.security;
 
 import java.util.List;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -35,13 +37,18 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       DenyListJwtAuthenticationConverter denyListJwtAuthenticationConverter,
-      SecurityErrorResponseHandler securityErrorResponseHandler
+      SecurityErrorResponseHandler securityErrorResponseHandler,
+      ObjectProvider<RateLimitingFilter> rateLimitingFilterProvider
   ) throws Exception {
     configureBasicSecurity(http);
     configureAuthorization(http);
     configureExceptionHandling(http, securityErrorResponseHandler);
     configureJwtAuthentication(http, denyListJwtAuthenticationConverter,
         securityErrorResponseHandler);
+    RateLimitingFilter rateLimitingFilter = rateLimitingFilterProvider.getIfAvailable();
+    if (rateLimitingFilter != null) {
+      http.addFilterBefore(rateLimitingFilter, AuthorizationFilter.class);
+    }
 
     return http.build();
   }
@@ -92,6 +99,9 @@ public class SecurityConfig {
   @Bean
   CsrfTokenRepository csrfTokenRepository() {
     CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+    repository.setCookieCustomizer(cookie -> cookie
+        .sameSite("None")
+        .secure(true));
     repository.setCookiePath("/");
     return repository;
   }

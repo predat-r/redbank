@@ -1,4 +1,4 @@
-package com.redmath.redbank.ai.anomaly;
+package com.redmath.redbank.anomaly;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StalePendingTransactionScheduler {
 
-  private static final int PENDING_TIMEOUT_MINUTES = 30;
+  private static final int PENDING_TIMEOUT_HOURS = 24;
 
   private final BankTransactionRepository bankTransactionRepository;
   private final BankTransactionService bankTransactionService;
@@ -29,7 +29,7 @@ public class StalePendingTransactionScheduler {
     }
 
     OffsetDateTime cutoff = OffsetDateTime.now(ZoneOffset.UTC)
-        .minusMinutes(PENDING_TIMEOUT_MINUTES);
+        .minusHours(PENDING_TIMEOUT_HOURS);
 
     int[] count = {0};
     bankTransactionRepository.findAllByStatusAndCreatedAtBefore(TransactionStatus.PENDING, cutoff)

@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.redmath.redbank.anomaly.AnomalyReport;
+import com.redmath.redbank.anomaly.AnomalyReportDto;
 import com.redmath.redbank.transaction.BankTransaction;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.DisplayName;

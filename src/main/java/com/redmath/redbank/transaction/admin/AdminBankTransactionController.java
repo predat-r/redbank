@@ -1,8 +1,8 @@
 package com.redmath.redbank.transaction.admin;
 
-import com.redmath.redbank.ai.anomaly.AnomalyAnalysisService;
-import com.redmath.redbank.ai.anomaly.AnomalyReport;
-import com.redmath.redbank.ai.anomaly.AnomalyReportDto;
+import com.redmath.redbank.anomaly.AnomalyAnalysisService;
+import com.redmath.redbank.anomaly.AnomalyReport;
+import com.redmath.redbank.anomaly.AnomalyReportDto;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
@@ -55,7 +55,8 @@ public class AdminBankTransactionController {
       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<BankTransaction> transactions = bankTransactionService.getAllTransactions(
         filter.getReference(), filter.getAccountNumber(), filter.getType(), filter.getStatus(),
-        filter.getCategory(), filter.getAnomalyFlag(), filter.getFromDate(), filter.getToDate(), pageable);
+        filter.getCategory(), filter.getAnomalyFlag(), filter.getFromDate(), filter.getToDate(),
+        pageable);
     return ResponseEntity.ok(transactions.map(AdminBankTransactionDto::from));
   }
 
@@ -66,7 +67,8 @@ public class AdminBankTransactionController {
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody DepositRequest request) {
     BankTransaction transaction = bankTransactionService.deposit(extractUserId(jwt), request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(AdminBankTransactionDto.from(transaction));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(AdminBankTransactionDto.from(transaction));
   }
 
   @GetMapping("/accounts/{accountNumber}/transactions")

@@ -1,7 +1,7 @@
 package com.redmath.redbank.transaction;
 
 import com.redmath.redbank.account.AccountHolder;
-import com.redmath.redbank.ai.anomaly.AnomalyFlag;
+import com.redmath.redbank.anomaly.AnomalyFlag;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

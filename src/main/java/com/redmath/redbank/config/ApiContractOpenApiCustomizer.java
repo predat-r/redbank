@@ -85,7 +85,6 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
       "createWithdrawal", "Withdrawal created");
 
   private static final Set<String> NO_CONTENT_OPERATIONS = Set.of(
-      "csrfToken",
       "deactivateUser",
       "reactivateUser",
       "freezeAccountHolder",
@@ -98,6 +97,7 @@ public class ApiContractOpenApiCustomizer implements OpenApiCustomizer {
   private static final Map<String, List<String>> REQUIRED_RESPONSE_FIELDS = Map.ofEntries(
       Map.entry("ApiError", List.of("timestamp", "status", "error", "message", "path")),
       Map.entry("LoginResponse", List.of("accessToken", "tokenType")),
+      Map.entry("CsrfTokenResponse", List.of("token")),
       Map.entry("RegisterResponse", List.of("id", "email", "status", "tokens")),
       Map.entry("RegistrationStatusResponse", List.of("userId", "status")),
       Map.entry("AdminUserResponse",

@@ -10,6 +10,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.anomaly.AnomalyAnalysisService;
+import com.redmath.redbank.anomaly.AnomalyFlag;
+import com.redmath.redbank.anomaly.AnomalyReport;
+import com.redmath.redbank.anomaly.AnomalyReportRepository;
+import com.redmath.redbank.anomaly.RuleEvaluationResult;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;
@@ -90,16 +95,19 @@ class AnomalyAnalysisServiceTest {
     when(chatClient.prompt()).thenReturn(requestSpec);
     when(requestSpec.user(anyString())).thenReturn(requestSpec);
     when(requestSpec.call()).thenReturn(callResponseSpec);
-    when(callResponseSpec.content()).thenReturn("AI Analysis: Appears suspicious due to sudden spike.");
+    when(callResponseSpec.content()).thenReturn(
+        "AI Analysis: Appears suspicious due to sudden spike.");
 
-    when(anomalyReportRepository.save(any(AnomalyReport.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(anomalyReportRepository.save(any(AnomalyReport.class))).thenAnswer(
+        invocation -> invocation.getArgument(0));
 
     AnomalyReport report = anomalyAnalysisService.analyzeAndReport(currentTxn, ruleResult);
 
     assertNotNull(report);
     assertEquals("MANUAL_REVIEW", report.getRecommendation());
     assertEquals(40, report.getRiskScore());
-    assertEquals("High amount | AI Analysis: AI Analysis: Appears suspicious due to sudden spike.", report.getReasoning());
+    assertEquals("High amount | AI Analysis: AI Analysis: Appears suspicious due to sudden spike.",
+        report.getReasoning());
   }
 
   @Test
@@ -124,7 +132,8 @@ class AnomalyAnalysisServiceTest {
     when(requestSpec.user(anyString())).thenReturn(requestSpec);
     when(requestSpec.call()).thenThrow(new RuntimeException("LLM Timeout"));
 
-    when(anomalyReportRepository.save(any(AnomalyReport.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(anomalyReportRepository.save(any(AnomalyReport.class))).thenAnswer(
+        invocation -> invocation.getArgument(0));
 
     AnomalyReport report = anomalyAnalysisService.analyzeAndReport(currentTxn, ruleResult);
 
@@ -150,7 +159,8 @@ class AnomalyAnalysisServiceTest {
     when(requestSpec.call()).thenReturn(callResponseSpec);
     when(callResponseSpec.content()).thenReturn(null);
 
-    when(anomalyReportRepository.save(any(AnomalyReport.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(anomalyReportRepository.save(any(AnomalyReport.class))).thenAnswer(
+        invocation -> invocation.getArgument(0));
 
     AnomalyReport report = anomalyAnalysisService.analyzeAndReport(depositTxn, ruleResult);
 

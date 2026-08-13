@@ -1,4 +1,4 @@
-package com.redmath.redbank.ai.config;
+package com.redmath.redbank.config;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;

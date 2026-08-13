@@ -100,6 +100,34 @@ vars.put("receiver_phone", "+92" + String.format("%010d", (base + 1) % 100000000
           <stringProp name="scriptLanguage">groovy</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="Per-thread HTTP Cookies" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+          <boolProp name="CookieManager.controlledByThreadGroup">true</boolProp>
+        </CookieManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="00 - Fetch CSRF Token" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+          <stringProp name="HTTPSampler.domain"/><stringProp name="HTTPSampler.port"/><stringProp name="HTTPSampler.protocol"/>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp><stringProp name="HTTPSampler.path">/api/auth/csrf</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp><boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp><boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp><stringProp name="HTTPSampler.embedded_url_re"/>
+          <stringProp name="HTTPSampler.connect_timeout">${__P(connect_timeout,10000)}</stringProp><stringProp name="HTTPSampler.response_timeout">${__P(response_timeout,30000)}</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="CSRF endpoint must return 204" enabled="true">
+            <collectionProp name="Asserion.test_strings"><stringProp name="0">204</stringProp></collectionProp><stringProp name="Assertion.custom_message"/>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp><boolProp name="Assertion.assume_success">false</boolProp><stringProp name="Assertion.test_type">8</stringProp>
+          </ResponseAssertion><hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract XSRF-TOKEN Cookie" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp><stringProp name="RegexExtractor.refname">csrf_token</stringProp><stringProp name="RegexExtractor.regex">XSRF-TOKEN=([^;]+)</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp><stringProp name="RegexExtractor.default">NOT_FOUND</stringProp><stringProp name="RegexExtractor.match_number">1</stringProp>
+          </RegexExtractor><hashTree/>
+        </hashTree>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Echo CSRF Token For Mutating Requests" enabled="true">
+          <collectionProp name="HeaderManager.headers"><elementProp name="0" elementType="Header"><stringProp name="Header.name">X-XSRF-TOKEN</stringProp><stringProp name="Header.value">${csrf_token}</stringProp></elementProp></collectionProp>
+        </HeaderManager><hashTree/>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01 - Admin Login" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">

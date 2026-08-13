@@ -7,28 +7,28 @@ databaseChangeLog:
         - sql:
             sql: |
               INSERT INTO bank_transactions
-                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, amount, status, created_at, completed_at)
-              SELECT 'SEED-JOHN-DEPOSIT', NULL, id, 'DEPOSIT', 'Initial account funding', 1000.00, 'COMPLETED', TIMESTAMPTZ '2026-01-01 09:00:00+00', TIMESTAMPTZ '2026-01-01 09:00:00+00'
+                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, category, amount, status, created_at, completed_at)
+              SELECT 'SEED-JOHN-DEPOSIT', NULL, id, 'DEPOSIT', 'Initial savings deposit', 'INVESTMENT', 1000.00, 'COMPLETED', TIMESTAMPTZ '2026-01-01 09:00:00+00', TIMESTAMPTZ '2026-01-01 09:00:00+00'
               FROM account_holders WHERE account_number = 'RB1000000001';
               INSERT INTO bank_transactions
-                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, amount, status, created_at, completed_at)
-              SELECT 'SEED-JANE-DEPOSIT', NULL, id, 'DEPOSIT', 'Initial account funding', 600.00, 'COMPLETED', TIMESTAMPTZ '2026-01-01 09:01:00+00', TIMESTAMPTZ '2026-01-01 09:01:00+00'
+                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, category, amount, status, created_at, completed_at)
+              SELECT 'SEED-JANE-DEPOSIT', NULL, id, 'DEPOSIT', 'Initial savings deposit', 'INVESTMENT', 600.00, 'COMPLETED', TIMESTAMPTZ '2026-01-01 09:01:00+00', TIMESTAMPTZ '2026-01-01 09:01:00+00'
               FROM account_holders WHERE account_number = 'RB1000000002';
               INSERT INTO bank_transactions
-                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, amount, status, created_at, completed_at)
-              SELECT 'SEED-JOHN-TO-JANE', s.id, d.id, 'TRANSFER', 'Payment to Jane Smith', 300.00, 'COMPLETED', TIMESTAMPTZ '2026-01-02 10:00:00+00', TIMESTAMPTZ '2026-01-02 10:00:00+00'
+                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, category, amount, status, created_at, completed_at)
+              SELECT 'SEED-JOHN-TO-JANE', s.id, d.id, 'TRANSFER', 'Monthly rent contribution', 'BILLS', 300.00, 'COMPLETED', TIMESTAMPTZ '2026-01-02 10:00:00+00', TIMESTAMPTZ '2026-01-02 10:00:00+00'
               FROM account_holders s, account_holders d WHERE s.account_number = 'RB1000000001' AND d.account_number = 'RB1000000002';
               INSERT INTO bank_transactions
-                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, amount, status, created_at, completed_at)
-              SELECT 'SEED-JANE-TO-JOHN', s.id, d.id, 'TRANSFER', 'Payment from Jane Smith', 200.00, 'COMPLETED', TIMESTAMPTZ '2026-01-03 11:00:00+00', TIMESTAMPTZ '2026-01-03 11:00:00+00'
+                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, category, amount, status, created_at, completed_at)
+              SELECT 'SEED-JANE-TO-JOHN', s.id, d.id, 'TRANSFER', 'Shared grocery reimbursement', 'GROCERY', 200.00, 'COMPLETED', TIMESTAMPTZ '2026-01-03 11:00:00+00', TIMESTAMPTZ '2026-01-03 11:00:00+00'
               FROM account_holders s, account_holders d WHERE s.account_number = 'RB1000000002' AND d.account_number = 'RB1000000001';
               INSERT INTO bank_transactions
-                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, amount, status, created_at, completed_at)
-              SELECT 'SEED-JOHN-WITHDRAWAL', id, NULL, 'WITHDRAWAL', 'ATM cash withdrawal', 250.00, 'COMPLETED', TIMESTAMPTZ '2026-01-04 12:00:00+00', TIMESTAMPTZ '2026-01-04 12:00:00+00'
+                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, category, amount, status, created_at, completed_at)
+              SELECT 'SEED-JOHN-WITHDRAWAL', id, NULL, 'WITHDRAWAL', 'Weekly grocery shopping', 'GROCERY', 250.00, 'COMPLETED', TIMESTAMPTZ '2026-01-04 12:00:00+00', TIMESTAMPTZ '2026-01-04 12:00:00+00'
               FROM account_holders WHERE account_number = 'RB1000000001';
               INSERT INTO bank_transactions
-                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, amount, status, created_at, completed_at)
-              SELECT 'SEED-JANE-WITHDRAWAL', id, NULL, 'WITHDRAWAL', 'ATM cash withdrawal', 300.00, 'COMPLETED', TIMESTAMPTZ '2026-01-05 13:00:00+00', TIMESTAMPTZ '2026-01-05 13:00:00+00'
+                (transaction_reference, source_account_holder_id, destination_account_holder_id, type, description, category, amount, status, created_at, completed_at)
+              SELECT 'SEED-JANE-WITHDRAWAL', id, NULL, 'WITHDRAWAL', 'Public transport expenses', 'TRANSPORT', 300.00, 'COMPLETED', TIMESTAMPTZ '2026-01-05 13:00:00+00', TIMESTAMPTZ '2026-01-05 13:00:00+00'
               FROM account_holders WHERE account_number = 'RB1000000002';
 
               INSERT INTO balance (account_holder_id, transaction_id, entry_date, amount, indicator, running_balance)

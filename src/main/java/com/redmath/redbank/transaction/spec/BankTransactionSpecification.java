@@ -1,7 +1,7 @@
 package com.redmath.redbank.transaction.spec;
 
 import com.redmath.redbank.account.AccountHolder;
-import com.redmath.redbank.ai.anomaly.AnomalyFlag;
+import com.redmath.redbank.anomaly.AnomalyFlag;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;
@@ -29,7 +29,8 @@ public final class BankTransactionSpecification {
       AnomalyFlag anomalyFlag,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return filterInternal(null, reference, accountNumber, type, status, category, anomalyFlag, fromDate, toDate);
+    return filterInternal(null, reference, accountNumber, type, status, category, anomalyFlag,
+        fromDate, toDate);
   }
 
   public static Specification<BankTransaction> filterForUser(
@@ -40,7 +41,8 @@ public final class BankTransactionSpecification {
       TransactionCategory category,
       OffsetDateTime fromDate,
       OffsetDateTime toDate) {
-    return filterInternal(accountHolderId, null, accountNumber, type, status, category, null, fromDate, toDate);
+    return filterInternal(accountHolderId, null, accountNumber, type, status, category, null,
+        fromDate, toDate);
   }
 
   private static Specification<BankTransaction> filterInternal(

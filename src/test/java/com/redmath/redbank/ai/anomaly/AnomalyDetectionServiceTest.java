@@ -7,6 +7,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.anomaly.AnomalyDetectionService;
+import com.redmath.redbank.anomaly.AnomalyFlag;
+import com.redmath.redbank.anomaly.RuleEvaluationResult;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;
 import java.math.BigDecimal;
@@ -104,7 +107,8 @@ class AnomalyDetectionServiceTest {
     transaction.setAmount(new BigDecimal("20.00"));
     transaction.setCreatedAt(OffsetDateTime.of(2026, 8, 11, 14, 0, 0, 0, ZoneOffset.UTC));
 
-    when(bankTransactionRepository.countBySourceAccountHolderIdAndCreatedAtAfter(eq(1L), any(OffsetDateTime.class)))
+    when(bankTransactionRepository.countBySourceAccountHolderIdAndCreatedAtAfter(eq(1L),
+        any(OffsetDateTime.class)))
         .thenReturn(12L);
 
     RuleEvaluationResult result = anomalyDetectionService.evaluate(transaction);
@@ -124,7 +128,8 @@ class AnomalyDetectionServiceTest {
     transaction.setAmount(new BigDecimal("60000.00")); // 70
     transaction.setCreatedAt(OffsetDateTime.of(2026, 8, 11, 2, 0, 0, 0, ZoneOffset.UTC)); // 25
 
-    when(bankTransactionRepository.countBySourceAccountHolderIdAndCreatedAtAfter(eq(1L), any(OffsetDateTime.class)))
+    when(bankTransactionRepository.countBySourceAccountHolderIdAndCreatedAtAfter(eq(1L),
+        any(OffsetDateTime.class)))
         .thenReturn(15L); // 35
 
     RuleEvaluationResult result = anomalyDetectionService.evaluate(transaction);

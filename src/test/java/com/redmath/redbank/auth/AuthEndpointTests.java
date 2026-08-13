@@ -4,6 +4,7 @@ import com.redmath.redbank.common.MockMvcSecurityTestConfig;
 
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static com.redmath.redbank.common.AuthUtilities.withPendingUser;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -135,6 +136,20 @@ class AuthEndpointTests {
         .andExpect(jsonPath("$.accessToken").isNotEmpty())
         .andExpect(jsonPath("$.refreshToken").doesNotExist())
         .andExpect(jsonPath("$.tokenType").value("Bearer"));
+  }
+
+  @Test
+  void csrfEndpointReturnsTheTokenWrittenToTheCookie() throws Exception {
+    MvcResult result = mockMvc.perform(get("/api/auth/csrf"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").isNotEmpty())
+        .andReturn();
+
+    String jsonToken = objectMapper.readTree(result.getResponse().getContentAsString())
+        .path("token").asText();
+    String cookieToken = result.getResponse().getCookie("XSRF-TOKEN").getValue();
+
+    assertEquals(cookieToken, jsonToken);
   }
 
   @Test
