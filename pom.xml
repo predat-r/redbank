@@ -213,7 +213,13 @@
     <dependency>
       <groupId>org.springframework.ai</groupId>
       <artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
+    </dependency>    <!-- PDF Generation -->
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>1.3.39</version>
     </dependency>
+
   </dependencies>
 
   <dependencyManagement>

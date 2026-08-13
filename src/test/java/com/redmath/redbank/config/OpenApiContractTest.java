@@ -102,7 +102,7 @@ class OpenApiContractTest {
         assertJsonResponseMediaTypes(responses, pathEntry.getKey(), methodEntry.getKey());
       }
     }
-    assertEquals(48, operationCount);
+    assertEquals(49, operationCount);
   }
 
   private boolean hasSuccessfulResponse(JsonNode responses) {

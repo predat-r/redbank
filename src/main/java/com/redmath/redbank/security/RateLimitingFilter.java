@@ -74,7 +74,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     if (path.contains("/chat")) {
       return RateLimitingService.RateLimitType.CHATBOT;
     }
-    if (path.contains("/transfers") || path.contains("/withdrawals") || path.contains("/deposits")) {
+    if (path.contains("/transfers") || path.contains("/withdrawals") || path.contains("/deposits") || path.contains("/statement")) {
       return RateLimitingService.RateLimitType.FINANCIAL;
     }
     return RateLimitingService.RateLimitType.GENERAL;
