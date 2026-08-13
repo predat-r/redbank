@@ -45,3 +45,4 @@ jmeter/reports/*
 jmeter.log
 results.jtl
 html-report/
+bank-statement-feature-prompt.md
