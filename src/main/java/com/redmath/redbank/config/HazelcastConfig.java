@@ -22,9 +22,6 @@ public class HazelcastConfig {
   public HazelcastInstance hazelcastInstance() {
     Config config = new Config();
     config.setClusterName("redbank");
-    config.getNetworkConfig().getRestApiConfig()
-        .setEnabled(true)
-        .enableAllGroups();
 
     config.addMapConfig(
         new MapConfig("account-holder-by-number")
