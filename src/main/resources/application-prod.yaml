@@ -22,6 +22,7 @@ logging:
     org.springframework.web: INFO
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
+    com.hazelcast.internal.server.tcp: OFF
 
 app:
   cors:
@@ -35,3 +36,16 @@ app:
 
 server:
   forward-headers-strategy: framework
+
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: false
+    tracing:
+      export:
+        enabled: false
+  metrics:
+    export:
+      otlp:
+        enabled: false

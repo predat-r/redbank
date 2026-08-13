@@ -8,6 +8,18 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   ai:
     google:
       genai:
@@ -41,11 +53,12 @@ scheduler:
   registration-cleanup:
     cron: "0 0 3 * * *"
   stale-transaction:
-    cron: "0 */15 * * * *"
-
-
+    cron: "0 0 * * * *"
 
 management:
+  endpoint:
+    health:
+      show-details: never
   tracing:
     sampling:
       probability: 1.0

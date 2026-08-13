@@ -16,6 +16,8 @@ import com.redmath.redbank.transaction.request.WithdrawalRequest;
 import com.redmath.redbank.transaction.spec.BankTransactionSpecification;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import com.redmath.redbank.transaction.event.TransactionCancelledEvent;
+import com.redmath.redbank.transaction.event.TransactionCompletedEvent;
 import com.redmath.redbank.transaction.event.TransactionSubmittedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -168,6 +170,8 @@ public class BankTransactionService {
     auditService.recordAuditLog(adminUserId, AuditAction.ADMIN_DEPOSIT_RECORDED,
         AuditTargetType.TRANSACTION, transaction.getId().toString(), null);
 
+    eventPublisher.publishEvent(new TransactionCompletedEvent(transaction.getId()));
+
     return transaction;
   }
 
@@ -207,6 +211,8 @@ public class BankTransactionService {
       balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction,
           BalanceIndicator.CREDIT);
     }
+
+    eventPublisher.publishEvent(new TransactionCompletedEvent(transaction.getId()));
 
     return transaction;
   }
@@ -248,6 +254,8 @@ public class BankTransactionService {
       auditService.recordAuditLog(adminUserId, AuditAction.TRANSACTION_REVERSED,
           AuditTargetType.TRANSACTION, original.getId().toString(), reason);
     }
+
+    eventPublisher.publishEvent(new TransactionCancelledEvent(original.getId(), reason));
 
     return reversal;
   }

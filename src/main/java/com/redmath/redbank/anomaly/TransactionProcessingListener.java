@@ -6,9 +6,10 @@ import com.redmath.redbank.transaction.BankTransactionService;
 import com.redmath.redbank.transaction.event.TransactionSubmittedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 
 @Component
 public class TransactionProcessingListener {
@@ -32,7 +33,7 @@ public class TransactionProcessingListener {
   }
 
   @Async
-  @EventListener
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleTransactionSubmitted(TransactionSubmittedEvent event) {
     if (event == null || event.getTransactionId() == null) {
       return;
