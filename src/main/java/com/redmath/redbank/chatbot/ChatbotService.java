@@ -88,7 +88,7 @@ public class ChatbotService {
       case BALANCE_AT_DATE -> handleBalanceAtDate(intent, accountHolderId);
       case PROJECTION -> handleProjection(accountHolderId, message, conversationId);
       case TRANSACTION_LOOKUP -> handleTransactionLookup(intent, accountHolderId);
-      default -> new ChatResponse("Sorry, I couldn't process that question.", false);
+      case null, default -> new ChatResponse("Sorry, I couldn't process that question.", false);
     };
   }
 

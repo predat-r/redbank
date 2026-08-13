@@ -40,6 +40,7 @@ class SpringAiLlmClientTest {
     mockOutput.setQueryType(QueryType.BALANCE_AT_DATE);
     
     when(intentChatClient.prompt()
+        .advisors(any(java.util.function.Consumer.class))
         .system(anyString())
         .user(anyString())
         .call()

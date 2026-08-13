@@ -44,8 +44,11 @@ public class SpringAiLlmClient implements LlmClient {
       String conversationId) {
     String systemPrompt = IntentPromptBuilder.buildSystemPrompt(today);
 
-    // intentChatClient has no advisors — conversationId is intentionally not passed
+    String convId = (conversationId != null && !conversationId.isBlank()) ? conversationId : "default";
+
+    // intentChatClient uses memory so it can handle follow-up questions
     LlmIntentOutput output = intentChatClient.prompt()
+        .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", convId))
         .system(systemPrompt)
         .user(userMessage)
         .call()
