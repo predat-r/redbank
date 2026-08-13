@@ -99,7 +99,7 @@ additional risk assessment; high-risk results may challenge the login or revoke 
 - **Registration Cleanup**: Cron job automatically rejects pending registrations that have remained
   unapproved for over 30 days.
 - **Stale Transaction Cleanup**: Cron job cancels pending transactions that remain uncompleted after
-  30 minutes.
+  24 hours.
 - **Audit Logging**: Administrative deposits, registration decisions, and administrator-driven user
   lifecycle changes write records to the `audit_logs` database table.
 
@@ -142,6 +142,7 @@ properties such as account number, currency, and account status are not user-edi
 | Method  | Endpoint                             | Query Parameters                                                                            | Description                                                                  |
 |:--------|:-------------------------------------|:--------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------|
 | `GET`   | `/api/accounts/me`                   | None                                                                                        | Returns the authenticated user's account-holder profile.                     |
+| `PATCH` | `/api/users/me`                      | None                                                                                        | Updates the authenticated user's personal profile.                           |
 | `GET`   | `/api/accounts/name/{accountNumber}` | None                                                                                        | Returns the name and account number for an account holder.                   |
 | `PATCH` | `/api/accounts/freeze/me`            | None                                                                                        | Freezes the authenticated user's account.                                    |
 | `PATCH` | `/api/accounts/unfreeze/me`          | None                                                                                        | Unfreezes the authenticated user's account.                                  |
@@ -149,6 +150,7 @@ properties such as account number, currency, and account status are not user-edi
 | `GET`   | `/api/accounts/me/transactions`      | `accountNumber`, `type`, `status`, `category`, `fromDate`, `toDate`, `page`, `size`, `sort` | Retrieves paginated transaction history for the authenticated user.          |
 | `POST`  | `/api/accounts/me/withdrawals`       | None                                                                                        | Executes a cash withdrawal from the user's account.                          |
 | `POST`  | `/api/accounts/me/transfers`         | None                                                                                        | Transfers funds from the user's account to a destination account number.     |
+| `POST`  | `/api/accounts/me/chat`              | None                                                                                        | Sends a prompt to the AI financial assistant chatbot.                        |
 | `GET`   | `/api/balance/me/latest`             | None                                                                                        | Returns the current running balance and latest ledger entry for the account. |
 
 ### CSRF Policy
@@ -229,8 +231,19 @@ return HTTP `409 Conflict`, while unknown user IDs return HTTP `404 Not Found`.
 - **Database & Migrations**: PostgreSQL with Liquibase migrations
 - **Containerization**: Spring Boot Docker Compose integration, Docker Compose
 - **Observability**: OpenTelemetry, Micrometer, Grafana LGTM (Grafana, Loki, Tempo, Mimir)
+- **Rate Limiting**: Bucket4j (in-memory token bucket rate limiting per IP/user)
 - **Code Quality Tools**: SonarCloud, PMD 7, Checkstyle (Google Java Style), SpotBugs, JaCoCo,
   Pitest
+
+### Rate Limiting & Security
+
+In-memory Bucket4j token bucket rate limiting (`RateLimitingFilter`, `RateLimitingService`) protects endpoints from abuse:
+- **AUTH** (`/api/auth/login`, `/api/auth/register`, `/api/auth/refresh`): 30 requests/minute
+- **CHATBOT** (`/api/accounts/me/chat`): 15 requests/minute
+- **FINANCIAL** (`/api/accounts/me/withdrawals`, `/api/accounts/me/transfers`, `/api/admin/deposits`): 60 requests/minute
+- **GENERAL**: 200 requests/minute
+
+Rate limiting is active in non-test profiles (`@Profile("!test")`).
 
 ### Hazelcast Caching
 
@@ -263,9 +276,11 @@ com.redmath.redbank
 ├── auth            # User registration, login, token refresh, and security filters
 ├── balance         # Balance entity, running balance ledger, and balance controllers
 │   └── admin
+├── chatbot         # AI Financial Assistant Chatbot domain & endpoints
 ├── common          # Custom exception classes, JWT utilities, and shared helpers
 ├── observability   # Telemetry setup, tracing, and metric instrumentation
 ├── scheduler       # Cron jobs (balance reconciliation, stale registration & txn cleanup)
+├── security        # Security configuration, JWT converters, and rate-limiting filter
 ├── transaction     # Transaction entity, service, repository, DTOs, and endpoints
 │   ├── admin
 │   ├── dto
