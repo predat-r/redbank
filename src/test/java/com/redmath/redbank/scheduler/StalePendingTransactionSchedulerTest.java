@@ -60,7 +60,7 @@ class StalePendingTransactionSchedulerTest {
     staleTxn.setType(TransactionType.TRANSFER);
     staleTxn.setAmount(new BigDecimal("100.00"));
     staleTxn.setStatus(TransactionStatus.PENDING);
-    staleTxn.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC).minusMinutes(45));
+    staleTxn.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC).minusHours(25));
 
     when(bankTransactionRepository.findAllByStatusAndCreatedAtBefore(eq(TransactionStatus.PENDING), any(OffsetDateTime.class)))
         .thenReturn(List.of(staleTxn));

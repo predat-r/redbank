@@ -18,7 +18,9 @@ import com.redmath.redbank.chatbot.llm.LlmClient;
 import com.redmath.redbank.chatbot.query.BalanceQueryService;
 import com.redmath.redbank.chatbot.query.CounterpartyResolver;
 import com.redmath.redbank.chatbot.query.TransactionQueryService;
+import com.redmath.redbank.chatbot.query.TransactionQueryService.AggregateResult;
 import com.redmath.redbank.transaction.BankTransaction;
+import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -156,5 +158,106 @@ class ChatbotServiceTest {
     assertFalse(response.isNeedsClarification());
     assertTrue(response.getReply().contains("$50.00"));
     assertTrue(response.getReply().contains("REF-123"));
+  }
+
+  @Test
+  void handleUnsupportedQueryType() {
+    when(accountHolderService.getAccountHolderByUserId(1L)).thenReturn(accountHolder);
+    
+    FinancialQueryIntent intent = new FinancialQueryIntent();
+    intent.setQueryType(QueryType.UNSUPPORTED);
+    when(llmClient.parseIntent(anyString(), any(LocalDate.class), anyString())).thenReturn(intent);
+    
+    ChatResponse response = chatbotService.handle("Tell me a joke", 1L);
+    assertFalse(response.isNeedsClarification());
+    assertTrue(response.getReply().contains("only answer questions about your own transactions"));
+  }
+
+  @Test
+  void handleCounterpartyNotFound() {
+    when(accountHolderService.getAccountHolderByUserId(1L)).thenReturn(accountHolder);
+    
+    FinancialQueryIntent intent = new FinancialQueryIntent();
+    intent.setQueryType(QueryType.TRANSACTION_AGGREGATE);
+    intent.setCounterpartyName("John Doe");
+    when(llmClient.parseIntent(anyString(), any(LocalDate.class), anyString())).thenReturn(intent);
+    
+    CounterpartyResolver.ResolutionResult notFoundResult = new CounterpartyResolver.ResolutionResult();
+    notFoundResult.status = CounterpartyResolver.ResolutionResult.Status.NOT_FOUND;
+    when(counterpartyResolver.resolve("John Doe", 10L)).thenReturn(notFoundResult);
+    
+    ChatResponse response = chatbotService.handle("How much did I send to John Doe?", 1L);
+    assertFalse(response.isNeedsClarification());
+    assertTrue(response.getReply().contains("couldn't find anyone named \"John Doe\""));
+  }
+
+  @Test
+  void handleCounterpartyAmbiguous() {
+    when(accountHolderService.getAccountHolderByUserId(1L)).thenReturn(accountHolder);
+    
+    FinancialQueryIntent intent = new FinancialQueryIntent();
+    intent.setQueryType(QueryType.TRANSACTION_AGGREGATE);
+    intent.setCounterpartyName("John");
+    when(llmClient.parseIntent(anyString(), any(LocalDate.class), anyString())).thenReturn(intent);
+    
+    CounterpartyResolver.ResolutionResult ambiguousResult = new CounterpartyResolver.ResolutionResult();
+    ambiguousResult.status = CounterpartyResolver.ResolutionResult.Status.AMBIGUOUS;
+    when(counterpartyResolver.resolve("John", 10L)).thenReturn(ambiguousResult);
+    
+    ChatResponse response = chatbotService.handle("How much did I send to John?", 1L);
+    assertTrue(response.isNeedsClarification());
+    assertTrue(response.getReply().contains("found multiple people named \"John\""));
+  }
+
+  @Test
+  void handleTransactionAggregateNoResults() {
+    when(accountHolderService.getAccountHolderByUserId(1L)).thenReturn(accountHolder);
+    
+    FinancialQueryIntent intent = new FinancialQueryIntent();
+    intent.setQueryType(QueryType.TRANSACTION_AGGREGATE);
+    when(llmClient.parseIntent(anyString(), any(LocalDate.class), anyString())).thenReturn(intent);
+    
+    when(transactionQueryService.execute(any(FinancialQueryIntent.class), anyLong())).thenReturn(new AggregateResult(BigDecimal.ZERO, 0, BigDecimal.ZERO, java.util.List.of()));
+    
+    ChatResponse response = chatbotService.handle("How much did I spend?", 1L);
+    assertFalse(response.isNeedsClarification());
+    assertTrue(response.getReply().contains("didn't find any matching transactions"));
+  }
+
+  @Test
+  void handleTransactionAggregateWithResults() {
+    when(accountHolderService.getAccountHolderByUserId(1L)).thenReturn(accountHolder);
+    
+    FinancialQueryIntent intent = new FinancialQueryIntent();
+    intent.setQueryType(QueryType.TRANSACTION_AGGREGATE);
+    intent.setCategory(TransactionCategory.GROCERY);
+    intent.setCounterpartyName("Walmart");
+    when(llmClient.parseIntent(anyString(), any(LocalDate.class), anyString())).thenReturn(intent);
+    
+    CounterpartyResolver.ResolutionResult resolvedResult = new CounterpartyResolver.ResolutionResult();
+    resolvedResult.status = CounterpartyResolver.ResolutionResult.Status.RESOLVED;
+    resolvedResult.accountHolderId = 99L;
+    when(counterpartyResolver.resolve("Walmart", 10L)).thenReturn(resolvedResult);
+    when(transactionQueryService.execute(any(FinancialQueryIntent.class), anyLong())).thenReturn(new AggregateResult(new BigDecimal("100.00"), 2, new BigDecimal("50.00"), java.util.List.of()));
+    when(llmClient.phraseAnswer(anyString(), anyString(), anyString())).thenReturn("You spent $100.00 on Groceries at Walmart.");
+    
+    ChatResponse response = chatbotService.handle("How much did I spend on Groceries at Walmart?", 1L);
+    assertEquals(99L, intent.getCounterpartyAccountHolderId()); // ensure it resolved and set the ID
+    assertFalse(response.isNeedsClarification());
+    assertEquals("You spent $100.00 on Groceries at Walmart.", response.getReply());
+  }
+
+  @Test
+  void handleUnknownQueryType() {
+    when(accountHolderService.getAccountHolderByUserId(1L)).thenReturn(accountHolder);
+    
+    FinancialQueryIntent intent = new FinancialQueryIntent();
+    // Setting null query type will fall through to default in switch statement
+    intent.setQueryType(null);
+    when(llmClient.parseIntent(anyString(), any(LocalDate.class), anyString())).thenReturn(intent);
+    
+    ChatResponse response = chatbotService.handle("Unknown question", 1L);
+    assertFalse(response.isNeedsClarification());
+    assertTrue(response.getReply().contains("couldn't process that question"));
   }
 }
