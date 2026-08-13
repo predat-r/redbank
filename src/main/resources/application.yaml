@@ -41,7 +41,7 @@ scheduler:
   registration-cleanup:
     cron: "0 0 3 * * *"
   stale-transaction:
-    cron: "0 */15 * * * *"
+    cron: "0 0 * * * *"
 
 management:
   endpoint:
