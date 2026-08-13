@@ -74,9 +74,6 @@ public class EmailService {
     if (!StringUtils.hasText(fromEmailAddress) || !StringUtils.hasText(mailHost)) {
       return false;
     }
-    if (fromEmailAddress.contains("your-redbank-email@gmail.com")) {
-      return false;
-    }
     return true;
   }
 }
