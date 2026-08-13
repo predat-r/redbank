@@ -43,9 +43,10 @@ scheduler:
   stale-transaction:
     cron: "0 */15 * * * *"
 
-
-
 management:
+  endpoint:
+    health:
+      show-details: never
   tracing:
     sampling:
       probability: 1.0
