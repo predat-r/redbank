@@ -121,7 +121,9 @@ public class StatementGenerationListener {
       emailService.sendStatement(accountHolder, pdfBytes, event.fromDate(), event.toDate());
 
     } catch (Exception e) {
-      log.error("Failed to process StatementRequestedEvent for account holder {}", event.accountHolderId(), e);
+      if (log.isErrorEnabled()) {
+        log.error("Failed to process StatementRequestedEvent for account holder {}", event.accountHolderId(), e);
+      }
     }
   }
 }

@@ -79,12 +79,16 @@ public class EmailService {
       }
 
       javaMailSender.send(message);
-      log.info("Email successfully sent to '{}' with subject '{}'", recipient,
-          emailMessage.getSubject());
+      if (log.isInfoEnabled()) {
+        log.info("Email successfully sent to '{}' with subject '{}'", recipient,
+            emailMessage.getSubject());
+      }
       return true;
 
     } catch (Exception e) {
-      log.debug("Email sending silently suppressed for '{}': {}", recipient, e.getMessage());
+      if (log.isDebugEnabled()) {
+        log.debug("Email sending silently suppressed for '{}': {}", recipient, e.getMessage());
+      }
       return false;
     }
   }
