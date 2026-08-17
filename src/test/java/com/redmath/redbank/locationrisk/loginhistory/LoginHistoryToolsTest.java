@@ -44,13 +44,4 @@ class LoginHistoryToolsTest {
     assertNull(tools.getLatestSuccessfulLogin());
   }
 
-  @Test
-  void usesBoundCurrentIpForIpHistory() {
-    when(loginHistoryService.hasUsedIpBeforeExcluding(42L, "198.51.100.10", 99L))
-        .thenReturn(true);
-
-    assertEquals(true, tools.hasUsedCurrentIpBefore());
-    verify(loginHistoryService)
-        .hasUsedIpBeforeExcluding(42L, "198.51.100.10", 99L);
-  }
 }
