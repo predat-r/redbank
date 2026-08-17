@@ -1,4 +1,4 @@
-package com.redmath.redbank.security;
+package com.redmath.redbank.security.denylist;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;

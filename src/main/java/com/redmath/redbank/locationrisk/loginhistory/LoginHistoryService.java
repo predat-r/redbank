@@ -14,73 +14,35 @@ public class LoginHistoryService {
   private final LoginEventRepository loginEventRepository;
 
   public Optional<LoginEvent> getLatestSuccessfulLogin(Long userId) {
-    return loginEventRepository
-        .findTopByUserIdAndSuccessfulTrueOrderByOccurredAtDesc(userId);
+    return loginEventRepository.findTopByUserIdAndSuccessfulTrueOrderByOccurredAtDesc(userId);
   }
 
-  public Optional<LoginEvent> getLatestSuccessfulLoginExcluding(
-      Long userId,
-      Long excludedLoginEventId
-  ) {
-    return loginEventRepository
-        .findTopByUserIdAndSuccessfulTrueAndIdNotOrderByOccurredAtDesc(
-            userId,
-            excludedLoginEventId
-        );
+  public Optional<LoginEvent> getLatestSuccessfulLoginExcluding(Long userId,
+      Long excludedLoginEventId) {
+    return loginEventRepository.findTopByUserIdAndSuccessfulTrueAndIdNotOrderByOccurredAtDesc(
+        userId, excludedLoginEventId);
   }
 
-  public boolean hasUsedIpBefore(Long userId, String ipAddress) {
-    return loginEventRepository
-        .existsByUserIdAndIpAddressAndSuccessfulTrue(userId, ipAddress);
+  public boolean hasUsedIpBeforeExcluding(Long userId, String ipAddress,
+      Long excludedLoginEventId) {
+    return loginEventRepository.existsByUserIdAndIpAddressAndIdNotAndSuccessfulTrue(userId,
+        ipAddress, excludedLoginEventId);
   }
 
-  public boolean hasUsedIpBeforeExcluding(
-      Long userId,
-      String ipAddress,
-      Long excludedLoginEventId
-  ) {
-    return loginEventRepository
-        .existsByUserIdAndIpAddressAndIdNotAndSuccessfulTrue(
-            userId,
-            ipAddress,
-            excludedLoginEventId
-        );
+
+  public List<LoginEvent> getLatestLoginAttemptsExcluding(Long userId, Long excludedLoginEventId) {
+    return loginEventRepository.findTop20ByUserIdAndIdNotOrderByOccurredAtDesc(userId,
+        excludedLoginEventId);
   }
 
-  public List<LoginEvent> getAttemptsByIpAddress(
-      Long userId,
-      String ipAddress
-  ) {
-    return loginEventRepository
-        .findTop20ByUserIdAndIpAddress(userId, ipAddress);
+  public List<LoginEvent> getAttemptsByIpAddressExcluding(Long userId, String ipAddress,
+      Long excludedLoginEventId) {
+    return loginEventRepository.findTop20ByUserIdAndIpAddressAndIdNotOrderByOccurredAtDesc(userId,
+        ipAddress, excludedLoginEventId);
   }
 
-  public List<LoginEvent> getLatestLoginAttempts(Long userId) {
-    return loginEventRepository
-        .findTop20ByUserIdOrderByOccurredAtDesc(userId);
-  }
-
-  public List<LoginEvent> getLatestLoginAttemptsExcluding(
-      Long userId,
-      Long excludedLoginEventId
-  ) {
-    return loginEventRepository
-        .findTop20ByUserIdAndIdNotOrderByOccurredAtDesc(
-            userId,
-            excludedLoginEventId
-        );
-  }
-
-  public List<LoginEvent> getAttemptsByIpAddressExcluding(
-      Long userId,
-      String ipAddress,
-      Long excludedLoginEventId
-  ) {
-    return loginEventRepository
-        .findTop20ByUserIdAndIpAddressAndIdNotOrderByOccurredAtDesc(
-            userId,
-            ipAddress,
-            excludedLoginEventId
-        );
+  public List<LoginEvent> getFailedAttemptsByIpAddress(Long userId, String ipAddress) {
+    return loginEventRepository.findTop20ByUserIdAndIpAddressAndSuccessfulFalseOrderByOccurredAtDesc(
+        userId, ipAddress);
   }
 }

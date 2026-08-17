@@ -1,4 +1,4 @@
-package com.redmath.redbank.security;
+package com.redmath.redbank.security.denylist;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.core.convert.converter.Converter;
