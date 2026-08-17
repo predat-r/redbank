@@ -1,5 +1,6 @@
 package com.redmath.redbank.security.ratelimit;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,6 +21,10 @@ public class RateLimitingFilter extends OncePerRequestFilter {
   private final RateLimitKeyResolver rateLimitKeyResolver;
   private final RateLimitResponseWriter rateLimitResponseWriter;
 
+  @SuppressFBWarnings(
+      value = "EI_EXPOSE_REP2",
+      justification = "Constructor receives Spring-managed filter dependencies"
+  )
   public RateLimitingFilter(RateLimitingService rateLimitingService,
       RateLimitPolicy rateLimitPolicy, RateLimitKeyResolver rateLimitKeyResolver,
       RateLimitResponseWriter rateLimitResponseWriter) {
