@@ -67,29 +67,14 @@ class BankTransactionServiceTest {
   }
 
   @Test
-  @DisplayName("getTransactionsForUser fetches transactions for given user")
-  void getTransactionsForUserSuccess() {
-    AccountHolder accountHolder = new AccountHolder();
-    accountHolder.setId(10L);
-
-    when(accountHolderService.getAccountHolderByUserId(10L)).thenReturn(accountHolder);
-    when(bankTransactionRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
-        .thenReturn(new PageImpl<>(List.of()));
-
-    Page<BankTransaction> result = bankTransactionService.getTransactionsForUser(10L, Pageable.unpaged());
-
-    assertNotNull(result);
-    verify(bankTransactionRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), eq(Pageable.unpaged()));
-  }
-
-  @Test
   @DisplayName("getTransactionsForUser with filters executes repository findAll with specification")
   void getTransactionsForUserWithFiltersSuccess() {
     AccountHolder accountHolder = new AccountHolder();
     accountHolder.setId(10L);
 
     when(accountHolderService.getAccountHolderByUserId(10L)).thenReturn(accountHolder);
-    when(bankTransactionRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+    when(bankTransactionRepository.findAll(
+        any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
         .thenReturn(new PageImpl<>(List.of()));
 
     Page<BankTransaction> result = bankTransactionService.getTransactionsForUser(
@@ -98,24 +83,15 @@ class BankTransactionServiceTest {
         Pageable.unpaged());
 
     assertNotNull(result);
-    verify(bankTransactionRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), eq(Pageable.unpaged()));
-  }
-
-  @Test
-  @DisplayName("getAllTransactions fetches all transactions with pagination")
-  void getAllTransactionsSuccess() {
-    when(bankTransactionRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));
-
-    Page<BankTransaction> result = bankTransactionService.getAllTransactions(Pageable.unpaged());
-
-    assertNotNull(result);
-    verify(bankTransactionRepository).findAll(Pageable.unpaged());
+    verify(bankTransactionRepository).findAll(
+        any(org.springframework.data.jpa.domain.Specification.class), eq(Pageable.unpaged()));
   }
 
   @Test
   @DisplayName("getAllTransactions with filter parameters executes repository findAll with specification")
   void getAllTransactionsWithFiltersSuccess() {
-    when(bankTransactionRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+    when(bankTransactionRepository.findAll(
+        any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
         .thenReturn(new PageImpl<>(List.of()));
 
     Page<BankTransaction> result = bankTransactionService.getAllTransactions(
@@ -124,7 +100,8 @@ class BankTransactionServiceTest {
         Pageable.unpaged());
 
     assertNotNull(result);
-    verify(bankTransactionRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), eq(Pageable.unpaged()));
+    verify(bankTransactionRepository).findAll(
+        any(org.springframework.data.jpa.domain.Specification.class), eq(Pageable.unpaged()));
   }
 
   @Test
@@ -133,14 +110,18 @@ class BankTransactionServiceTest {
     AccountHolder accountHolder = new AccountHolder();
     accountHolder.setId(5L);
 
-    when(accountHolderService.findByAccountNumber("RB123456")).thenReturn(Optional.of(accountHolder));
-    when(bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(eq(5L), eq(5L), any(Pageable.class)))
+    when(accountHolderService.findByAccountNumber("RB123456")).thenReturn(
+        Optional.of(accountHolder));
+    when(bankTransactionRepository.findBySourceAccountHolderIdOrDestinationAccountHolderId(eq(5L),
+        eq(5L), any(Pageable.class)))
         .thenReturn(new PageImpl<>(List.of()));
 
-    Page<BankTransaction> result = bankTransactionService.getTransactionsByAccountNumber("RB123456", Pageable.unpaged());
+    Page<BankTransaction> result = bankTransactionService.getTransactionsByAccountNumber("RB123456",
+        Pageable.unpaged());
 
     assertNotNull(result);
-    verify(bankTransactionRepository).findBySourceAccountHolderIdOrDestinationAccountHolderId(5L, 5L, Pageable.unpaged());
+    verify(bankTransactionRepository).findBySourceAccountHolderIdOrDestinationAccountHolderId(5L,
+        5L, Pageable.unpaged());
   }
 
   @Test
@@ -171,7 +152,8 @@ class BankTransactionServiceTest {
   void getTransactionByIdNotFound() {
     when(bankTransactionRepository.findById(999L)).thenReturn(Optional.empty());
 
-    assertThrows(ResourceNotFoundException.class, () -> bankTransactionService.getTransactionById(999L));
+    assertThrows(ResourceNotFoundException.class,
+        () -> bankTransactionService.getTransactionById(999L));
   }
 
   @Test
@@ -180,7 +162,8 @@ class BankTransactionServiceTest {
     BankTransaction transaction = new BankTransaction();
     transaction.setTransactionReference("TXN-REF-100");
 
-    when(bankTransactionRepository.findByTransactionReference("TXN-REF-100")).thenReturn(Optional.of(transaction));
+    when(bankTransactionRepository.findByTransactionReference("TXN-REF-100")).thenReturn(
+        Optional.of(transaction));
 
     BankTransaction result = bankTransactionService.getTransactionByReference("TXN-REF-100");
 
@@ -190,9 +173,11 @@ class BankTransactionServiceTest {
   @Test
   @DisplayName("getTransactionByReference throws ResourceNotFoundException when not found")
   void getTransactionByReferenceNotFound() {
-    when(bankTransactionRepository.findByTransactionReference("TXN-INVALID")).thenReturn(Optional.empty());
+    when(bankTransactionRepository.findByTransactionReference("TXN-INVALID")).thenReturn(
+        Optional.empty());
 
-    assertThrows(ResourceNotFoundException.class, () -> bankTransactionService.getTransactionByReference("TXN-INVALID"));
+    assertThrows(ResourceNotFoundException.class,
+        () -> bankTransactionService.getTransactionByReference("TXN-INVALID"));
   }
 
   @Test
@@ -221,8 +206,10 @@ class BankTransactionServiceTest {
     assertEquals(TransactionType.DEPOSIT, result.getType());
     assertEquals(new BigDecimal("500.00"), result.getAmount());
     assertEquals(null, result.getCategory());
-    verify(balanceService).recordLedgerEntry(eq(target), any(BankTransaction.class), eq(BalanceIndicator.CREDIT));
-    verify(auditService).recordAuditLog(eq(99L), eq(AuditAction.ADMIN_DEPOSIT_RECORDED), eq(AuditTargetType.TRANSACTION), eq("100"), eq(null));
+    verify(balanceService).recordLedgerEntry(eq(target), any(BankTransaction.class),
+        eq(BalanceIndicator.CREDIT));
+    verify(auditService).recordAuditLog(eq(99L), eq(AuditAction.ADMIN_DEPOSIT_RECORDED),
+        eq(AuditTargetType.TRANSACTION), eq("100"), eq(null));
   }
 
   @Test
@@ -252,8 +239,10 @@ class BankTransactionServiceTest {
     assertEquals(new BigDecimal("100.00"), result.getAmount());
     assertEquals(TransactionCategory.FOOD, result.getCategory());
     assertEquals(TransactionStatus.PENDING, result.getStatus());
-    verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class), eq(BalanceIndicator.DEBIT));
-    verify(eventPublisher).publishEvent(any(com.redmath.redbank.transaction.event.TransactionSubmittedEvent.class));
+    verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class),
+        eq(BalanceIndicator.DEBIT));
+    verify(eventPublisher).publishEvent(
+        any(com.redmath.redbank.transaction.event.TransactionSubmittedEvent.class));
   }
 
   @Test
@@ -271,7 +260,8 @@ class BankTransactionServiceTest {
 
     when(accountHolderService.getAccountHolderByUserId(10L)).thenReturn(source);
     when(accountHolderService.findByAccountNumber("RB-DEST-002")).thenReturn(Optional.of(dest));
-    when(bankTransactionRepository.save(any(BankTransaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(bankTransactionRepository.save(any(BankTransaction.class))).thenAnswer(
+        invocation -> invocation.getArgument(0));
 
     TransferRequest request = new TransferRequest();
     request.setDestinationAccountNumber("RB-DEST-002");
@@ -285,7 +275,9 @@ class BankTransactionServiceTest {
     assertEquals(TransactionType.TRANSFER, result.getType());
     assertEquals(TransactionCategory.GROCERY, result.getCategory());
     assertEquals(TransactionStatus.PENDING, result.getStatus());
-    verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class), eq(BalanceIndicator.DEBIT));
-    verify(eventPublisher).publishEvent(any(com.redmath.redbank.transaction.event.TransactionSubmittedEvent.class));
+    verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class),
+        eq(BalanceIndicator.DEBIT));
+    verify(eventPublisher).publishEvent(
+        any(com.redmath.redbank.transaction.event.TransactionSubmittedEvent.class));
   }
 }

@@ -48,10 +48,6 @@ public class BankTransactionService {
     this.eventPublisher = eventPublisher;
   }
 
-  public Page<BankTransaction> getTransactionsForUser(Long userId, Pageable pageable) {
-    return getTransactionsForUser(userId, null, null, null, null, null, null, pageable);
-  }
-
   public Page<BankTransaction> getTransactionsForUser(
       Long userId,
       String accountNumber,
@@ -66,10 +62,6 @@ public class BankTransactionService {
         BankTransactionSpecification.filterForUser(
             accountHolder.getId(), accountNumber, type, status, category, fromDate, toDate),
         pageable);
-  }
-
-  public Page<BankTransaction> getAllTransactions(Pageable pageable) {
-    return bankTransactionRepository.findAll(pageable);
   }
 
   public Page<BankTransaction> getAllTransactions(
@@ -88,6 +80,7 @@ public class BankTransactionService {
         pageable);
   }
 
+  //admin method
   public Page<BankTransaction> getTransactionsByAccountNumber(String accountNumber,
       Pageable pageable) {
     AccountHolder accountHolder = accountHolderService.findByAccountNumber(accountNumber)
@@ -114,6 +107,7 @@ public class BankTransactionService {
       throw new ResourceNotFoundException("Transaction not found with ID: " + transactionId);
     }
 
+    // If transaction is pending, and user is not the sender, then don't show transaction.
     if (isDestination && !isSource && transaction.getStatus() != TransactionStatus.COMPLETED) {
       throw new ResourceNotFoundException("Transaction not found with ID: " + transactionId);
     }
