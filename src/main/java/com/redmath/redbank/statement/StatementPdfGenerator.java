@@ -1,5 +1,6 @@
 package com.redmath.redbank.statement;
 
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
@@ -17,6 +18,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.redmath.redbank.statement.dto.StatementData;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -83,7 +85,7 @@ public class StatementPdfGenerator {
         logo.scaleToFit(120, 120);
         leftCell.addElement(logo);
       }
-    } catch (Exception e) {
+    } catch (BadElementException | IOException e) {
       log.warn("Logo not found or could not be loaded from path: {}", logoPath);
     }
     headerTable.addCell(leftCell);
@@ -105,7 +107,7 @@ public class StatementPdfGenerator {
     table.setWidthPercentage(100);
     table.setSpacingBefore(10f);
     table.setSpacingAfter(20f);
-    
+
     Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, PRIMARY_600);
     Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 9, NEUTRAL_700);
 
@@ -119,18 +121,21 @@ public class StatementPdfGenerator {
     addDetailCell(table, "From Date", data.getFromDate().toString(), labelFont, valueFont);
     addDetailCell(table, "To Date", data.getToDate().toString(), labelFont, valueFont);
 
-    addDetailCell(table, "Opening Balance", df.format(data.getOpeningBalance()), labelFont, valueFont);
-    addDetailCell(table, "Closing Balance", df.format(data.getClosingBalance()), labelFont, valueFont);
+    addDetailCell(table, "Opening Balance", df.format(data.getOpeningBalance()), labelFont,
+        valueFont);
+    addDetailCell(table, "Closing Balance", df.format(data.getClosingBalance()), labelFont,
+        valueFont);
     addDetailCell(table, "Address", data.getAddress(), labelFont, valueFont);
 
     document.add(table);
   }
 
-  private void addDetailCell(PdfPTable table, String label, String value, Font labelFont, Font valueFont) {
+  private void addDetailCell(PdfPTable table, String label, String value, Font labelFont,
+      Font valueFont) {
     PdfPCell cell = new PdfPCell();
     cell.setBorder(Rectangle.NO_BORDER);
     cell.setPaddingBottom(10f);
-    
+
     if (!label.isEmpty()) {
       cell.addElement(new Paragraph(label, labelFont));
       Paragraph val = new Paragraph(value != null ? value : "N/A", valueFont);
@@ -152,7 +157,7 @@ public class StatementPdfGenerator {
 
     Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, NEUTRAL_0);
     String[] headers = {"Booking Date", "Description", "Credit", "Debit", "Available Balance"};
-    
+
     for (String h : headers) {
       PdfPCell hc = new PdfPCell(new Phrase(h, headerFont));
       hc.setBackgroundColor(PRIMARY_600);
@@ -182,8 +187,10 @@ public class StatementPdfGenerator {
       descCell.setBorderColorBottom(NEUTRAL_200);
       descCell.setBorderWidthBottom(0.5f);
       descCell.setPadding(8);
-      
-      String mainDesc = t.getCounterparty() != null && !t.getCounterparty().isEmpty() ? t.getCounterparty() : t.getType();
+
+      String mainDesc =
+          t.getCounterparty() != null && !t.getCounterparty().isEmpty() ? t.getCounterparty()
+              : t.getType();
       descCell.addElement(new Paragraph(mainDesc, rowFont));
       Paragraph ref = new Paragraph(t.getReference(), secRowFont);
       ref.setSpacingBefore(2f);
@@ -216,6 +223,7 @@ public class StatementPdfGenerator {
   }
 
   private static class FooterEvent extends PdfPageEventHelper {
+
     private final StatementData data;
 
     public FooterEvent(StatementData data) {
@@ -226,7 +234,7 @@ public class StatementPdfGenerator {
     public void onEndPage(PdfWriter writer, Document document) {
       PdfPTable footer = new PdfPTable(2);
       footer.setTotalWidth(document.right() - document.left());
-      
+
       PdfPCell lineCell = new PdfPCell(new Phrase(""));
       lineCell.setBorder(Rectangle.TOP);
       lineCell.setBorderColorTop(NEUTRAL_200);
@@ -236,20 +244,20 @@ public class StatementPdfGenerator {
 
       Font labelFont = FontFactory.getFont(FontFactory.HELVETICA, 8, NEUTRAL_500);
       Font badgeFont = FontFactory.getFont(FontFactory.HELVETICA, 8, NEUTRAL_700);
-      
+
       DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'");
       String generatedAt = data.getGenerationTimestamp().format(dtf);
-      
+
       PdfPCell left = new PdfPCell(new Phrase("Generated at " + generatedAt, labelFont));
       left.setBorder(Rectangle.NO_BORDER);
       left.setPaddingTop(5);
-      
+
       Chunk badgeChunk = new Chunk(" " + writer.getPageNumber() + " ", badgeFont);
       badgeChunk.setBackground(NEUTRAL_100);
       Paragraph badgePara = new Paragraph();
       badgePara.add(new Chunk("Page ", labelFont));
       badgePara.add(badgeChunk);
-      
+
       PdfPCell badgeCell = new PdfPCell(badgePara);
       badgeCell.setBorder(Rectangle.NO_BORDER);
       badgeCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -257,8 +265,9 @@ public class StatementPdfGenerator {
 
       footer.addCell(left);
       footer.addCell(badgeCell);
-      
-      footer.writeSelectedRows(0, -1, document.left(), document.bottom() - 10, writer.getDirectContent());
+
+      footer.writeSelectedRows(0, -1, document.left(), document.bottom() - 10,
+          writer.getDirectContent());
     }
   }
 }

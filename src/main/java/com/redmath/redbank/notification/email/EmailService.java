@@ -6,6 +6,9 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,10 @@ public class EmailService {
   private String mailHost;
 
   public boolean sendEmail(EmailMessage emailMessage) {
+    return sendEmailWithAttachment(emailMessage, null, null, null);
+  }
+
+  public boolean sendEmailWithAttachment(EmailMessage emailMessage, String attachmentFileName, byte[] attachmentBytes, String attachmentContentType) {
     // Silently skip if email configuration (username/host) is missing or default placeholder
     if (!isEmailConfigured()) {
       log.debug("Email sending skipped: SMTP username or host configuration is incomplete.");
@@ -59,13 +66,29 @@ public class EmailService {
       helper.setSubject(emailMessage.getSubject());
       helper.setText(emailMessage.getBody(), emailMessage.isHtml());
 
+      if (emailMessage.isHtml()) {
+        Resource logoResource = new ClassPathResource("static/branding/logo.png");
+        if (logoResource.exists()) {
+          helper.addInline("logo", logoResource);
+        }
+      }
+
+      if (StringUtils.hasText(attachmentFileName) && attachmentBytes != null && attachmentBytes.length > 0) {
+        String contentType = StringUtils.hasText(attachmentContentType) ? attachmentContentType : "application/pdf";
+        helper.addAttachment(attachmentFileName, new ByteArrayResource(attachmentBytes), contentType);
+      }
+
       javaMailSender.send(message);
-      log.info("Email successfully sent to '{}' with subject '{}'", recipient,
-          emailMessage.getSubject());
+      if (log.isInfoEnabled()) {
+        log.info("Email successfully sent to '{}' with subject '{}'", recipient,
+            emailMessage.getSubject());
+      }
       return true;
 
     } catch (Exception e) {
-      log.debug("Email sending silently suppressed for '{}': {}", recipient, e.getMessage());
+      if (log.isDebugEnabled()) {
+        log.debug("Email sending silently suppressed for '{}': {}", recipient, e.getMessage());
+      }
       return false;
     }
   }

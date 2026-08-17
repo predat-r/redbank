@@ -9,12 +9,9 @@ import com.redmath.redbank.statement.dto.StatementData;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -32,6 +29,7 @@ public class StatementGenerationListener {
   private final StatementPdfGenerator pdfGenerator;
   private final StatementEmailService emailService;
 
+  @SuppressFBWarnings("EI_EXPOSE_REP2")
   public StatementGenerationListener(
       AccountHolderRepository accountHolderRepository,
       BalanceRepository balanceRepository,
@@ -120,26 +118,12 @@ public class StatementGenerationListener {
 
       byte[] pdfBytes = pdfGenerator.generatePdf(data);
 
-      // Temporarily comment out sending the statement via email and instead save the
-      // generated PDF to a local directory for inspection/debugging.
-      try {
-        Path dir = Path.of("build", "statements");
-        Files.createDirectories(dir);
-        String fileName = String.format("%s_%s_%s_statement.pdf",
-            accountHolder.getAccountNumber(),
-            event.fromDate().format(DateTimeFormatter.ISO_DATE),
-            event.toDate().format(DateTimeFormatter.ISO_DATE));
-        Path out = dir.resolve(fileName);
-        Files.write(out, pdfBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-        log.info("Saved statement PDF to {}", out.toAbsolutePath());
-      } catch (Exception ex) {
-        log.error("Failed to write statement PDF to disk for account holder {}", accountHolder.getId(), ex);
-      }
-
-       emailService.sendStatement(accountHolder, pdfBytes, event.fromDate(), event.toDate());
+      emailService.sendStatement(accountHolder, pdfBytes, event.fromDate(), event.toDate());
 
     } catch (Exception e) {
-      log.error("Failed to process StatementRequestedEvent for account holder {}", event.accountHolderId(), e);
+      if (log.isErrorEnabled()) {
+        log.error("Failed to process StatementRequestedEvent for account holder {}", event.accountHolderId(), e);
+      }
     }
   }
 }

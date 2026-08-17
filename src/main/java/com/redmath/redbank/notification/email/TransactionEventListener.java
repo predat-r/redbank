@@ -44,8 +44,10 @@ public class TransactionEventListener {
       }
 
     } catch (Exception e) {
-      log.error("Error processing TransactionCompletedEvent for transaction ID {}: {}",
-          event.getTransactionId(), e.getMessage(), e);
+      if (log.isErrorEnabled()) {
+        log.error("Error processing TransactionCompletedEvent for transaction ID {}: {}",
+            event.getTransactionId(), e.getMessage(), e);
+      }
     }
   }
 
@@ -70,8 +72,10 @@ public class TransactionEventListener {
       }
 
     } catch (Exception e) {
-      log.error("Error processing TransactionCancelledEvent for transaction ID {}: {}",
-          event.getTransactionId(), e.getMessage(), e);
+      if (log.isErrorEnabled()) {
+        log.error("Error processing TransactionCancelledEvent for transaction ID {}: {}",
+            event.getTransactionId(), e.getMessage(), e);
+      }
     }
   }
 
