@@ -114,10 +114,10 @@ public class EmailTemplateService {
             + "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" style=\"max-width: 580px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;\">"
             
             // Header Bar
-            + "<tr><td style=\"background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px 30px; text-align: center;\">"
-            + "<div style=\"display: inline-block; background-color: #ef4444; color: #ffffff; padding: 8px 18px; border-radius: 8px; font-weight: 800; font-size: 20px; letter-spacing: 1px; text-transform: uppercase;\">RedBank</div>"
-            + "<h1 style=\"color: #ffffff; margin: 18px 0 6px 0; font-size: 22px; font-weight: 700;\">" + title + "</h1>"
-            + "<p style=\"color: #94a3b8; margin: 0; font-size: 14px;\">" + subtitle + "</p>"
+            + "<tr><td style=\"background-color: #ffffff; padding: 36px 30px 24px 30px; text-align: center; border-bottom: 1px solid #f1f5f9; border-top: 4px solid #dc2626;\">"
+            + "<img src=\"cid:logo\" alt=\"RedBank Logo\" style=\"height: 42px; width: auto; max-width: 240px; display: inline-block; vertical-align: middle; margin-bottom: 16px;\" />"
+            + "<h1 style=\"color: #0f172a; margin: 0 0 6px 0; font-size: 24px; font-weight: 700; letter-spacing: -0.3px;\">" + title + "</h1>"
+            + "<p style=\"color: #64748b; margin: 0; font-size: 14px;\">" + subtitle + "</p>"
             + "</td></tr>"
 
             // Body Content

@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -58,6 +60,13 @@ public class EmailService {
       helper.setTo(recipient);
       helper.setSubject(emailMessage.getSubject());
       helper.setText(emailMessage.getBody(), emailMessage.isHtml());
+
+      if (emailMessage.isHtml()) {
+        Resource logoResource = new ClassPathResource("static/branding/logo.png");
+        if (logoResource.exists()) {
+          helper.addInline("logo", logoResource);
+        }
+      }
 
       javaMailSender.send(message);
       log.info("Email successfully sent to '{}' with subject '{}'", recipient,
