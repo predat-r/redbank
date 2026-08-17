@@ -24,13 +24,10 @@ class IdempotencyServiceTest {
   @BeforeEach
   @SuppressWarnings("unchecked")
   void setUp() {
-    ObjectProvider<ObjectMapper> objectMapperProvider = mock(ObjectProvider.class);
-    when(objectMapperProvider.getIfAvailable()).thenReturn(objectMapper);
-
     ObjectProvider<HazelcastInstance> hazelcastProvider = mock(ObjectProvider.class);
     when(hazelcastProvider.getIfAvailable()).thenReturn(null);
 
-    idempotencyService = new IdempotencyService(objectMapperProvider, hazelcastProvider);
+    idempotencyService = new IdempotencyService(objectMapper, hazelcastProvider);
   }
 
   @Test
