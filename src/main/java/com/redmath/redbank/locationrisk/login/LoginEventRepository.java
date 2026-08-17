@@ -12,9 +12,7 @@ public interface LoginEventRepository extends JpaRepository<LoginEvent, Long> {
       Long userId,
       Long excludedLoginEventId
   );
-
-  boolean existsByUserIdAndIpAddressAndSuccessfulTrue(Long userId, String ipAddress);
-
+  
   boolean existsByUserIdAndIpAddressAndIdNotAndSuccessfulTrue(
       Long userId,
       String ipAddress,
