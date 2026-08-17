@@ -1,4 +1,4 @@
-package com.redmath.redbank.locationrisk.ai;
+package com.redmath.redbank.locationrisk.assessment;
 
 public record LocationRiskAssessment(
     String riskLevel,

@@ -6,8 +6,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.redmath.redbank.audit.AuditService;
-import com.redmath.redbank.locationrisk.ai.LocationRiskAssessment;
-import com.redmath.redbank.locationrisk.ai.LocationRiskAssessmentService;
 import com.redmath.redbank.locationrisk.geolocation.IpGeolocationResult;
 import com.redmath.redbank.locationrisk.login.LoginEventService;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerResult;

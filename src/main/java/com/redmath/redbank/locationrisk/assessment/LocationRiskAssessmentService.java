@@ -1,4 +1,4 @@
-package com.redmath.redbank.locationrisk.ai;
+package com.redmath.redbank.locationrisk.assessment;
 
 import com.redmath.redbank.locationrisk.geolocation.IpGeolocationResult;
 import com.redmath.redbank.locationrisk.loginhistory.LoginHistoryService;
@@ -49,7 +49,7 @@ public class LocationRiskAssessmentService {
         - Recent login timestamps and locations.
         - Repeated attempts from the current IP.
         - Unusual movement between distant locations.
-
+        
         Treat impossible travel as a decisive security signal. If the current login is from a
         geographically distant location and the previous successful login occurred only minutes
         earlier, classify the event as EXTREME with HIGH confidence and recommend REVOKE_SESSION.

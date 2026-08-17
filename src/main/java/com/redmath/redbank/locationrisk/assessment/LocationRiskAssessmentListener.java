@@ -3,8 +3,6 @@ package com.redmath.redbank.locationrisk.assessment;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
-import com.redmath.redbank.locationrisk.ai.LocationRiskAssessment;
-import com.redmath.redbank.locationrisk.ai.LocationRiskAssessmentService;
 import com.redmath.redbank.locationrisk.login.LoginEventService;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerResult;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerService;
