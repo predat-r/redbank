@@ -86,6 +86,22 @@ public class EmailTemplateService {
         return buildBaseHtmlTemplate(accountHolderName, title, subtitle, badgeColor, badgeText, detailsHtml, "If you did not make this withdrawal, please freeze your account immediately.");
     }
 
+    public String buildStatementCompletedHtml(String accountHolderName, String accountNumber, java.time.LocalDate fromDate, java.time.LocalDate toDate) {
+        String title = "Account Statement Ready";
+        String subtitle = "Your requested account statement has been generated.";
+        String badgeColor = "#2563eb"; // Blue
+        String badgeText = "STATEMENT";
+        
+        String dateRange = (fromDate != null ? formatDate(fromDate) : "N/A") + " - " + (toDate != null ? formatDate(toDate) : "N/A");
+
+        String detailsHtml = buildDetailRow("Document Type", "Account Statement (PDF)")
+            + buildDetailRow("Account Number", accountNumber != null ? accountNumber : "N/A")
+            + buildDetailRow("Statement Period", dateRange)
+            + buildDetailRow("Status", "Attached to Email");
+
+        return buildBaseHtmlTemplate(accountHolderName, title, subtitle, badgeColor, badgeText, detailsHtml, "Please find your official PDF account statement attached to this email. For security, keep your financial statements confidential.");
+    }
+
     private String buildDetailRow(String label, String value) {
         return "<tr>"
             + "<td style=\"padding: 10px 0; color: #64748b; font-size: 14px; font-weight: 500; border-bottom: 1px dashed #f1f5f9;\">" + label + "</td>"
@@ -99,6 +115,12 @@ public class EmailTemplateService {
 
     private String formatDate(OffsetDateTime timestamp) {
         return timestamp != null ? timestamp.format(DATE_FORMATTER) : "N/A";
+    }
+
+    private static final DateTimeFormatter LOCAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+
+    private String formatDate(java.time.LocalDate date) {
+        return date != null ? date.format(LOCAL_DATE_FORMATTER) : "N/A";
     }
 
     private String buildBaseHtmlTemplate(String recipientName, String title, String subtitle, String badgeColor, String badgeText, String detailsHtml, String footerNote) {

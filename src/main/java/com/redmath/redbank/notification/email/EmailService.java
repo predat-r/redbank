@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -31,6 +32,10 @@ public class EmailService {
   private String mailHost;
 
   public boolean sendEmail(EmailMessage emailMessage) {
+    return sendEmailWithAttachment(emailMessage, null, null, null);
+  }
+
+  public boolean sendEmailWithAttachment(EmailMessage emailMessage, String attachmentFileName, byte[] attachmentBytes, String attachmentContentType) {
     // Silently skip if email configuration (username/host) is missing or default placeholder
     if (!isEmailConfigured()) {
       log.debug("Email sending skipped: SMTP username or host configuration is incomplete.");
@@ -66,6 +71,11 @@ public class EmailService {
         if (logoResource.exists()) {
           helper.addInline("logo", logoResource);
         }
+      }
+
+      if (StringUtils.hasText(attachmentFileName) && attachmentBytes != null && attachmentBytes.length > 0) {
+        String contentType = StringUtils.hasText(attachmentContentType) ? attachmentContentType : "application/pdf";
+        helper.addAttachment(attachmentFileName, new ByteArrayResource(attachmentBytes), contentType);
       }
 
       javaMailSender.send(message);
