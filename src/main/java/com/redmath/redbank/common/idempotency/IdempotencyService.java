@@ -36,11 +36,9 @@ public final class IdempotencyService {
 
   @Autowired
   public IdempotencyService(
-      ObjectProvider<ObjectMapper> objectMapperProvider,
+      ObjectMapper objectMapper,
       ObjectProvider<HazelcastInstance> hazelcastProvider) {
-    ObjectMapper mapper =
-        objectMapperProvider != null ? objectMapperProvider.getIfAvailable() : null;
-    this.objectMapper = mapper != null ? mapper.copy() : new ObjectMapper();
+    this.objectMapper = objectMapper;
     this.hazelcastInstance =
         hazelcastProvider != null ? hazelcastProvider.getIfAvailable() : null;
   }
