@@ -75,8 +75,8 @@ public class LocationRiskAssessmentListener {
         + ", action=" + assessment.recommendedAction()
         + ", reason=" + assessment.reason();
 
-    if ("EXTREME".equals(assessment.riskLevel())
-        && "REVOKE_SESSION".equals(assessment.recommendedAction())
+    if (assessment.riskLevel() == RiskLevel.EXTREME
+        && assessment.recommendedAction() == RecommendedAction.REVOKE_SESSION
         && event.accessTokenJti() != null
         && !event.accessTokenJti().isBlank()
         && event.expiresAt() != null) {

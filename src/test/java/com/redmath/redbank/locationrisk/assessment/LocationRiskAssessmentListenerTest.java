@@ -74,7 +74,8 @@ class LocationRiskAssessmentListenerTest {
         .thenReturn(new LocationRiskTriggerResult(location(), false, true));
     when(assessmentService.assess(42L, "198.51.100.10", 99L, location()))
         .thenReturn(new LocationRiskAssessment(
-            "EXTREME", "New city and malicious IP", "HIGH", "REVOKE_SESSION"));
+            RiskLevel.EXTREME, "New city and malicious IP", AssessmentConfidence.HIGH,
+            RecommendedAction.REVOKE_SESSION));
 
     listener.handle(event);
 
@@ -90,7 +91,8 @@ class LocationRiskAssessmentListenerTest {
     when(triggerService.assessLocationRisk(42L, "198.51.100.10", 99L))
         .thenReturn(new LocationRiskTriggerResult(location(), false, true));
     when(assessmentService.assess(42L, "198.51.100.10", 99L, location()))
-        .thenReturn(new LocationRiskAssessment("HIGH", "Unusual origin", "MEDIUM", "FLAG"));
+        .thenReturn(new LocationRiskAssessment(RiskLevel.HIGH, "Unusual origin",
+            AssessmentConfidence.MEDIUM, RecommendedAction.FLAG));
 
     listener.handle(event);
 

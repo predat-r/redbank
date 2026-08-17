@@ -1,10 +1,10 @@
 package com.redmath.redbank.locationrisk.assessment;
 
 public record LocationRiskAssessment(
-    String riskLevel,
+    RiskLevel riskLevel,
     String reason,
-    String confidence,
-    String recommendedAction
+    AssessmentConfidence confidence,
+    RecommendedAction recommendedAction
 ) {
 
 }
