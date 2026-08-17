@@ -44,4 +44,15 @@ class LoginHistoryToolsTest {
     assertNull(tools.getLatestSuccessfulLogin());
   }
 
+  @Test
+  void usesBoundCurrentIpWhenReadingFailedAttempts() {
+    List<LoginEvent> events = List.of(new LoginEvent());
+    when(loginHistoryService.getFailedAttemptsByIpAddress(42L, "198.51.100.10"))
+        .thenReturn(events);
+
+    assertEquals(events, tools.getFailedAttemptsFromCurrentIp());
+    verify(loginHistoryService)
+        .getFailedAttemptsByIpAddress(42L, "198.51.100.10");
+  }
+
 }

@@ -28,7 +28,7 @@ public class LoginHistoryService {
     return loginEventRepository.existsByUserIdAndIpAddressAndIdNotAndSuccessfulTrue(userId,
         ipAddress, excludedLoginEventId);
   }
-  
+
 
   public List<LoginEvent> getLatestLoginAttemptsExcluding(Long userId, Long excludedLoginEventId) {
     return loginEventRepository.findTop20ByUserIdAndIdNotOrderByOccurredAtDesc(userId,
@@ -39,5 +39,10 @@ public class LoginHistoryService {
       Long excludedLoginEventId) {
     return loginEventRepository.findTop20ByUserIdAndIpAddressAndIdNotOrderByOccurredAtDesc(userId,
         ipAddress, excludedLoginEventId);
+  }
+
+  public List<LoginEvent> getFailedAttemptsByIpAddress(Long userId, String ipAddress) {
+    return loginEventRepository.findTop20ByUserIdAndIpAddressAndSuccessfulFalseOrderByOccurredAtDesc(
+        userId, ipAddress);
   }
 }

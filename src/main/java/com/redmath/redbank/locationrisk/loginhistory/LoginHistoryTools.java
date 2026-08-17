@@ -35,4 +35,9 @@ public class LoginHistoryTools {
     return loginHistoryService.getAttemptsByIpAddressExcluding(userId, currentIp,
         currentLoginEventId);
   }
+
+  @Tool()
+  public List<LoginEvent> getFailedAttemptsFromCurrentIp() {
+    return loginHistoryService.getFailedAttemptsByIpAddress(userId, currentIp);
+  }
 }
