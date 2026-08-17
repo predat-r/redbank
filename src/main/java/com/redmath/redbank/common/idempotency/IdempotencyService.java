@@ -35,6 +35,7 @@ public final class IdempotencyService {
   private final Map<String, IdempotencyKey> fallbackMap = new ConcurrentHashMap<>();
 
   @Autowired
+  @SuppressFBWarnings("EI_EXPOSE_REP2")
   public IdempotencyService(
       ObjectMapper objectMapper,
       ObjectProvider<HazelcastInstance> hazelcastProvider) {
