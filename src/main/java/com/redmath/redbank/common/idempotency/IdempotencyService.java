@@ -45,20 +45,6 @@ public final class IdempotencyService {
         hazelcastProvider != null ? hazelcastProvider.getIfAvailable() : null;
   }
 
-  @SuppressFBWarnings(
-      value = "EI_EXPOSE_REP2",
-      justification = "Constructor receives framework-managed shared dependencies"
-  )
-  public IdempotencyService(HazelcastInstance hazelcastInstance, ObjectMapper objectMapper) {
-    this.hazelcastInstance = hazelcastInstance;
-    this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
-  }
-
-  public IdempotencyService() {
-    this.hazelcastInstance = null;
-    this.objectMapper = new ObjectMapper();
-  }
-
   private Map<String, IdempotencyKey> getIdempotencyMap() {
     if (hazelcastInstance != null) {
       try {
