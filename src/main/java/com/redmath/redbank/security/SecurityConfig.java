@@ -40,15 +40,12 @@ public class SecurityConfig {
       SecurityErrorResponseHandler securityErrorResponseHandler,
       ObjectProvider<RateLimitingFilter> rateLimitingFilterProvider
   ) throws Exception {
-    configureBasicSecurity(http);
+    configureCsrfSessionAndCors(http);
     configureAuthorization(http);
     configureExceptionHandling(http, securityErrorResponseHandler);
-    configureJwtAuthentication(http, denyListJwtAuthenticationConverter,
+    configureJwtResourceServer(http, denyListJwtAuthenticationConverter,
         securityErrorResponseHandler);
-    RateLimitingFilter rateLimitingFilter = rateLimitingFilterProvider.getIfAvailable();
-    if (rateLimitingFilter != null) {
-      http.addFilterBefore(rateLimitingFilter, AuthorizationFilter.class);
-    }
+    addRateLimitingFilterIfAvailable(http, rateLimitingFilterProvider);
 
     return http.build();
   }
@@ -56,6 +53,21 @@ public class SecurityConfig {
   @Bean
   PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  CsrfTokenRequestAttributeHandler csrfTokenRequestHandler() {
+    return new CsrfTokenRequestAttributeHandler();
+  }
+
+  @Bean
+  CsrfTokenRepository csrfTokenRepository() {
+    CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+    repository.setCookieCustomizer(cookie -> cookie
+        .sameSite("None")
+        .secure(true));
+    repository.setCookiePath("/");
+    return repository;
   }
 
   @Bean
@@ -78,55 +90,6 @@ public class SecurityConfig {
         tokenDenylistService);
   }
 
-  private void configureBasicSecurity(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(csrfTokenRepository())
-            .csrfTokenRequestHandler(csrfTokenRequestHandler())
-            .ignoringRequestMatchers(
-                "/api/auth/register",
-                "/api/auth/login"))
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .cors(Customizer.withDefaults());
-  }
-
-  @Bean
-  CsrfTokenRequestAttributeHandler csrfTokenRequestHandler() {
-    return new CsrfTokenRequestAttributeHandler();
-  }
-
-  @Bean
-  CsrfTokenRepository csrfTokenRepository() {
-    CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-    repository.setCookieCustomizer(cookie -> cookie
-        .sameSite("None")
-        .secure(true));
-    repository.setCookiePath("/");
-    return repository;
-  }
-
-  private void configureAuthorization(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-        .requestMatchers(REGISTRATION_STATUS_ENDPOINTS).hasAnyRole("PENDING_USER", "ACCOUNT_HOLDER")
-        .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN").anyRequest()
-        .hasAnyRole("ADMIN", "ACCOUNT_HOLDER"));
-  }
-
-  private void configureExceptionHandling(HttpSecurity http,
-      SecurityErrorResponseHandler errorHandler) throws Exception {
-    http.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(errorHandler)
-        .accessDeniedHandler(errorHandler));
-  }
-
-  private void configureJwtAuthentication(HttpSecurity http,
-      DenyListJwtAuthenticationConverter denyListJwtAuthenticationConverter,
-      SecurityErrorResponseHandler errorHandler) throws Exception {
-    http.oauth2ResourceServer(
-        oauth2 -> oauth2.authenticationEntryPoint(errorHandler).accessDeniedHandler(errorHandler)
-            .jwt(jwt -> jwt.jwtAuthenticationConverter(denyListJwtAuthenticationConverter)));
-  }
-
   @Bean
   CorsConfigurationSource corsConfigurationSource(TrustedOriginService trustedOriginService) {
     CorsConfiguration configuration = new CorsConfiguration();
@@ -145,5 +108,48 @@ public class SecurityConfig {
 
     source.registerCorsConfiguration("/**", configuration);
     return source;
+  }
+
+  private void configureCsrfSessionAndCors(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(csrfTokenRepository())
+            .csrfTokenRequestHandler(csrfTokenRequestHandler())
+            .ignoringRequestMatchers(
+                "/api/auth/register",
+                "/api/auth/login"))
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .cors(Customizer.withDefaults());
+  }
+
+  private void configureAuthorization(HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+        .requestMatchers(REGISTRATION_STATUS_ENDPOINTS).hasAnyRole("PENDING_USER", "ACCOUNT_HOLDER")
+        .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN").anyRequest()
+        .hasAnyRole("ADMIN", "ACCOUNT_HOLDER"));
+  }
+
+  private void configureExceptionHandling(HttpSecurity http,
+      SecurityErrorResponseHandler errorHandler) throws Exception {
+    http.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(errorHandler)
+        .accessDeniedHandler(errorHandler));
+  }
+
+  private void configureJwtResourceServer(HttpSecurity http,
+      DenyListJwtAuthenticationConverter denyListJwtAuthenticationConverter,
+      SecurityErrorResponseHandler errorHandler) throws Exception {
+    http.oauth2ResourceServer(
+        oauth2 -> oauth2.authenticationEntryPoint(errorHandler).accessDeniedHandler(errorHandler)
+            .jwt(jwt -> jwt.jwtAuthenticationConverter(denyListJwtAuthenticationConverter)));
+  }
+
+  private void addRateLimitingFilterIfAvailable(HttpSecurity http,
+      ObjectProvider<RateLimitingFilter> rateLimitingFilterProvider) {
+    RateLimitingFilter filter = rateLimitingFilterProvider.getIfAvailable();
+
+    if (filter != null) {
+      http.addFilterBefore(filter, AuthorizationFilter.class);
+    }
   }
 }
