@@ -1,4 +1,4 @@
-package com.redmath.redbank.security;
+package com.redmath.redbank.security.denylist;
 
 import java.time.Duration;
 

@@ -12,7 +12,7 @@ import com.redmath.redbank.locationrisk.geolocation.IpGeolocationResult;
 import com.redmath.redbank.locationrisk.login.LoginEventService;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerResult;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerService;
-import com.redmath.redbank.security.TokenDenylistService;
+import com.redmath.redbank.security.denylist.TokenDenylistService;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class LocationRiskAssessmentListenerTest {
   private LoginEventService loginEventService;
 
   private LocationRiskAssessmentListener listener;
-  
+
   @BeforeEach
   void setUp() {
     listener = new LocationRiskAssessmentListener(

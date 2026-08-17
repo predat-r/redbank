@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
+import com.redmath.redbank.security.denylist.CacheTokenDenyListService;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,5 +1,8 @@
 package com.redmath.redbank.security;
 
+import com.redmath.redbank.security.denylist.DenyListJwtAuthenticationConverter;
+import com.redmath.redbank.security.denylist.TokenDenylistService;
+import com.redmath.redbank.security.ratelimit.RateLimitingFilter;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
@@ -10,12 +13,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,12 +37,10 @@ public class SecurityConfig {
   private static final String[] ADMIN_ENDPOINTS = {"/api/admin/**"};
 
   @Bean
-  SecurityFilterChain securityFilterChain(
-      HttpSecurity http,
+  SecurityFilterChain securityFilterChain(HttpSecurity http,
       DenyListJwtAuthenticationConverter denyListJwtAuthenticationConverter,
       SecurityErrorResponseHandler securityErrorResponseHandler,
-      ObjectProvider<RateLimitingFilter> rateLimitingFilterProvider
-  ) throws Exception {
+      ObjectProvider<RateLimitingFilter> rateLimitingFilterProvider) throws Exception {
     configureCsrfSessionAndCors(http);
     configureAuthorization(http);
     configureExceptionHandling(http, securityErrorResponseHandler);
@@ -63,9 +64,7 @@ public class SecurityConfig {
   @Bean
   CsrfTokenRepository csrfTokenRepository() {
     CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-    repository.setCookieCustomizer(cookie -> cookie
-        .sameSite("None")
-        .secure(true));
+    repository.setCookieCustomizer(cookie -> cookie.sameSite("None").secure(true));
     repository.setCookiePath("/");
     return repository;
   }
@@ -99,8 +98,7 @@ public class SecurityConfig {
     configuration.setAllowedHeaders(
         List.of("Authorization", "Content-Type", "X-XSRF-TOKEN", "X-Idempotency-Key",
             "ngrok-skip-browser-warning"));
-    configuration.setExposedHeaders(
-        List.of("X-Idempotent-Replayed", "X-Idempotency-Key"));
+    configuration.setExposedHeaders(List.of("X-Idempotent-Replayed", "X-Idempotency-Key"));
     configuration.setAllowCredentials(true);
     configuration.setMaxAge(3600L);
 
@@ -111,15 +109,10 @@ public class SecurityConfig {
   }
 
   private void configureCsrfSessionAndCors(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(csrfTokenRepository())
+    http.csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository())
             .csrfTokenRequestHandler(csrfTokenRequestHandler())
-            .ignoringRequestMatchers(
-                "/api/auth/register",
-                "/api/auth/login"))
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .ignoringRequestMatchers("/api/auth/register", "/api/auth/login")).sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .cors(Customizer.withDefaults());
   }
 
@@ -153,3 +146,4 @@ public class SecurityConfig {
     }
   }
 }
+
