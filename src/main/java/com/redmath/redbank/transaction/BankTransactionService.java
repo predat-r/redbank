@@ -16,6 +16,8 @@ import com.redmath.redbank.transaction.request.WithdrawalRequest;
 import com.redmath.redbank.transaction.spec.BankTransactionSpecification;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import com.redmath.redbank.transaction.event.TransactionCancelledEvent;
+import com.redmath.redbank.transaction.event.TransactionCompletedEvent;
 import com.redmath.redbank.transaction.event.TransactionSubmittedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -46,10 +48,6 @@ public class BankTransactionService {
     this.eventPublisher = eventPublisher;
   }
 
-  public Page<BankTransaction> getTransactionsForUser(Long userId, Pageable pageable) {
-    return getTransactionsForUser(userId, null, null, null, null, null, null, pageable);
-  }
-
   public Page<BankTransaction> getTransactionsForUser(
       Long userId,
       String accountNumber,
@@ -64,10 +62,6 @@ public class BankTransactionService {
         BankTransactionSpecification.filterForUser(
             accountHolder.getId(), accountNumber, type, status, category, fromDate, toDate),
         pageable);
-  }
-
-  public Page<BankTransaction> getAllTransactions(Pageable pageable) {
-    return bankTransactionRepository.findAll(pageable);
   }
 
   public Page<BankTransaction> getAllTransactions(
@@ -86,6 +80,7 @@ public class BankTransactionService {
         pageable);
   }
 
+  //admin method
   public Page<BankTransaction> getTransactionsByAccountNumber(String accountNumber,
       Pageable pageable) {
     AccountHolder accountHolder = accountHolderService.findByAccountNumber(accountNumber)
@@ -112,6 +107,7 @@ public class BankTransactionService {
       throw new ResourceNotFoundException("Transaction not found with ID: " + transactionId);
     }
 
+    // If transaction is pending, and user is not the sender, then don't show transaction.
     if (isDestination && !isSource && transaction.getStatus() != TransactionStatus.COMPLETED) {
       throw new ResourceNotFoundException("Transaction not found with ID: " + transactionId);
     }
@@ -168,6 +164,8 @@ public class BankTransactionService {
     auditService.recordAuditLog(adminUserId, AuditAction.ADMIN_DEPOSIT_RECORDED,
         AuditTargetType.TRANSACTION, transaction.getId().toString(), null);
 
+    eventPublisher.publishEvent(new TransactionCompletedEvent(transaction.getId()));
+
     return transaction;
   }
 
@@ -207,6 +205,8 @@ public class BankTransactionService {
       balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction,
           BalanceIndicator.CREDIT);
     }
+
+    eventPublisher.publishEvent(new TransactionCompletedEvent(transaction.getId()));
 
     return transaction;
   }
@@ -248,6 +248,8 @@ public class BankTransactionService {
       auditService.recordAuditLog(adminUserId, AuditAction.TRANSACTION_REVERSED,
           AuditTargetType.TRANSACTION, original.getId().toString(), reason);
     }
+
+    eventPublisher.publishEvent(new TransactionCancelledEvent(original.getId(), reason));
 
     return reversal;
   }

@@ -82,7 +82,6 @@ public class User {
   public void changePasswordHash(String passwordHash, Instant now) {
     this.passwordHash = passwordHash;
     this.updatedAt = now;
-    this.refreshTokenVersion++;
   }
 
   public void rejectRegistration(String rejectionReason, Instant now) {

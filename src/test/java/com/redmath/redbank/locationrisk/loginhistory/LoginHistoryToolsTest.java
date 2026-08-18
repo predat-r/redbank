@@ -45,12 +45,14 @@ class LoginHistoryToolsTest {
   }
 
   @Test
-  void usesBoundCurrentIpForIpHistory() {
-    when(loginHistoryService.hasUsedIpBeforeExcluding(42L, "198.51.100.10", 99L))
-        .thenReturn(true);
+  void usesBoundCurrentIpWhenReadingFailedAttempts() {
+    List<LoginEvent> events = List.of(new LoginEvent());
+    when(loginHistoryService.getFailedAttemptsByIpAddress(42L, "198.51.100.10"))
+        .thenReturn(events);
 
-    assertEquals(true, tools.hasUsedCurrentIpBefore());
+    assertEquals(events, tools.getFailedAttemptsFromCurrentIp());
     verify(loginHistoryService)
-        .hasUsedIpBeforeExcluding(42L, "198.51.100.10", 99L);
+        .getFailedAttemptsByIpAddress(42L, "198.51.100.10");
   }
+
 }

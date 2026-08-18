@@ -13,26 +13,28 @@ public interface LoginEventRepository extends JpaRepository<LoginEvent, Long> {
       Long excludedLoginEventId
   );
 
-  boolean existsByUserIdAndIpAddressAndSuccessfulTrue(Long userId, String ipAddress);
-
   boolean existsByUserIdAndIpAddressAndIdNotAndSuccessfulTrue(
       Long userId,
       String ipAddress,
       Long excludedLoginEventId
   );
 
-  List<LoginEvent> findTop20ByUserIdOrderByOccurredAtDesc(Long userId);
 
   List<LoginEvent> findTop20ByUserIdAndIdNotOrderByOccurredAtDesc(
       Long userId,
       Long excludedLoginEventId
   );
 
-  List<LoginEvent> findTop20ByUserIdAndIpAddress(Long userId, String ipAddress);
-
   List<LoginEvent> findTop20ByUserIdAndIpAddressAndIdNotOrderByOccurredAtDesc(
       Long userId,
       String ipAddress,
       Long excludedLoginEventId
   );
+
+  List<LoginEvent> findTop20ByUserIdAndIpAddressAndSuccessfulFalseOrderByOccurredAtDesc(
+      Long userId,
+      String ipAddress
+  );
+
+
 }

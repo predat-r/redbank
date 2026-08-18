@@ -35,64 +35,66 @@ public final class IdempotencyService {
   private final Map<String, IdempotencyKey> fallbackMap = new ConcurrentHashMap<>();
 
   @Autowired
+  @SuppressFBWarnings("EI_EXPOSE_REP2")
   public IdempotencyService(
-      ObjectProvider<ObjectMapper> objectMapperProvider,
+      ObjectMapper objectMapper,
       ObjectProvider<HazelcastInstance> hazelcastProvider) {
-    ObjectMapper mapper =
-        objectMapperProvider != null ? objectMapperProvider.getIfAvailable() : null;
-    this.objectMapper = mapper != null ? mapper.copy() : new ObjectMapper();
+    this.objectMapper = objectMapper;
     this.hazelcastInstance =
         hazelcastProvider != null ? hazelcastProvider.getIfAvailable() : null;
   }
 
-  @SuppressFBWarnings(
-      value = "EI_EXPOSE_REP2",
-      justification = "Constructor receives framework-managed shared dependencies"
-  )
-  public IdempotencyService(HazelcastInstance hazelcastInstance, ObjectMapper objectMapper) {
-    this.hazelcastInstance = hazelcastInstance;
-    this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
-  }
-
-  public IdempotencyService() {
-    this.hazelcastInstance = null;
-    this.objectMapper = new ObjectMapper();
-  }
-
-  private Map<String, IdempotencyKey> getIdempotencyMap() {
-    if (hazelcastInstance != null) {
-      try {
-        return hazelcastInstance.getMap(HAZELCAST_MAP_NAME);
-      } catch (Exception e) {
-        if (log.isWarnEnabled()) {
-          log.warn("Hazelcast map unavailable, using local memory map: {}", e.getMessage());
-        }
-      }
-    }
-    return fallbackMap;
-  }
-
-  private String buildCacheKey(String key, Long userId) {
+  public String buildCacheKey(String key, Long userId) {
     return userId + ":" + key;
   }
 
-  public Optional<IdempotencyKey> findExistingKey(String key, Long userId) {
-    String cacheKey = buildCacheKey(key, userId);
-    Map<String, IdempotencyKey> map = getIdempotencyMap();
-    IdempotencyKey cached = map.get(cacheKey);
-    if (cached != null) {
-      if (log.isDebugEnabled()) {
-        log.debug("Idempotency key found in Hazelcast: {}", cacheKey);
+  public void lockKey(String cacheKey) {
+    if (hazelcastInstance != null) {
+      try {
+        hazelcastInstance.getMap(HAZELCAST_MAP_NAME).lock(cacheKey);
+      } catch (Exception e) {
+        if (log.isWarnEnabled()) {
+          log.warn("Failed to lock Hazelcast key {}: {}", cacheKey, e.getMessage());
+        }
       }
-      return Optional.of(cached);
     }
-    return Optional.empty();
   }
 
-  public IdempotencyKey createInProgressRecord(String key, Long userId, String path, String hash) {
-    String cacheKey = buildCacheKey(key, userId);
-    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+  public void unlockKey(String cacheKey) {
+    if (hazelcastInstance != null) {
+      try {
+        IMap<String, IdempotencyKey> map = hazelcastInstance.getMap(HAZELCAST_MAP_NAME);
+        if (map.isLocked(cacheKey)) {
+          map.unlock(cacheKey);
+        }
+      } catch (Exception e) {
+        if (log.isWarnEnabled()) {
+          log.warn("Failed to unlock Hazelcast key {}: {}", cacheKey, e.getMessage());
+        }
+      }
+    }
+  }
 
+  public Optional<IdempotencyKey> findExistingKey(String cacheKey) {
+    if (hazelcastInstance != null) {
+      try {
+        IMap<String, IdempotencyKey> map = hazelcastInstance.getMap(HAZELCAST_MAP_NAME);
+        IdempotencyKey cached = map.get(cacheKey);
+        if (cached != null) {
+          return Optional.of(cached);
+        }
+      } catch (Exception e) {
+        if (log.isWarnEnabled()) {
+          log.warn("Hazelcast get failed for key {}: {}", cacheKey, e.getMessage());
+        }
+      }
+    }
+    return Optional.ofNullable(fallbackMap.get(cacheKey));
+  }
+
+  public IdempotencyKey createInProgressRecord(String cacheKey, String key, Long userId,
+      String path, String hash) {
+    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     IdempotencyKey record = IdempotencyKey.builder()
         .idempotencyKey(key)
         .userId(userId)
@@ -103,30 +105,24 @@ public final class IdempotencyService {
         .updatedAt(now)
         .build();
 
-    Map<String, IdempotencyKey> map = getIdempotencyMap();
-    if (map instanceof IMap<String, IdempotencyKey> imap) {
-      IdempotencyKey existing = imap.putIfAbsent(cacheKey, record, TTL_HOURS, TimeUnit.HOURS);
-      if (existing != null) {
-        if (log.isInfoEnabled()) {
-          log.info("Hazelcast lock acquired by another request for key: {}", cacheKey);
+    if (hazelcastInstance != null) {
+      try {
+        IMap<String, IdempotencyKey> map = hazelcastInstance.getMap(HAZELCAST_MAP_NAME);
+        IdempotencyKey existing = map.putIfAbsent(cacheKey, record, TTL_HOURS, TimeUnit.HOURS);
+        return existing != null ? existing : record;
+      } catch (Exception e) {
+        if (log.isWarnEnabled()) {
+          log.warn("Hazelcast putIfAbsent failed for key {}: {}", cacheKey, e.getMessage());
         }
-        return existing;
       }
-      return record;
-    } else {
-      IdempotencyKey existing = map.putIfAbsent(cacheKey, record);
-      if (existing != null) {
-        return existing;
-      }
-      return record;
     }
+
+    IdempotencyKey existing = fallbackMap.putIfAbsent(cacheKey, record);
+    return existing != null ? existing : record;
   }
 
-  public void markCompleted(String key, Long userId, int statusCode, Object responseBody) {
-    String cacheKey = buildCacheKey(key, userId);
-    Map<String, IdempotencyKey> map = getIdempotencyMap();
-    IdempotencyKey record = map.get(cacheKey);
-
+  public void markCompleted(String cacheKey, int statusCode, Object responseBody) {
+    IdempotencyKey record = findExistingKey(cacheKey).orElse(null);
     if (record != null) {
       record.setStatus(IdempotencyStatus.COMPLETED);
       record.setResponseStatusCode(statusCode);
@@ -135,33 +131,39 @@ public final class IdempotencyService {
         record.setResponseBody(objectMapper.writeValueAsString(responseBody));
       } catch (Exception e) {
         if (log.isWarnEnabled()) {
-          log.warn("Failed to serialize response body for idempotency key {}", key, e);
+          log.warn("Failed to serialize response body for cache key {}", cacheKey, e);
         }
         record.setResponseBody(null);
       }
-
-      if (map instanceof IMap<String, IdempotencyKey> imap) {
-        imap.put(cacheKey, record, TTL_HOURS, TimeUnit.HOURS);
-      } else {
-        map.put(cacheKey, record);
+      putInCache(cacheKey, record);
+      if (log.isInfoEnabled()) {
+        log.warn("Cached response against the key {}", cacheKey);
       }
     }
   }
 
-  public void markFailed(String key, Long userId) {
-    String cacheKey = buildCacheKey(key, userId);
-    Map<String, IdempotencyKey> map = getIdempotencyMap();
-    IdempotencyKey record = map.get(cacheKey);
-
+  public void markFailed(String cacheKey) {
+    IdempotencyKey record = findExistingKey(cacheKey).orElse(null);
     if (record != null) {
       record.setStatus(IdempotencyStatus.FAILED);
       record.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
-      if (map instanceof IMap<String, IdempotencyKey> imap) {
-        imap.put(cacheKey, record, TTL_HOURS, TimeUnit.HOURS);
-      } else {
-        map.put(cacheKey, record);
+      putInCache(cacheKey, record);
+    }
+  }
+
+  private void putInCache(String cacheKey, IdempotencyKey record) {
+    if (hazelcastInstance != null) {
+      try {
+        IMap<String, IdempotencyKey> map = hazelcastInstance.getMap(HAZELCAST_MAP_NAME);
+        map.put(cacheKey, record, TTL_HOURS, TimeUnit.HOURS);
+        return;
+      } catch (Exception e) {
+        if (log.isWarnEnabled()) {
+          log.warn("Failed to put key in Hazelcast {}: {}", cacheKey, e.getMessage());
+        }
       }
     }
+    fallbackMap.put(cacheKey, record);
   }
 
   public String computeHash(Object... args) {
@@ -190,8 +192,7 @@ public final class IdempotencyService {
     }
   }
 
-  public ResponseEntity<?> createReplayedResponse(IdempotencyKey record,
-      Class<?> targetReturnType) {
+  public ResponseEntity<Object> createReplayedResponse(IdempotencyKey record) {
     if (log.isInfoEnabled()) {
       log.info("Replaying cached idempotent response for key: {} user: {}",
           record.getIdempotencyKey(), record.getUserId());
@@ -204,11 +205,7 @@ public final class IdempotencyService {
     Object body = null;
     if (record.getResponseBody() != null && !record.getResponseBody().isBlank()) {
       try {
-        if (targetReturnType != null && !void.class.equals(targetReturnType)) {
-          body = objectMapper.readValue(record.getResponseBody(), targetReturnType);
-        } else {
-          body = objectMapper.readValue(record.getResponseBody(), Object.class);
-        }
+        body = objectMapper.readValue(record.getResponseBody(), Object.class);
       } catch (Exception e) {
         if (log.isErrorEnabled()) {
           log.error("Failed to deserialize cached idempotency response body", e);

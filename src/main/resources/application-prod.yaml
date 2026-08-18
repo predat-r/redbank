@@ -17,6 +17,12 @@ spring:
       private-key: ${JWT_PRIVATE_KEY}
       public-key: ${JWT_PUBLIC_KEY}
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 logging:
   level:
     org.springframework.web: INFO
@@ -41,11 +47,14 @@ management:
   otlp:
     metrics:
       export:
-        enabled: false
-    tracing:
-      export:
-        enabled: false
-  metrics:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 0.1
     export:
       otlp:
-        enabled: false
+        enabled: true
+  logging:
+    export:
+      otlp:
+        enabled: true

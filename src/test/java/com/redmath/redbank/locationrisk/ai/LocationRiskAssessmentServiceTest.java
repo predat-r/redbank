@@ -6,6 +6,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.redmath.redbank.locationrisk.assessment.LocationRiskAssessment;
+import com.redmath.redbank.locationrisk.assessment.LocationRiskAssessmentService;
+import com.redmath.redbank.locationrisk.assessment.AssessmentConfidence;
+import com.redmath.redbank.locationrisk.assessment.RecommendedAction;
+import com.redmath.redbank.locationrisk.assessment.RiskLevel;
 import com.redmath.redbank.locationrisk.geolocation.IpGeolocationResult;
 import com.redmath.redbank.locationrisk.loginhistory.LoginHistoryService;
 import com.redmath.redbank.locationrisk.reputation.IpReputationProvider;
@@ -36,7 +41,8 @@ class LocationRiskAssessmentServiceTest {
   @Test
   void sendsBoundToolsAndMapsStructuredAiResult() {
     LocationRiskAssessment expected = new LocationRiskAssessment(
-        "HIGH", "New city and poor IP reputation", "HIGH", "CHALLENGE");
+        RiskLevel.HIGH, "New city and poor IP reputation", AssessmentConfidence.HIGH,
+        RecommendedAction.CHALLENGE);
     when(chatClient.prompt()).thenReturn(requestSpec);
     when(requestSpec.system(any(String.class))).thenReturn(requestSpec);
     when(requestSpec.user(any(String.class))).thenReturn(requestSpec);
