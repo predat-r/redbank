@@ -57,7 +57,7 @@ class SpringAiLlmClientTest {
     when(conversationChatClient.prompt()
         .advisors(any(java.util.function.Consumer.class))
         .system(anyString())
-        .user(anyString())
+        .user(any(java.util.function.Consumer.class))
         .call()
         .content()).thenReturn("Your balance is $100.00.");
 

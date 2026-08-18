@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface AccountHolderRepository extends JpaRepository<AccountHolder, Long> {
 
@@ -47,6 +48,6 @@ public interface AccountHolderRepository extends JpaRepository<AccountHolder, Lo
       AND ah.id != :myId
       AND LOWER(ah.user.name) LIKE LOWER(CONCAT('%', :name, '%'))
       """)
-  java.util.List<AccountHolder> findTransactedCounterparties(@org.springframework.data.repository.query.Param("myId") Long myId, @org.springframework.data.repository.query.Param("name") String name);
+  java.util.List<AccountHolder> findTransactedCounterparties(@Param("myId") Long myId, @Param("name") String name);
 }
 
