@@ -21,12 +21,15 @@ public class AdminAccountHolderService {
   private final AccountHolderRepository accountHolderRepository;
   private final AuditService auditService;
   private final UserService userService;
+  private final com.redmath.redbank.account.AccountHolderService accountHolderService;
 
   public AdminAccountHolderService(AccountHolderRepository accountHolderRepository,
-      AuditService auditService, UserService userService) {
+      AuditService auditService, UserService userService,
+      com.redmath.redbank.account.AccountHolderService accountHolderService) {
     this.accountHolderRepository = accountHolderRepository;
     this.auditService = auditService;
     this.userService = userService;
+    this.accountHolderService = accountHolderService;
   }
 
   public AccountHolder getAccountHolderById(Long accountId) {
@@ -51,6 +54,7 @@ public class AdminAccountHolderService {
 
     accountHolder.setAccountStatus(AccountStatus.FROZEN);
     accountHolderRepository.save(accountHolder);
+    accountHolderService.evictAccountHolderCache(accountHolder);
     auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_FROZEN, AuditTargetType.ACCOUNT,
         accountId.toString(), null);
   }
@@ -65,6 +69,7 @@ public class AdminAccountHolderService {
 
     accountHolder.setAccountStatus(AccountStatus.CLOSED);
     accountHolderRepository.save(accountHolder);
+    accountHolderService.evictAccountHolderCache(accountHolder);
     userService.deactivateUser(accountHolder.getUser().getId());
     auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_CLOSED, AuditTargetType.ACCOUNT,
         accountId.toString(), null);
@@ -83,6 +88,7 @@ public class AdminAccountHolderService {
     accountHolder.setAccountStatus(AccountStatus.ACTIVE);
     accountHolder.setUpdatedAt(OffsetDateTime.now());
     accountHolderRepository.save(accountHolder);
+    accountHolderService.evictAccountHolderCache(accountHolder);
 
     if (wasClosed) {
       userService.reactivateUser(accountHolder.getUser().getId());

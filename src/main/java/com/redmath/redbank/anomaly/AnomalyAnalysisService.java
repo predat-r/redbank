@@ -38,6 +38,14 @@ public class AnomalyAnalysisService {
   @Transactional
   public AnomalyReport analyzeAndReport(BankTransaction transaction,
       RuleEvaluationResult ruleResult) {
+    if (anomalyReportRepository.existsByTransactionId(transaction.getId())) {
+      if (log.isInfoEnabled()) {
+        log.info("Anomaly report already exists for transaction {}, skipping duplicate analysis.",
+            transaction.getTransactionReference());
+      }
+      return anomalyReportRepository.findByTransactionId(transaction.getId()).orElseThrow();
+    }
+
     int finalScore = ruleResult.getRiskScore();
     String recommendation = ruleResult.getAnomalyFlag() == AnomalyFlag.HIGH
         || ruleResult.getAnomalyFlag() == AnomalyFlag.CRITICAL

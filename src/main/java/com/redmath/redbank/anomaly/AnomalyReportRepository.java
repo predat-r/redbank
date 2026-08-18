@@ -10,4 +10,6 @@ public interface AnomalyReportRepository extends JpaRepository<AnomalyReport, Lo
 
   @EntityGraph(attributePaths = {"transaction"})
   Optional<AnomalyReport> findByTransactionId(Long transactionId);
+
+  boolean existsByTransactionId(Long transactionId);
 }
