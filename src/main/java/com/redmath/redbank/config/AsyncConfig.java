@@ -3,6 +3,7 @@ package com.redmath.redbank.config;
 import java.util.concurrent.Executor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -17,6 +18,7 @@ public class AsyncConfig {
     executor.setMaxPoolSize(20);
     executor.setQueueCapacity(100);
     executor.setThreadNamePrefix("AsyncAudit-");
+    executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
     executor.initialize();
     return executor;
   }
@@ -28,6 +30,7 @@ public class AsyncConfig {
     executor.setMaxPoolSize(30);
     executor.setQueueCapacity(100);
     executor.setThreadNamePrefix("LocationRiskAssessment-");
+    executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
     executor.initialize();
     return executor;
   }
@@ -39,6 +42,7 @@ public class AsyncConfig {
     executor.setMaxPoolSize(20);
     executor.setQueueCapacity(100);
     executor.setThreadNamePrefix("StatementGeneration-");
+    executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
     executor.initialize();
     return executor;
   }
