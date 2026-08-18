@@ -11,6 +11,7 @@ import com.redmath.redbank.locationrisk.login.LoginEventService;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerResult;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerService;
 import com.redmath.redbank.security.denylist.TokenDenylistService;
+import com.redmath.redbank.user.UserService;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,12 +37,16 @@ class LocationRiskAssessmentListenerTest {
   @Mock
   private LoginEventService loginEventService;
 
+  @Mock
+  private UserService userService;
+
   private LocationRiskAssessmentListener listener;
 
   @BeforeEach
   void setUp() {
     listener = new LocationRiskAssessmentListener(
-        triggerService, loginEventService, assessmentService, auditService, tokenDenylistService);
+        triggerService, loginEventService, assessmentService, auditService, tokenDenylistService,
+        userService);
   }
 
   @Test
@@ -81,6 +86,7 @@ class LocationRiskAssessmentListenerTest {
 
     verify(loginEventService).updateLocation(99L, "Karachi", "Pakistan");
     verify(tokenDenylistService).deny(any(), any());
+    verify(userService).invalidateRefreshTokens(42L);
     verify(auditService).recordAuditLog(any(), any(), any(), any(), any());
   }
 
@@ -97,6 +103,7 @@ class LocationRiskAssessmentListenerTest {
     listener.handle(event);
 
     verify(tokenDenylistService, never()).deny(any(), any());
+    verify(userService, never()).invalidateRefreshTokens(any());
     verify(auditService).recordAuditLog(any(), any(), any(), any(), any());
   }
 

@@ -87,6 +87,13 @@ public class UserService {
     return user;
   }
 
+  @Transactional
+  public void invalidateRefreshTokens(Long userId) {
+    User user = userRepository.findByIdForUpdate(userId)
+        .orElseThrow(UserNotFoundException::new);
+    user.incrementRefreshTokenVersion(Instant.now());
+  }
+
 
   @Transactional(propagation = Propagation.MANDATORY)
   public boolean deactivateUser(Long userId) {
