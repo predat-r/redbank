@@ -47,11 +47,14 @@ management:
   otlp:
     metrics:
       export:
-        enabled: false
-    tracing:
-      export:
-        enabled: false
-  metrics:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 0.1
     export:
       otlp:
-        enabled: false
+        enabled: true
+  logging:
+    export:
+      otlp:
+        enabled: true
