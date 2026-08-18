@@ -190,7 +190,8 @@ public class BankTransactionService {
 
   @Transactional
   public BankTransaction completePendingTransaction(Long transactionId) {
-    BankTransaction transaction = getTransactionById(transactionId);
+    BankTransaction transaction = bankTransactionRepository.findByIdWithLock(transactionId)
+        .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with ID: " + transactionId));
     if (transaction.getStatus() != TransactionStatus.PENDING) {
       throw new IllegalStateException(
           "Transaction is not PENDING (current status: " + transaction.getStatus() + ")");
@@ -213,7 +214,8 @@ public class BankTransactionService {
 
   @Transactional
   public BankTransaction reverseTransaction(Long adminUserId, Long transactionId, String reason) {
-    BankTransaction original = getTransactionById(transactionId);
+    BankTransaction original = bankTransactionRepository.findByIdWithLock(transactionId)
+        .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with ID: " + transactionId));
 
     if (original.getStatus() == TransactionStatus.REVERSED
         || original.getStatus() == TransactionStatus.CANCELLED) {
