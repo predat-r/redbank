@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -21,15 +22,13 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
       """)
   Optional<Balance> getLatestBalanceByUserId(Long userId);
 
-  @Query(
-      """
-          SELECT b
-          FROM Balance b
-          WHERE b.accountHolder.id = :accountId
-          ORDER BY b.id DESC
-          LIMIT 1
-          """
-  )
+  @Query("""
+      SELECT b
+      FROM Balance b
+      WHERE b.accountHolder.id = :accountId
+      ORDER BY b.id DESC
+      LIMIT 1
+      """)
   Optional<Balance> getLatestBalanceByAccountHolderId(Long accountId);
 
   Optional<Balance> getBalanceByTransactionId(Long transactionId);
@@ -55,11 +54,14 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
   Optional<Balance> findTopByAccountHolderIdAndEntryDateLessThanEqualOrderByEntryDateDescIdDesc(
       Long accountHolderId, OffsetDateTime entryDate);
 
+  @EntityGraph(attributePaths = {"transaction", "transaction.sourceAccountHolder",
+      "transaction.sourceAccountHolder.user", "transaction.destinationAccountHolder",
+      "transaction.destinationAccountHolder.user"})
   List<Balance> findByAccountHolderIdAndEntryDateBetweenOrderByEntryDateAscIdAsc(
       Long accountHolderId, OffsetDateTime from, OffsetDateTime to);
 
-  List<Balance> findByAccountHolderIdAndEntryDateAfter(
-      Long accountHolderId, OffsetDateTime entryDate);
+  List<Balance> findByAccountHolderIdAndEntryDateAfter(Long accountHolderId,
+      OffsetDateTime entryDate);
 
   Optional<Balance> findTopByAccountHolderIdOrderByEntryDateDesc(Long accountHolderId);
 }
