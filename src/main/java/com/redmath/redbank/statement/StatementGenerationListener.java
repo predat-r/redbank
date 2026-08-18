@@ -73,29 +73,33 @@ public class StatementGenerationListener {
 
       List<StatementData.StatementTransactionData> txData = new ArrayList<>();
       for (Balance b : balances) {
+        var transaction = b.getTransaction();
+
         if (b.getIndicator() == BalanceIndicator.CREDIT) {
           totalCredits = totalCredits.add(b.getAmount());
         } else {
           totalDebits = totalDebits.add(b.getAmount());
         }
-        
+
         String counterpartyName = null;
-        if (b.getTransaction().getDestinationAccountHolder() != null && b.getTransaction().getSourceAccountHolder() != null) {
-          if (b.getTransaction().getSourceAccountHolder().getId().equals(accountHolder.getId())) {
-             counterpartyName = b.getTransaction().getDestinationAccountHolder().getUser().getName();
+        if (transaction.getDestinationAccountHolder() != null
+            && transaction.getSourceAccountHolder() != null) {
+          if (transaction.getSourceAccountHolder().getId().equals(accountHolder.getId())) {
+            counterpartyName = transaction.getDestinationAccountHolder().getUser().getName();
           } else {
-             counterpartyName = b.getTransaction().getSourceAccountHolder().getUser().getName();
+            counterpartyName = transaction.getSourceAccountHolder().getUser().getName();
           }
         }
 
         txData.add(StatementData.StatementTransactionData.builder()
             .dateTime(b.getEntryDate())
-            .reference(b.getTransaction().getTransactionReference())
-            .type(b.getTransaction().getType().name())
-            .category(b.getTransaction().getCategory() != null ? b.getTransaction().getCategory().name() : "")
+            .reference(transaction.getTransactionReference())
+            .type(transaction.getType().name())
+            .category(transaction.getCategory() != null ? transaction.getCategory().name() : "")
             .counterparty(counterpartyName)
-            .status(b.getTransaction().getStatus().name())
-            .amount(b.getIndicator() == BalanceIndicator.CREDIT ? b.getAmount() : b.getAmount().negate())
+            .status(transaction.getStatus().name())
+            .amount(b.getIndicator() == BalanceIndicator.CREDIT ? b.getAmount()
+                : b.getAmount().negate())
             .runningBalance(b.getRunningBalance())
             .build());
       }
@@ -122,7 +126,8 @@ public class StatementGenerationListener {
 
     } catch (Exception e) {
       if (log.isErrorEnabled()) {
-        log.error("Failed to process StatementRequestedEvent for account holder {}", event.accountHolderId(), e);
+        log.error("Failed to process StatementRequestedEvent for account holder {}",
+            event.accountHolderId(), e);
       }
     }
   }

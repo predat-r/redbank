@@ -3,12 +3,11 @@ package com.redmath.redbank.locationrisk.assessment;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
-import com.redmath.redbank.locationrisk.ai.LocationRiskAssessment;
-import com.redmath.redbank.locationrisk.ai.LocationRiskAssessmentService;
 import com.redmath.redbank.locationrisk.login.LoginEventService;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerResult;
 import com.redmath.redbank.locationrisk.trigger.LocationRiskTriggerService;
 import com.redmath.redbank.security.denylist.TokenDenylistService;
+import com.redmath.redbank.user.UserService;
 import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +27,7 @@ public class LocationRiskAssessmentListener {
   private final LocationRiskAssessmentService locationRiskAssessmentService;
   private final AuditService auditService;
   private final TokenDenylistService tokenDenylistService;
+  private final UserService userService;
 
   @Async("locationRiskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -77,15 +77,17 @@ public class LocationRiskAssessmentListener {
         + ", action=" + assessment.recommendedAction()
         + ", reason=" + assessment.reason();
 
-    if ("EXTREME".equals(assessment.riskLevel())
-        && "REVOKE_SESSION".equals(assessment.recommendedAction())
-        && event.accessTokenJti() != null
-        && !event.accessTokenJti().isBlank()
-        && event.expiresAt() != null) {
-      Duration remainingTokenLifetime = Duration.between(Instant.now(), event.expiresAt());
-      if (!remainingTokenLifetime.isNegative() && !remainingTokenLifetime.isZero()) {
-        tokenDenylistService.deny(event.accessTokenJti(), remainingTokenLifetime);
+    if (assessment.riskLevel() == RiskLevel.EXTREME
+        && assessment.recommendedAction() == RecommendedAction.REVOKE_SESSION) {
+      if (event.accessTokenJti() != null
+          && !event.accessTokenJti().isBlank()
+          && event.expiresAt() != null) {
+        Duration remainingTokenLifetime = Duration.between(Instant.now(), event.expiresAt());
+        if (!remainingTokenLifetime.isNegative() && !remainingTokenLifetime.isZero()) {
+          tokenDenylistService.deny(event.accessTokenJti(), remainingTokenLifetime);
+        }
       }
+      userService.invalidateRefreshTokens(event.userId());
     }
 
     auditService.recordAuditLog(
