@@ -41,20 +41,28 @@ app:
       secure: true
 
 server:
+  port: ${PORT:8080}
   forward-headers-strategy: framework
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
   otlp:
     metrics:
       export:
-        enabled: true
+        enabled: ${OTLP_METRICS_ENABLED:false}
   tracing:
     sampling:
       probability: 0.1
     export:
       otlp:
-        enabled: true
+        enabled: ${OTLP_TRACING_ENABLED:false}
   logging:
     export:
       otlp:
-        enabled: true
+        enabled: ${OTLP_LOGGING_ENABLED:false}
