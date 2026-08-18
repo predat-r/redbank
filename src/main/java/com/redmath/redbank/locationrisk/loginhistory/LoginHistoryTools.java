@@ -36,7 +36,7 @@ public class LoginHistoryTools {
         currentLoginEventId);
   }
 
-  @Tool()
+  @Tool(description = "Retrieve the user's failed login attempts from the current IP address")
   public List<LoginEvent> getFailedAttemptsFromCurrentIp() {
     return loginHistoryService.getFailedAttemptsByIpAddress(userId, currentIp);
   }
