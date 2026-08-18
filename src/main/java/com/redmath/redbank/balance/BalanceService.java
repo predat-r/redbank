@@ -1,6 +1,7 @@
 package com.redmath.redbank.balance;
 
 import com.redmath.redbank.account.AccountHolder;
+import com.redmath.redbank.account.AccountHolderRepository;
 import com.redmath.redbank.common.exception.InsufficientFundsException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
 import com.redmath.redbank.transaction.BankTransaction;
@@ -14,9 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class BalanceService {
 
   private final BalanceRepository balanceRepository;
+  private final AccountHolderRepository accountHolderRepository;
 
-  public BalanceService(BalanceRepository balanceRepository) {
+  public BalanceService(BalanceRepository balanceRepository,
+      AccountHolderRepository accountHolderRepository) {
     this.balanceRepository = balanceRepository;
+    this.accountHolderRepository = accountHolderRepository;
   }
 
   public Balance getLatestBalanceByUserId(Long userId) {
@@ -52,6 +56,16 @@ public class BalanceService {
     if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("Transaction amount must be positive");
     }
+
+    // Acquire pessimistic write lock on the account holder row to serialize concurrent
+    // balance mutations. This prevents Read-Modify-Write race conditions where two
+    // threads read the same previousRunningBalance and overwrite each other's updates.
+    // Callers that already hold this lock (e.g. transfer, deposit) simply re-acquire
+    // within the same transaction (no-op). Callers that don't (e.g. completePendingTransaction)
+    // are now protected as well.
+    accountHolderRepository.findByIdWithLock(accountHolder.getId())
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Account holder not found: " + accountHolder.getId()));
 
     BigDecimal previousRunningBalance = balanceRepository.getLatestBalanceByAccountHolderId(
             accountHolder.getId())
