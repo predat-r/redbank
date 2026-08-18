@@ -3,16 +3,15 @@ package com.redmath.redbank.common.idempotency;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hazelcast.core.HazelcastInstance;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
-import com.hazelcast.core.HazelcastInstance;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -32,23 +31,25 @@ class IdempotencyServiceTest {
 
   @Test
   void testCreateInProgressRecord() {
-    IdempotencyKey record = idempotencyService.createInProgressRecord("key-123", 1L, "/api/test", "hash-abc");
+    String cacheKey = idempotencyService.buildCacheKey("key-123", 1L);
+    IdempotencyKey record = idempotencyService.createInProgressRecord(cacheKey, "key-123", 1L, "/api/test", "hash-abc");
 
     assertNotNull(record);
     assertEquals("key-123", record.getIdempotencyKey());
     assertEquals(1L, record.getUserId());
     assertEquals(IdempotencyStatus.IN_PROGRESS, record.getStatus());
 
-    Optional<IdempotencyKey> existing = idempotencyService.findExistingKey("key-123", 1L);
+    Optional<IdempotencyKey> existing = idempotencyService.findExistingKey(cacheKey);
     assertTrue(existing.isPresent());
   }
 
   @Test
   void testMarkCompleted() {
-    idempotencyService.createInProgressRecord("key-123", 1L, "/api/test", "hash-abc");
-    idempotencyService.markCompleted("key-123", 1L, 201, "Success Payload");
+    String cacheKey = idempotencyService.buildCacheKey("key-123", 1L);
+    idempotencyService.createInProgressRecord(cacheKey, "key-123", 1L, "/api/test", "hash-abc");
+    idempotencyService.markCompleted(cacheKey, 201, "Success Payload");
 
-    Optional<IdempotencyKey> keyOpt = idempotencyService.findExistingKey("key-123", 1L);
+    Optional<IdempotencyKey> keyOpt = idempotencyService.findExistingKey(cacheKey);
     assertTrue(keyOpt.isPresent());
     IdempotencyKey key = keyOpt.get();
     assertEquals(IdempotencyStatus.COMPLETED, key.getStatus());
@@ -65,7 +66,7 @@ class IdempotencyServiceTest {
         .responseBody("\"Success Payload\"")
         .build();
 
-    ResponseEntity<?> response = idempotencyService.createReplayedResponse(record, String.class);
+    ResponseEntity<?> response = idempotencyService.createReplayedResponse(record);
 
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
     assertEquals("Success Payload", response.getBody());

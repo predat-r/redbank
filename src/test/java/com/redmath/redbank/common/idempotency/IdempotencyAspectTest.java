@@ -3,7 +3,6 @@ package com.redmath.redbank.common.idempotency;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,7 +54,8 @@ class IdempotencyAspectTest {
         .header("alg", "none")
         .claim("userId", 1L)
         .build();
-    SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt, Collections.emptyList()));
+    SecurityContextHolder.getContext()
+        .setAuthentication(new JwtAuthenticationToken(jwt, Collections.emptyList()));
   }
 
   @AfterEach
@@ -87,6 +87,7 @@ class IdempotencyAspectTest {
   @Test
   void testInProgressKeyThrowsConflictException() {
     when(request.getHeader(IdempotencyService.IDEMPOTENCY_HEADER)).thenReturn("key-123");
+    when(idempotencyService.buildCacheKey("key-123", 1L)).thenReturn("1:key-123");
     when(request.getRequestURI()).thenReturn("/api/accounts/me/transfers");
     when(idempotencyService.computeHash(any())).thenReturn("hash-123");
 
@@ -96,7 +97,7 @@ class IdempotencyAspectTest {
         .status(IdempotencyStatus.IN_PROGRESS)
         .build();
 
-    when(idempotencyService.findExistingKey("key-123", 1L)).thenReturn(Optional.of(inProgressRecord));
+    when(idempotencyService.findExistingKey("1:key-123")).thenReturn(Optional.of(inProgressRecord));
 
     assertThrows(ConflictException.class, () ->
         idempotencyAspect.handleIdempotency(joinPoint, requireIdempotency));
@@ -105,6 +106,7 @@ class IdempotencyAspectTest {
   @Test
   void testCompletedKeyReplaysResponse() throws Throwable {
     when(request.getHeader(IdempotencyService.IDEMPOTENCY_HEADER)).thenReturn("key-123");
+    when(idempotencyService.buildCacheKey("key-123", 1L)).thenReturn("1:key-123");
     when(request.getRequestURI()).thenReturn("/api/accounts/me/transfers");
     when(idempotencyService.computeHash(any())).thenReturn("hash-123");
 
@@ -117,12 +119,10 @@ class IdempotencyAspectTest {
         .responseBody("\"Replayed Response\"")
         .build();
 
-    when(idempotencyService.findExistingKey("key-123", 1L)).thenReturn(Optional.of(completedRecord));
-    when(joinPoint.getSignature()).thenReturn(methodSignature);
-    when(methodSignature.getReturnType()).thenReturn((Class) ResponseEntity.class);
+    when(idempotencyService.findExistingKey("1:key-123")).thenReturn(Optional.of(completedRecord));
 
-    ResponseEntity<String> expectedResponse = ResponseEntity.ok("Replayed Response");
-    when(idempotencyService.createReplayedResponse(eq(completedRecord), any())).thenReturn((ResponseEntity) expectedResponse);
+    ResponseEntity<Object> expectedResponse = ResponseEntity.ok("Replayed Response");
+    when(idempotencyService.createReplayedResponse(completedRecord)).thenReturn(expectedResponse);
 
     Object result = idempotencyAspect.handleIdempotency(joinPoint, requireIdempotency);
 
