@@ -91,15 +91,21 @@ public class SpringAiLlmClient implements LlmClient {
     String convId =
         (conversationId != null && !conversationId.isBlank()) ? conversationId : "default";
 
-    String userPrompt = ("User's original question: " + userMessage + "\n\n"
-        + "Raw factual data fetched from the database:\n"
-        + rawFactualAnswer + "\n\n"
-        + "Please rephrase this into a natural, friendly response.");
+    String userTemplate = """
+        User's original question: {userMessage}
+        
+        Raw factual data fetched from the database:
+        {rawFactualAnswer}
+        
+        Please rephrase this into a natural, friendly response.
+        """;
 
     String response = conversationChatClient.prompt()
         .advisors(advisorSpec -> advisorSpec.param("chat_memory_conversation_id", convId))
         .system(PHRASING_SYSTEM_PROMPT)
-        .user(userPrompt)
+        .user(u -> u.text(userTemplate)
+            .param("userMessage", userMessage)
+            .param("rawFactualAnswer", rawFactualAnswer))
         .call()
         .content();
 
