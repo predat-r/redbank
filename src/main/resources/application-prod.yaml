@@ -66,3 +66,6 @@ management:
     export:
       otlp:
         enabled: ${OTLP_LOGGING_ENABLED:false}
+  health:
+    mail:
+      enabled: false
