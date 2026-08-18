@@ -185,7 +185,7 @@ public class AccountHolderService {
     return candidate;
   }
 
-  private void evictAccountHolderCache(AccountHolder accountHolder) {
+  public void evictAccountHolderCache(AccountHolder accountHolder) {
     Cache cache = cacheManager.getCache("account-holder-by-number");
     if (cache != null) {
       cache.evict(accountHolder.getAccountNumber());
