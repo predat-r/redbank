@@ -25,6 +25,6 @@ EXPOSE 8080
 
 USER appuser
 
-ENV JAVA_OPTS="-Xms64m -Xmx224m -XX:MaxMetaspaceSize=100m -XX:ReservedCodeCacheSize=40m -Xss256k -XX:+UseG1GC -XX:+UseContainerSupport -XX:+ExitOnOutOfMemoryError"
+ENV JAVA_OPTS="-Xms32m -Xmx160m -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=32m -Xss256k -XX:+UseSerialGC -XX:+UseContainerSupport -XX:+ExitOnOutOfMemoryError"
 
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
