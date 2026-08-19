@@ -11,18 +11,20 @@ concurrency:
   group: verify-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SPRING_PROFILES_ACTIVE: test
+  POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
+  JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+  JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 jobs:
-  verify:
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      SPRING_PROFILES_ACTIVE: test
-      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
-      JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-      JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
-      SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
@@ -35,5 +37,50 @@ jobs:
           java-version: "25"
           cache: maven
 
-      - name: Run Maven verification
-        run: ./mvnw --batch-mode --no-transfer-progress -DskipPitest=true verify
+      - name: Run tests
+        run: ./mvnw --batch-mode --no-transfer-progress test jacoco:report jacoco:check
+
+  static-quality:
+    name: Static quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Run Checkstyle
+        run: ./mvnw --batch-mode --no-transfer-progress checkstyle:check
+
+      - name: Run PMD
+        run: ./mvnw --batch-mode --no-transfer-progress pmd:check pmd:cpd-check
+
+      - name: Run SpotBugs
+        run: ./mvnw --batch-mode --no-transfer-progress spotbugs:check
+
+  sonar:
+    name: SonarCloud analysis
+    needs: [tests, static-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Compile and analyze
+        run: ./mvnw --batch-mode --no-transfer-progress -DskipTests=true -DskipPitest=true compile sonar:sonar
