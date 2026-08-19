@@ -1,5 +1,7 @@
 # RedBank Backend
 
+# RedBank Backend
+
 RedBank is a Spring Boot backend for a digital banking platform. It handles user authentication,
 registration approval workflows, account management, transaction processing (deposits, withdrawals,
 transfers), running balance ledgers, scheduled background cleanup jobs, audit logging, and telemetry
@@ -23,7 +25,8 @@ authentication, transaction execution, and background reconciliation.
 4. **Approval / Rejection**:
     - **Approval**: Admin calls `POST /api/admin/registrations/{userId}/approve`. The system updates
       the user status to `ACTIVE`, assigns `ROLE_ACCOUNT_HOLDER`, creates an account holder profile,
-      and auto-generates a unique account number (`RB-XXXXXX`).
+      and auto-generates a unique account number in the format `RBXXXXXXXXXX` (the `RB` prefix plus
+      ten uppercase hexadecimal characters).
     - **Rejection**: Admin calls `POST /api/admin/registrations/{userId}/reject` with a rejection
       reason. The user status is set to `REJECTED`.
 5. **Direct Admin Creation**: An administrator can bypass the pending-registration workflow with
@@ -64,19 +67,19 @@ additional risk assessment; high-risk results may challenge the login or revoke 
         4. An asynchronous `TransactionSubmittedEvent` is published to trigger decoupled risk
            evaluation.
 3. **Async Risk Evaluation & AI Assessment**:
-    - **Rule Engine**: Evaluates configurable rules for amount thresholds
-      (High >= $100, Very High >= $500), off-peak transaction hours, and velocity (multiple
-      transactions within a 5-minute window). Assigns risk scores and flags (`NONE`, `LOW`,
+    - **Rule Engine**: Evaluates amount thresholds (High >= $10,000, Very High >= $50,000), off-peak
+      transaction hours, and velocity (at least 10 source transactions within a 5-minute window).
+      Assigns risk scores and flags (`NONE`, `LOW`,
       `MEDIUM`, `HIGH`, `CRITICAL`).
     - **AI Behavioral Context (Spring AI)**: Analyzes qualitative risk by querying the account
       holder's historical transaction profile (average/max amount, weekly frequency, top categories,
       peak hours excluding the current transaction) and generating a risk reasoning summary via
       `ChatClient`.
     - **Auto-Settlement vs. Admin Review**:
-        - Transactions with low/medium risk (`NONE`, `LOW`, `MEDIUM`) are automatically approved and
-          completed.
-        - High-risk transactions (`HIGH`, `CRITICAL`) remain `PENDING` for manual administrative
-          review.
+        - Transactions with a total risk score below 30 (`NONE`, `LOW`) are automatically approved
+          and completed.
+        - Transactions scoring 30 or higher (`MEDIUM`, `HIGH`, `CRITICAL`) remain `PENDING` for
+          anomaly analysis and manual administrative review.
 4. **Admin Anomaly Review & Settlement Workflows**:
     - Admins review pending transactions and their associated AI anomaly reports via
       `GET /api/admin/transactions/{id}/anomaly-report`.
@@ -112,7 +115,10 @@ additional risk assessment; high-risk results may challenge the login or revoke 
 - API Base URL: `http://localhost:8080/api`
 - OpenAPI Specification: `http://localhost:8080/v3/api-docs`
 - Swagger UI Documentation: `http://localhost:8080/swagger-ui/index.html`
-- Grafana Telemetry Dashboard: `http://localhost:3000`
+- Local Grafana telemetry dashboard: `http://localhost:3000`
+- Production observability: Grafana Cloud (configured through OTLP environment variables)
+
+OpenAPI and Swagger UI are available locally but are disabled in the production profile.
 
 ---
 
@@ -146,8 +152,10 @@ properties such as account number, currency, and account status are not user-edi
 | `GET`   | `/api/accounts/name/{accountNumber}` | None                                                                                        | Returns the name and account number for an account holder.                   |
 | `PATCH` | `/api/accounts/freeze/me`            | None                                                                                        | Freezes the authenticated user's account.                                    |
 | `PATCH` | `/api/accounts/unfreeze/me`          | None                                                                                        | Unfreezes the authenticated user's account.                                  |
+| `PATCH` | `/api/accounts/activate/me`          | None                                                                                        | Reactivates the authenticated user's account.                                |
 | `PATCH` | `/api/accounts/deactivate/me`        | None                                                                                        | Deactivates the authenticated user's account.                                |
 | `GET`   | `/api/accounts/me/transactions`      | `accountNumber`, `type`, `status`, `category`, `fromDate`, `toDate`, `page`, `size`, `sort` | Retrieves paginated transaction history for the authenticated user.          |
+| `GET`   | `/api/accounts/me/transactions/{id}` | None                                                                                        | Retrieves one transaction belonging to the authenticated user.               |
 | `POST`  | `/api/accounts/me/withdrawals`       | None                                                                                        | Executes a cash withdrawal from the user's account.                          |
 | `POST`  | `/api/accounts/me/transfers`         | None                                                                                        | Transfers funds from the user's account to a destination account number.     |
 | `POST`  | `/api/accounts/me/chat`              | None                                                                                        | Sends a prompt to the AI financial assistant chatbot.                        |
@@ -158,8 +166,9 @@ properties such as account number, currency, and account status are not user-edi
 CSRF protection is enabled for state-changing requests. The frontend should first call
 `GET /api/auth/csrf` with credentials enabled, store the returned token, then send it in the
 `X-XSRF-TOKEN` header on every `POST`, `PUT`, `PATCH`, or `DELETE` request. The matching cookie is
-sent automatically by the browser. The refresh and logout endpoints are public but still require a valid CSRF token because they use the
-refresh-token cookie. Registration and login are exempt from CSRF checks.
+sent automatically by the browser. The refresh and logout endpoints are public but still require a
+valid CSRF token because they use the refresh-token cookie. Registration and login are exempt from
+CSRF checks.
 
 ---
 
@@ -190,6 +199,7 @@ refresh-token cookie. Registration and login are exempt from CSRF checks.
 | `GET`   | `/api/admin/accounts/{accountId}`            | Retrieves an account holder by ID.                                               |
 | `PATCH` | `/api/admin/accounts/freeze/{accountId}`     | Freezes an account holder's account.                                             |
 | `PATCH` | `/api/admin/accounts/unfreeze/{accountId}`   | Unfreezes an account holder's account.                                           |
+| `PATCH` | `/api/admin/accounts/activate/{accountId}`   | Reactivates an account holder's account.                                         |
 | `PATCH` | `/api/admin/accounts/deactivate/{accountId}` | Deactivates an account holder's account.                                         |
 
 Admin user creation accepts `email`, `phoneNumber`, `password`, `name`, and `address`. It returns
@@ -202,16 +212,16 @@ return HTTP `409 Conflict`, while unknown user IDs return HTTP `404 Not Found`.
 
 #### Financial & Transaction Management
 
-| Method | Endpoint                                           | Query Parameters                                                                                         | Description                                                                                   |
-|:-------|:---------------------------------------------------|:---------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| `POST` | `/api/admin/deposits`                              | None                                                                                                     | Deposits funds directly into a specified account number.                                      |
-| `GET`  | `/api/admin/transactions`                          | `reference`, `accountNumber`, `type`, `status`, `category`, `fromDate`, `toDate`, `page`, `size`, `sort` | Fetches a paginated list of all system transactions.                                          |
-| `GET`  | `/api/admin/transactions/{id}`                     | None                                                                                                     | Retrieves detailed transaction information by ID (includes source/destination owner details). |
-| `GET`  | `/api/admin/transactions/reference/{reference}`    | None                                                                                                     | Fetches transaction details by transaction reference string (e.g. `TXN-XXXXXXXXXXXX`).        |
-| `GET`  | `/api/admin/accounts/{accountNumber}/transactions` | `page`, `size`, `sort`                                                                                   | Retrieves transaction history for a specific account number.                                  |
-| `POST` | `/api/admin/transactions/{id}/approve`             | None                                                                                                 | Manually approves a flagged pending transaction and completes settlement.                     |
-| `POST` | `/api/admin/transactions/{id}/reject`              | None                                                                                                 | Rejects a flagged pending transaction and reverses debited funds to the source account.       |
-| `GET`  | `/api/admin/transactions/{id}/anomaly-report`      | None                                                                                                 | Retrieves the AI anomaly assessment report and reasoning for a transaction.                   |
+| Method | Endpoint                                           | Query Parameters                                                                                                        | Description                                                                                   |
+|:-------|:---------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| `POST` | `/api/admin/deposits`                              | None                                                                                                                    | Deposits funds directly into a specified account number.                                      |
+| `GET`  | `/api/admin/transactions`                          | `reference`, `accountNumber`, `type`, `status`, `category`, `anomalyFlag`, `fromDate`, `toDate`, `page`, `size`, `sort` | Fetches a paginated list of all system transactions.                                          |
+| `GET`  | `/api/admin/transactions/{id}`                     | None                                                                                                                    | Retrieves detailed transaction information by ID (includes source/destination owner details). |
+| `GET`  | `/api/admin/transactions/reference/{reference}`    | None                                                                                                                    | Fetches transaction details by transaction reference string (e.g. `TXN-XXXXXXXXXXXX`).        |
+| `GET`  | `/api/admin/accounts/{accountNumber}/transactions` | `page`, `size`, `sort`                                                                                                  | Retrieves transaction history for a specific account number.                                  |
+| `POST` | `/api/admin/transactions/{id}/approve`             | None                                                                                                                    | Manually approves a flagged pending transaction and completes settlement.                     |
+| `POST` | `/api/admin/transactions/{id}/reject`              | None                                                                                                                    | Rejects a flagged pending transaction and reverses debited funds to the source account.       |
+| `GET`  | `/api/admin/transactions/{id}/anomaly-report`      | None                                                                                                                    | Retrieves the AI anomaly assessment report and reasoning for a transaction.                   |
 
 #### Balance & Audit Logs
 
@@ -230,18 +240,22 @@ return HTTP `409 Conflict`, while unknown user IDs return HTTP `404 Not Found`.
 - **Framework**: Spring Boot 4.1.0 (Spring Security, Spring Data JPA, Spring WebMVC)
 - **Database & Migrations**: PostgreSQL with Liquibase migrations
 - **Containerization**: Spring Boot Docker Compose integration, Docker Compose
-- **Observability**: OpenTelemetry, Micrometer, Grafana LGTM (Grafana, Loki, Tempo, Mimir)
+- **Observability**: OpenTelemetry and Micrometer; local Grafana OTEL-LGTM through Docker Compose;
+  production Grafana Cloud OTLP export
 - **Rate Limiting**: Bucket4j (in-memory token bucket rate limiting per IP/user)
 - **Code Quality Tools**: SonarCloud, PMD 7, Checkstyle (Google Java Style), SpotBugs, JaCoCo,
   Pitest
 
 ### Rate Limiting & Security
 
-In-memory Bucket4j token bucket rate limiting (`RateLimitingFilter`, `RateLimitingService`) protects endpoints from abuse:
-- **AUTH** (`/api/auth/login`, `/api/auth/register`, `/api/auth/refresh`): 30 requests/minute
-- **CHATBOT** (`/api/accounts/me/chat`): 15 requests/minute
-- **FINANCIAL** (`/api/accounts/me/withdrawals`, `/api/accounts/me/transfers`, `/api/admin/deposits`): 60 requests/minute
-- **GENERAL**: 200 requests/minute
+In-memory Bucket4j token bucket rate limiting (`RateLimitingFilter`, `RateLimitingService`) protects
+endpoints from abuse:
+
+- **AUTH** (`/api/auth/login`, `/api/auth/register`, `/api/auth/refresh`): 10 requests/minute
+- **CHATBOT** (`/api/accounts/me/chat`): 5 requests/minute
+- **FINANCIAL** (`/api/accounts/me/withdrawals`, `/api/accounts/me/transfers`,
+  `/api/admin/deposits`): 20 requests/minute
+- **GENERAL**: 50 requests/minute
 
 Rate limiting is active in non-test profiles (`@Profile("!test")`).
 
@@ -269,18 +283,16 @@ used for nested `User` or timestamp fields.
 com.redmath.redbank
 ├── account         # Account holder domain, service, and admin approval controllers
 │   └── admin
-├── ai              # Spring AI anomaly detection engine, rule evaluation, and prompt enrichment
-│   ├── anomaly
-│   └── config
+├── anomaly         # Rule-based and Spring AI transaction anomaly analysis
 ├── audit           # Audit logging service, repository, and action targets
 ├── auth            # User registration, login, token refresh, and security filters
 ├── balance         # Balance entity, running balance ledger, and balance controllers
 │   └── admin
 ├── chatbot         # AI Financial Assistant Chatbot domain & endpoints
-├── common          # Custom exception classes, JWT utilities, and shared helpers
+├── common          # Shared exceptions, idempotency, and utilities
 ├── observability   # Telemetry setup, tracing, and metric instrumentation
 ├── scheduler       # Cron jobs (balance reconciliation, stale registration & txn cleanup)
-├── security        # Security configuration, JWT converters, and rate-limiting filter
+├── security        # Security configuration, JWT, CSRF, CORS, authorization, and rate limiting
 ├── transaction     # Transaction entity, service, repository, DTOs, and endpoints
 │   ├── admin
 │   ├── dto
