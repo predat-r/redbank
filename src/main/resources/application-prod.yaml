@@ -3,6 +3,9 @@ spring:
     url: ${DATABASE_URL}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
   docker:
     compose:
       enabled: false
@@ -43,6 +46,10 @@ app:
 server:
   port: ${PORT:8080}
   forward-headers-strategy: framework
+  tomcat:
+    threads:
+      max: 30
+      min-spare: 5
 
 management:
   endpoints:
