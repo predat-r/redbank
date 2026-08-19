@@ -45,8 +45,8 @@ authentication, transaction execution, and background reconciliation.
 
 ### 3. Location Risk Assessment
 
-After a successful login, RedBank records the login IP and asynchronously resolves its location.
-The resolved city and country are stored with the login event. New login locations can trigger an
+After a successful login, RedBank records the login IP and asynchronously resolves its location. The
+resolved city and country are stored with the login event. New login locations can trigger an
 additional risk assessment; high-risk results may challenge the login or revoke the session.
 
 ### 4. Funding and Transaction Execution
@@ -56,7 +56,10 @@ additional risk assessment; high-risk results may challenge the login or revoke 
 2. **Transaction Processing**:
     - For **withdrawals** (`POST /api/accounts/me/withdrawals`) or **transfers**
       (`POST /api/accounts/me/transfers`):
-        1. The system validates request parameters, including an optional `category` (predefined values: `FOOD`, `GROCERY`, `DONATION`, `BILLS`, `ENTERTAINMENT`, `SHOPPING`, `HEALTH`, `TRANSPORT`, `EDUCATION`, `INVESTMENT`, `OTHER`), and verifies that initiating/destination accounts are `ACTIVE`.
+        1. The system validates request parameters, including an optional `category` (predefined
+           values: `FOOD`, `GROCERY`, `DONATION`, `BILLS`, `ENTERTAINMENT`, `SHOPPING`, `HEALTH`,
+           `TRANSPORT`, `EDUCATION`, `INVESTMENT`, `OTHER`), and verifies that
+           initiating/destination accounts are `ACTIVE`.
         2. A database pessimistic write lock (`PESSIMISTIC_WRITE`) is acquired on the account holder
            entity to guarantee atomic execution under concurrent requests.
         3. The system queries `BalanceService` to confirm sufficient funds before deducting.
@@ -79,8 +82,8 @@ additional risk assessment; high-risk results may challenge the login or revoke 
   unapproved for over 30 days.
 - **Stale Transaction Cleanup**: Cron job cancels pending transactions that remain uncompleted after
   30 minutes.
-- **Audit Logging**: Administrative deposits, registration decisions, and administrator-driven
-  user lifecycle changes write records to the `audit_logs` database table.
+- **Audit Logging**: Administrative deposits, registration decisions, and administrator-driven user
+  lifecycle changes write records to the `audit_logs` database table.
 
 ---
 
@@ -97,15 +100,15 @@ additional risk assessment; high-risk results may challenge the login or revoke 
 
 ### 1. Authentication Endpoints (`/api/auth`)
 
-| Method | Endpoint                        | Access Level                   | Description                                                          |
-|:-------|:--------------------------------|:-------------------------------|:---------------------------------------------------------------------|
-| `POST` | `/api/auth/register`            | Public                         | Registers a new user (creates account in `PENDING_APPROVAL` state).  |
-| `POST` | `/api/auth/login`               | Public                         | Returns an access token and sets the refresh-token cookie.           |
-| `GET`  | `/api/auth/csrf`                | Public                         | Sets the `XSRF-TOKEN` cookie; the token is not returned in JSON.     |
-| `POST` | `/api/auth/refresh`             | Public                         | Rotates the refresh cookie and issues a new access token.            |
-| `POST` | `/api/auth/logout`              | Public                         | Revokes and clears the refresh-token cookie.                         |
-| `PUT`  | `/api/auth/password`            | Authenticated                  | Changes the authenticated user's password.                           |
-| `GET`  | `/api/auth/registration-status` | Pending user or account holder | Returns the authenticated user's registration status.                |
+| Method | Endpoint                        | Access Level                   | Description                                                         |
+|:-------|:--------------------------------|:-------------------------------|:--------------------------------------------------------------------|
+| `POST` | `/api/auth/register`            | Public                         | Registers a new user (creates account in `PENDING_APPROVAL` state). |
+| `POST` | `/api/auth/login`               | Public                         | Returns an access token and sets the refresh-token cookie.          |
+| `GET`  | `/api/auth/csrf`                | Public                         | Sets the `XSRF-TOKEN` cookie; the token is not returned in JSON.    |
+| `POST` | `/api/auth/refresh`             | Public                         | Rotates the refresh cookie and issues a new access token.           |
+| `POST` | `/api/auth/logout`              | Public                         | Revokes and clears the refresh-token cookie.                        |
+| `PUT`  | `/api/auth/password`            | Authenticated                  | Changes the authenticated user's password.                          |
+| `GET`  | `/api/auth/registration-status` | Pending user or account holder | Returns the authenticated user's registration status.               |
 
 ---
 
@@ -118,25 +121,25 @@ The account-name lookup also permits `ROLE_ADMIN`.
 Account holders can update their personal profile through `PATCH /api/users/me`. Bank-account
 properties such as account number, currency, and account status are not user-editable.
 
-| Method  | Endpoint                                | Query Parameters                                                           | Description                                                                  |
-|:--------|:----------------------------------------|:---------------------------------------------------------------------------|:-----------------------------------------------------------------------------|
-| `GET`   | `/api/accounts/me`                      | None                                                                       | Returns the authenticated user's account-holder profile.                     |
-| `GET`   | `/api/accounts/name/{accountNumber}`    | None                                                                       | Returns the name and account number for an account holder.                   |
-| `PATCH` | `/api/accounts/freeze/me`               | None                                                                       | Freezes the authenticated user's account.                                    |
-| `PATCH` | `/api/accounts/unfreeze/me`             | None                                                                       | Unfreezes the authenticated user's account.                                  |
-| `PATCH` | `/api/accounts/deactivate/me`           | None                                                                       | Deactivates the authenticated user's account.                                |
-| `GET`   | `/api/accounts/me/transactions`         | `accountNumber`, `type`, `status`, `category`, `fromDate`, `toDate`, `page`, `size`, `sort` | Retrieves paginated transaction history for the authenticated user.          |
-| `POST`  | `/api/accounts/me/withdrawals`          | None                                                                                       | Executes a cash withdrawal from the user's account.                          |
-| `POST`  | `/api/accounts/me/transfers`            | None                                                                                       | Transfers funds from the user's account to a destination account number.     |
-| `GET`   | `/api/balance/me/latest`                | None                                                                                       | Returns the current running balance and latest ledger entry for the account. |
+| Method  | Endpoint                             | Query Parameters                                                                            | Description                                                                  |
+|:--------|:-------------------------------------|:--------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------|
+| `GET`   | `/api/accounts/me`                   | None                                                                                        | Returns the authenticated user's account-holder profile.                     |
+| `GET`   | `/api/accounts/name/{accountNumber}` | None                                                                                        | Returns the name and account number for an account holder.                   |
+| `PATCH` | `/api/accounts/freeze/me`            | None                                                                                        | Freezes the authenticated user's account.                                    |
+| `PATCH` | `/api/accounts/unfreeze/me`          | None                                                                                        | Unfreezes the authenticated user's account.                                  |
+| `PATCH` | `/api/accounts/deactivate/me`        | None                                                                                        | Deactivates the authenticated user's account.                                |
+| `GET`   | `/api/accounts/me/transactions`      | `accountNumber`, `type`, `status`, `category`, `fromDate`, `toDate`, `page`, `size`, `sort` | Retrieves paginated transaction history for the authenticated user.          |
+| `POST`  | `/api/accounts/me/withdrawals`       | None                                                                                        | Executes a cash withdrawal from the user's account.                          |
+| `POST`  | `/api/accounts/me/transfers`         | None                                                                                        | Transfers funds from the user's account to a destination account number.     |
+| `GET`   | `/api/balance/me/latest`             | None                                                                                        | Returns the current running balance and latest ledger entry for the account. |
 
 ### CSRF Policy
 
 CSRF protection is enabled for state-changing requests. The frontend should first call
 `GET /api/auth/csrf` with credentials enabled, read the `XSRF-TOKEN` cookie, then send that same
-value in the `X-XSRF-TOKEN` header on every `POST`, `PUT`, `PATCH`, or `DELETE` request. The refresh and logout
-endpoints are public but still require a valid CSRF token because they use the refresh-token cookie.
-Registration and login are exempt from CSRF checks.
+value in the `X-XSRF-TOKEN` header on every `POST`, `PUT`, `PATCH`, or `DELETE` request. The refresh
+and logout endpoints are public but still require a valid CSRF token because they use the
+refresh-token cookie. Registration and login are exempt from CSRF checks.
 
 ---
 
@@ -155,38 +158,37 @@ Registration and login are exempt from CSRF checks.
 
 #### User & Account Management
 
-| Method  | Endpoint                                      | Description                                                                       |
-|:--------|:----------------------------------------------|:----------------------------------------------------------------------------------|
-| `POST`  | `/api/admin/users`                            | Creates an active user and account holder; returns both in a nested response.      |
-| `GET`   | `/api/admin/users`                            | Retrieves a paginated list of users.                                              |
-| `GET`   | `/api/admin/users/{userId}`                   | Retrieves a user by ID.                                                           |
-| `PUT`   | `/api/admin/users/{userId}`                   | Replaces the user's editable email, phone number, name, and address details.       |
-| `PATCH` | `/api/admin/users/{userId}/deactivate`        | Deactivates the user, invalidates refresh tokens, and closes the linked account.   |
-| `PATCH` | `/api/admin/users/{userId}/reactivate`        | Reactivates the user and reopens the existing linked account.                      |
-| `GET`   | `/api/admin/accounts`                         | Retrieves a paginated list of account holders.                                    |
-| `GET`   | `/api/admin/accounts/{accountId}`             | Retrieves an account holder by ID.                                                |
-| `PATCH` | `/api/admin/accounts/freeze/{accountId}`      | Freezes an account holder's account.                                              |
-| `PATCH` | `/api/admin/accounts/unfreeze/{accountId}`    | Unfreezes an account holder's account.                                            |
-| `PATCH` | `/api/admin/accounts/deactivate/{accountId}`  | Deactivates an account holder's account.                                          |
+| Method  | Endpoint                                     | Description                                                                      |
+|:--------|:---------------------------------------------|:---------------------------------------------------------------------------------|
+| `POST`  | `/api/admin/users`                           | Creates an active user and account holder; returns both in a nested response.    |
+| `GET`   | `/api/admin/users`                           | Retrieves a paginated list of users.                                             |
+| `GET`   | `/api/admin/users/{userId}`                  | Retrieves a user by ID.                                                          |
+| `PUT`   | `/api/admin/users/{userId}`                  | Replaces the user's editable email, phone number, name, and address details.     |
+| `PATCH` | `/api/admin/users/{userId}/deactivate`       | Deactivates the user, invalidates refresh tokens, and closes the linked account. |
+| `PATCH` | `/api/admin/users/{userId}/reactivate`       | Reactivates the user and reopens the existing linked account.                    |
+| `GET`   | `/api/admin/accounts`                        | Retrieves a paginated list of account holders.                                   |
+| `GET`   | `/api/admin/accounts/{accountId}`            | Retrieves an account holder by ID.                                               |
+| `PATCH` | `/api/admin/accounts/freeze/{accountId}`     | Freezes an account holder's account.                                             |
+| `PATCH` | `/api/admin/accounts/unfreeze/{accountId}`   | Unfreezes an account holder's account.                                           |
+| `PATCH` | `/api/admin/accounts/deactivate/{accountId}` | Deactivates an account holder's account.                                         |
 
 Admin user creation accepts `email`, `phoneNumber`, `password`, `name`, and `address`. It returns
 HTTP `201 Created` with a `user` object and an embedded `accountHolder` object. Updating a user
 returns HTTP `200 OK` and does not modify the password or status. Deactivation requires no request
 body and returns HTTP `204 No Content`; repeated deactivation is treated as a successful no-op.
 Reactivation also returns HTTP `204 No Content`, preserves the existing account number and history,
-and treats an already-active user as a successful no-op.
-Duplicate email or phone-number values return HTTP `409 Conflict`, while unknown user IDs return
-HTTP `404 Not Found`.
+and treats an already-active user as a successful no-op. Duplicate email or phone-number values
+return HTTP `409 Conflict`, while unknown user IDs return HTTP `404 Not Found`.
 
 #### Financial & Transaction Management
 
-| Method | Endpoint                                           | Query Parameters                                                                                     | Description                                                                                   |
-|:-------|:---------------------------------------------------|:-----------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| `POST` | `/api/admin/deposits`                              | None                                                                                                 | Deposits funds directly into a specified account number.                                      |
+| Method | Endpoint                                           | Query Parameters                                                                                         | Description                                                                                   |
+|:-------|:---------------------------------------------------|:---------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| `POST` | `/api/admin/deposits`                              | None                                                                                                     | Deposits funds directly into a specified account number.                                      |
 | `GET`  | `/api/admin/transactions`                          | `reference`, `accountNumber`, `type`, `status`, `category`, `fromDate`, `toDate`, `page`, `size`, `sort` | Fetches a paginated list of all system transactions.                                          |
-| `GET`  | `/api/admin/transactions/{id}`                     | None                                                                                                 | Retrieves detailed transaction information by ID (includes source/destination owner details). |
-| `GET`  | `/api/admin/transactions/reference/{reference}`    | None                                                                                                 | Fetches transaction details by transaction reference string (e.g. `TXN-XXXXXXXXXXXX`).        |
-| `GET`  | `/api/admin/accounts/{accountNumber}/transactions` | `page`, `size`, `sort`                                                                               | Retrieves transaction history for a specific account number.                                  |
+| `GET`  | `/api/admin/transactions/{id}`                     | None                                                                                                     | Retrieves detailed transaction information by ID (includes source/destination owner details). |
+| `GET`  | `/api/admin/transactions/reference/{reference}`    | None                                                                                                     | Fetches transaction details by transaction reference string (e.g. `TXN-XXXXXXXXXXXX`).        |
+| `GET`  | `/api/admin/accounts/{accountNumber}/transactions` | `page`, `size`, `sort`                                                                                   | Retrieves transaction history for a specific account number.                                  |
 
 #### Balance & Audit Logs
 
@@ -206,7 +208,8 @@ HTTP `404 Not Found`.
 - **Database & Migrations**: PostgreSQL with Liquibase migrations
 - **Containerization**: Spring Boot Docker Compose integration, Docker Compose
 - **Observability**: OpenTelemetry, Micrometer, Grafana LGTM (Grafana, Loki, Tempo, Mimir)
-- **Code Quality Tools**: SonarCloud, PMD 7, Checkstyle (Google Java Style), SpotBugs, JaCoCo, Pitest
+- **Code Quality Tools**: SonarCloud, PMD 7, Checkstyle (Google Java Style), SpotBugs, JaCoCo,
+  Pitest
 
 ### Hazelcast Caching
 
@@ -215,14 +218,14 @@ Hazelcast is used as the Spring cache manager for two read-heavy lookups:
 - `account-holder-by-number`
 - `role-by-name`
 
-Both caches use a 15-minute time-to-live. Account-holder entries are evicted by account number
-when the account is frozen, unfrozen, or deactivated. Roles are treated as immutable seed data and
-do not require eviction.
+Both caches use a 15-minute time-to-live. Account-holder entries are evicted by account number when
+the account is frozen, unfrozen, or deactivated. Roles are treated as immutable seed data and do not
+require eviction.
 
 The caches use explicit Compact serializers. Account-holder cache entries contain only `id`,
-`accountNumber`, `currency`, and `accountStatus`; role entries contain only `id` and `name`.
-These entries are partial cache representations, not complete JPA entities, so cached values should
-not be used for nested `User` or timestamp fields.
+`accountNumber`, `currency`, and `accountStatus`; role entries contain only `id` and `name`. These
+entries are partial cache representations, not complete JPA entities, so cached values should not be
+used for nested `User` or timestamp fields.
 
 ---
 
