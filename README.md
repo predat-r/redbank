@@ -84,7 +84,8 @@ additional risk assessment; high-risk results may challenge the login or revoke 
     - **Approval**: Calling `POST /api/admin/transactions/{id}/approve` completes the pending
       transaction and credits destination accounts (if a transfer).
     - **Rejection & Reversal**: Calling `POST /api/admin/transactions/{id}/reject` cancels the
-      transaction and automatically reverses the debited funds back to the source account ledger.
+      transaction and automatically reverses debited funds to the source account and debits destination accounts for completed transfers.
+    - **Concurrency & Idempotency**: State transitions (`completePendingTransaction`, `reverseTransaction`) acquire a `PESSIMISTIC_WRITE` database lock (`findByIdWithLock`) to serialize concurrent admin reversals and async processing. Anomaly analysis is guarded against duplicate execution.
 
 ### 5. Balance and Ledger Monitoring
 
@@ -244,34 +245,39 @@ return HTTP `409 Conflict`, while unknown user IDs return HTTP `404 Not Found`.
 - **Code Quality Tools**: SonarCloud, PMD 7, Checkstyle (Google Java Style), SpotBugs, JaCoCo,
   Pitest
 
+### Idempotency Framework
+
+RedBank implements custom idempotency control (`@Idempotent`, `IdempotencyService`, `IdempotencyAspect`) to protect financial and sensitive APIs against network retries or duplicate request submissions:
+
+- **Idempotency Key Header**: Clients attach `X-Idempotency-Key: <unique-uuid>` to requests (`POST /api/accounts/me/withdrawals`, `POST /api/accounts/me/transfers`, etc.).
+- **Distributed Lock & Result Cache**: Pending requests acquire a distributed lock in Hazelcast (`idempotency-keys` map). Concurrent requests with the same key receive HTTP `409 Conflict`.
+- **Response Replay**: Completed request outputs are cached for 24 hours. Subsequent retries return HTTP `200 OK` with header `X-Idempotent-Replayed: true`.
+
 ### Rate Limiting & Security
 
-In-memory Bucket4j token bucket rate limiting (`RateLimitingFilter`, `RateLimitingService`) protects
-endpoints from abuse:
+In-memory Bucket4j token bucket rate limiting (`RateLimitingFilter`, `RateLimitingService`) protects endpoints from abuse per IP/user:
 
 - **AUTH** (`/api/auth/login`, `/api/auth/register`, `/api/auth/refresh`): 10 requests/minute
 - **CHATBOT** (`/api/accounts/me/chat`): 5 requests/minute
-- **FINANCIAL** (`/api/accounts/me/withdrawals`, `/api/accounts/me/transfers`,
-  `/api/admin/deposits`): 20 requests/minute
+- **FINANCIAL** (`/api/accounts/me/withdrawals`, `/api/accounts/me/transfers`, `/api/admin/deposits`): 20 requests/minute
 - **GENERAL**: 50 requests/minute
 
 Rate limiting is active in non-test profiles (`@Profile("!test")`).
 
-### Hazelcast Caching
+### Distributed Caching & State Management (Hazelcast)
 
-Hazelcast is used as the Spring cache manager for two read-heavy lookups:
+Hazelcast is used for read-heavy JPA entity caching and idempotency state management:
 
-- `account-holder-by-number`
-- `role-by-name`
+1. **`account-holder-by-number`** (15-minute TTL): Cached account holder profiles using Compact Serialization. Evicted when account status changes (frozen, unfrozen, deactivated).
+2. **`role-by-name`** (15-minute TTL): Cached role authority lookups.
+3. **`idempotency-keys`** (24-hour TTL): Idempotency request state and cached responses for duplicate request suppression.
 
-Both caches use a 15-minute time-to-live. Account-holder entries are evicted by account number when
-the account is frozen, unfrozen, or deactivated. Roles are treated as immutable seed data and do not
-require eviction.
+### Asynchronous Transactional Email Notifications
 
-The caches use explicit Compact serializers. Account-holder cache entries contain only `id`,
-`accountNumber`, `currency`, and `accountStatus`; role entries contain only `id` and `name`. These
-entries are partial cache representations, not complete JPA entities, so cached values should not be
-used for nested `User` or timestamp fields.
+RedBank sends asynchronous HTML email notifications for financial event lifecycle state changes:
+- Decoupled from core database transactions via `@TransactionalEventListener(phase = AFTER_COMMIT)`.
+- Triggers notification emails for `TransactionSubmittedEvent`, `TransactionCompletedEvent`, and `TransactionCancelledEvent`.
+- Gracefully suppressed if SMTP environment settings (`SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`) are unconfigured or invalid.
 
 ---
 
