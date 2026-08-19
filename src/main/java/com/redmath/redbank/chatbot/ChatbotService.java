@@ -153,7 +153,7 @@ public class ChatbotService {
     BankTransaction txn = result.get();
     String typeLabel = intent.getTransactionType() != null
         ? intent.getTransactionType().name().toLowerCase() : "transaction";
-    String when = intent.getSortOrder().equals("EARLIEST") ? "first" : "most recent";
+    String when = "EARLIEST".equals(intent.getSortOrder()) ? "first" : "most recent";
 
     String reply = String.format("Your %s %s was $%s on %s (ref: %s).",
         when, typeLabel, txn.getAmount(), txn.getCreatedAt().toLocalDate(),
