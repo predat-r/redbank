@@ -94,7 +94,11 @@ additional risk assessment; high-risk results may challenge the login or revoke 
 2. Administrators inspect complete ledger history and audit records for any account via
    `GET /api/admin/balance/{accountId}/ledger`.
 
-### 6. Automated Schedulers and Audit
+### 6. Bank Statements
+
+Account holders can request a formal bank statement covering a specific date range via `POST /api/accounts/me/statement`. The system generates a PDF statement asynchronously and delivers it to the user's registered email address.
+
+### 7. Automated Schedulers and Audit
 
 - **Balance Reconciliation**: Cron job calculates account totals from ledger entries and flags any
   balance discrepancies.
@@ -158,6 +162,7 @@ properties such as account number, currency, and account status are not user-edi
 | `POST`  | `/api/accounts/me/withdrawals`       | None                                                                                        | Executes a cash withdrawal from the user's account.                          |
 | `POST`  | `/api/accounts/me/transfers`         | None                                                                                        | Transfers funds from the user's account to a destination account number.     |
 | `POST`  | `/api/accounts/me/chat`              | None                                                                                        | Sends a prompt to the AI financial assistant chatbot.                        |
+| `POST`  | `/api/accounts/me/statement`         | None                                                                                        | Requests a bank statement (PDF) delivered asynchronously via email.          |
 | `GET`   | `/api/balance/me/latest`             | None                                                                                        | Returns the current running balance and latest ledger entry for the account. |
 
 ### CSRF Policy
@@ -294,9 +299,13 @@ com.redmath.redbank
 │   └── admin
 ├── chatbot         # AI Financial Assistant Chatbot domain & endpoints
 ├── common          # Shared exceptions, idempotency, and utilities
+├── config          # Application configuration classes
+├── locationrisk    # IP geolocation resolution and risk assessment
+├── notification    # Email notification services and templates
 ├── observability   # Telemetry setup, tracing, and metric instrumentation
 ├── scheduler       # Cron jobs (balance reconciliation, stale registration & txn cleanup)
 ├── security        # Security configuration, JWT, CSRF, CORS, authorization, and rate limiting
+├── statement       # Bank statement PDF generation and asynchronous email delivery
 ├── transaction     # Transaction entity, service, repository, DTOs, and endpoints
 │   ├── admin
 │   ├── dto
