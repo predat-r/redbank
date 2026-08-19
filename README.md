@@ -1,7 +1,5 @@
 # RedBank Backend
 
-# RedBank Backend
-
 RedBank is a Spring Boot backend for a digital banking platform. It handles user authentication,
 registration approval workflows, account management, transaction processing (deposits, withdrawals,
 transfers), running balance ledgers, scheduled background cleanup jobs, audit logging, and telemetry
