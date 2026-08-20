@@ -34,6 +34,7 @@ public interface AccountHolderRepository extends JpaRepository<AccountHolder, Lo
 
   boolean existsByAccountNumber(String accountNumber);
 
+  @EntityGraph(attributePaths = {"user"})
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT a FROM AccountHolder a WHERE a.id = :id")
   Optional<AccountHolder> findByIdWithLock(Long id);
@@ -41,6 +42,7 @@ public interface AccountHolderRepository extends JpaRepository<AccountHolder, Lo
   @EntityGraph(attributePaths = {"user"})
   java.util.List<AccountHolder> findByUserNameContainingIgnoreCase(String name);
 
+  @EntityGraph(attributePaths = {"user"})
   @Query("""
       SELECT DISTINCT ah FROM AccountHolder ah 
       JOIN BankTransaction t ON (t.sourceAccountHolder = ah OR t.destinationAccountHolder = ah)

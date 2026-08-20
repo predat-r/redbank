@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -23,7 +24,8 @@ import lombok.Setter;
 public class AnomalyReport {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "anomaly_reports_seq")
+  @SequenceGenerator(name = "anomaly_reports_seq", sequenceName = "anomaly_reports_id_seq", allocationSize = 50)
   private Long id;
 
   @OneToOne(fetch = FetchType.LAZY)
