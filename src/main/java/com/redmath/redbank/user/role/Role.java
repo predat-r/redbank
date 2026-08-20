@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -24,7 +25,8 @@ import lombok.NoArgsConstructor;
 public class Role {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "roles_seq")
+  @SequenceGenerator(name = "roles_seq", sequenceName = "roles_id_seq", allocationSize = 50)
   private Long id;
 
   @Enumerated(EnumType.STRING)

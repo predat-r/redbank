@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -27,7 +28,8 @@ import lombok.Setter;
 public class BankTransaction {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "bank_transactions_seq")
+  @SequenceGenerator(name = "bank_transactions_seq", sequenceName = "bank_transactions_id_seq", allocationSize = 50)
   private Long id;
 
   @Column(name = "transaction_reference", nullable = false, unique = true, length = 64, updatable = false)

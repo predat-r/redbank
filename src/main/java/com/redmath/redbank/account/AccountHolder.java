@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -24,7 +25,8 @@ import lombok.Setter;
 public class AccountHolder {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_holders_seq")
+  @SequenceGenerator(name = "account_holders_seq", sequenceName = "account_holders_id_seq", allocationSize = 50)
   private Long id;
 
   @NotNull
