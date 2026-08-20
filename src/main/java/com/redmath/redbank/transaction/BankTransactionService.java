@@ -131,8 +131,8 @@ public class BankTransactionService {
 
     transaction = bankTransactionRepository.save(transaction);
 
-    balanceService.recordLedgerEntry(transaction.getSourceAccountHolder(), transaction,
-        BalanceIndicator.DEBIT);
+    balanceService.recordLedgerEntry(transaction.getSourceAccountHolder(), transaction.getId(),
+        transaction.getAmount(), BalanceIndicator.DEBIT);
 
     eventPublisher.publishEvent(new TransactionSubmittedEvent(transaction.getId()));
 
@@ -159,7 +159,8 @@ public class BankTransactionService {
 
     transaction = bankTransactionRepository.save(transaction);
 
-    balanceService.recordLedgerEntry(targetAccount, transaction, BalanceIndicator.CREDIT);
+    balanceService.recordLedgerEntry(targetAccount, transaction.getId(), transaction.getAmount(),
+        BalanceIndicator.CREDIT);
     auditService.recordAuditLog(adminUserId, AuditAction.ADMIN_DEPOSIT_RECORDED,
         AuditTargetType.TRANSACTION, transaction.getId().toString(), null);
 
@@ -180,7 +181,8 @@ public class BankTransactionService {
 
     transaction = bankTransactionRepository.save(transaction);
 
-    balanceService.recordLedgerEntry(sourceAccount, transaction, BalanceIndicator.DEBIT);
+    balanceService.recordLedgerEntry(sourceAccount, transaction.getId(), transaction.getAmount(),
+        BalanceIndicator.DEBIT);
 
     eventPublisher.publishEvent(new TransactionSubmittedEvent(transaction.getId()));
 
@@ -202,8 +204,8 @@ public class BankTransactionService {
 
     if (transaction.getType() == TransactionType.TRANSFER
         && transaction.getDestinationAccountHolder() != null) {
-      balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction,
-          BalanceIndicator.CREDIT);
+      balanceService.recordLedgerEntry(transaction.getDestinationAccountHolder(), transaction.getId(),
+          transaction.getAmount(), BalanceIndicator.CREDIT);
     }
 
     eventPublisher.publishEvent(new TransactionCompletedEvent(transaction.getId()));
@@ -239,8 +241,8 @@ public class BankTransactionService {
     if (original.getSourceAccountHolder() != null) {
       reversal.setSourceAccountHolder(original.getSourceAccountHolder());
       reversal = bankTransactionRepository.save(reversal);
-      balanceService.recordLedgerEntry(original.getSourceAccountHolder(), reversal,
-          BalanceIndicator.CREDIT);
+      balanceService.recordLedgerEntry(original.getSourceAccountHolder(), reversal.getId(),
+          reversal.getAmount(), BalanceIndicator.CREDIT);
     } else {
       reversal = bankTransactionRepository.save(reversal);
     }
