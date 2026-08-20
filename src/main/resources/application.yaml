@@ -59,6 +59,10 @@ management:
   endpoint:
     health:
       show-details: never
+  endpoints:
+    web:
+      exposure:
+        include: health
   tracing:
     sampling:
       probability: 1.0
