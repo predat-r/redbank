@@ -73,7 +73,7 @@ class IdempotencyIntegrationTest {
   @Test
   @DisplayName("Sending duplicate requests with the same idempotency key replays the cached response")
   void testMultipleRequestsWithSameIdempotencyKey() throws Exception {
-    String idempotencyKey = "unique-txn-idempotency-key-100";
+    String idempotencyKey = "unique-txn-idempotency-key-" + java.util.UUID.randomUUID();
 
     TransferRequest transferRequest = new TransferRequest();
     transferRequest.setAmount(new BigDecimal("100.00"));
