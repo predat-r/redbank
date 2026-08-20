@@ -160,7 +160,7 @@ class AuditLogEndpointTests {
       String details
   ) {
     AuditLog auditLog = AuditLog.builder()
-        .actor(adminUser())
+        .actorUserId(adminUserId())
         .action(action)
         .targetType(targetType)
         .targetIdentifier(targetIdentifier)

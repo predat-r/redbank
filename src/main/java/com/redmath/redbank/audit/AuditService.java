@@ -3,9 +3,6 @@ package com.redmath.redbank.audit;
 import com.redmath.redbank.audit.dto.AuditLogResponse;
 import com.redmath.redbank.common.exception.InvalidSortException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
-import com.redmath.redbank.common.exception.UserNotFoundException;
-import com.redmath.redbank.user.User;
-import com.redmath.redbank.user.UserService;
 import java.time.Instant;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +20,7 @@ public class AuditService {
   private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "createdAt", "action",
       "targetType");
   private final AuditLogRepository auditLogRepository;
-  private final UserService userService;
+  private final AuditActorResolver auditActorResolver;
 
   @Async("auditTaskExecutor")
   @Transactional
@@ -61,11 +58,14 @@ public class AuditService {
       throw new IllegalArgumentException("Audit details cannot exceed 1000 characters");
     }
 
-    User actor = userService.findById(actorUserId).orElseThrow(UserNotFoundException::new);
-
-    AuditLog auditLog = AuditLog.builder().actor(actor).action(action).targetType(targetType)
-        .targetIdentifier(normalizedTargetIdentifier).details(normalizedDetails)
-        .createdAt(Instant.now()).build();
+    AuditLog auditLog = AuditLog.builder()
+        .actorUserId(actorUserId)
+        .action(action)
+        .targetType(targetType)
+        .targetIdentifier(normalizedTargetIdentifier)
+        .details(normalizedDetails)
+        .createdAt(Instant.now())
+        .build();
 
     auditLogRepository.save(auditLog);
   }
@@ -85,7 +85,6 @@ public class AuditService {
     return toResponse(auditLog);
   }
 
-
   private void validateSort(Pageable pageable) {
     for (Sort.Order order : pageable.getSort()) {
       if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
@@ -95,9 +94,9 @@ public class AuditService {
   }
 
   private AuditLogResponse toResponse(AuditLog auditLog) {
-    User actor = auditLog.getActor();
+    String actorEmail = auditActorResolver.getActorEmail(auditLog.getActorUserId());
 
-    return new AuditLogResponse(auditLog.getId(), actor.getId(), actor.getEmail(),
+    return new AuditLogResponse(auditLog.getId(), auditLog.getActorUserId(), actorEmail,
         auditLog.getAction(), auditLog.getTargetType(), auditLog.getTargetIdentifier(),
         auditLog.getDetails(), auditLog.getCreatedAt());
   }
