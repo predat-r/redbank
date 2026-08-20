@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-add-foreign-key-indexes
+      author: zohaib
+      changes:
+        - createIndex:
+            tableName: balance
+            indexName: idx_balance_transaction_id
+            columns:
+              - column:
+                  name: transaction_id
+
+        - createIndex:
+            tableName: bank_transactions
+            indexName: idx_bank_txn_source_account_holder_id
+            columns:
+              - column:
+                  name: source_account_holder_id
+
+        - createIndex:
+            tableName: bank_transactions
+            indexName: idx_bank_txn_destination_account_holder_id
+            columns:
+              - column:
+                  name: destination_account_holder_id
+
+        - createIndex:
+            tableName: bank_transactions
+            indexName: idx_bank_txn_reversed_transaction_id
+            columns:
+              - column:
+                  name: reversed_transaction_id
+
+        - createIndex:
+            tableName: users
+            indexName: idx_users_approved_by_user_id
+            columns:
+              - column:
+                  name: approved_by_user_id

@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -20,7 +21,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "bank_transactions")
+@Table(name = "bank_transactions", indexes = {
+    @Index(name = "idx_bank_txn_source_account_holder_id", columnList = "source_account_holder_id"),
+    @Index(name = "idx_bank_txn_destination_account_holder_id", columnList = "destination_account_holder_id"),
+    @Index(name = "idx_bank_txn_reversed_transaction_id", columnList = "reversed_transaction_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
