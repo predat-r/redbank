@@ -50,7 +50,7 @@ public class RegistrationReviewController {
     );
   }
 
-  @PostMapping("/{userId}/reject")
+  @PostMapping(value = "/{userId}/reject", consumes = "application/json")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void rejectRegistration(
       @PathVariable Long userId,

@@ -33,7 +33,7 @@ public class AdminUserController {
 
   private final AdminUserService adminUserService;
 
-  @PostMapping
+  @PostMapping(consumes = "application/json")
   public ResponseEntity<CreateUserResponse> createUser(
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody CreateUserRequest request
@@ -63,7 +63,7 @@ public class AdminUserController {
     return adminUserService.findUser(userId);
   }
 
-  @PutMapping("/{userId}")
+  @PutMapping(value = "/{userId}", consumes = "application/json")
   public AdminUserResponse updateUser(
       @AuthenticationPrincipal Jwt jwt,
       @PathVariable Long userId,

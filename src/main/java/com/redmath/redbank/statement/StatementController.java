@@ -30,7 +30,7 @@ public class StatementController {
     this.accountHolderService = accountHolderService;
   }
 
-  @PostMapping
+  @PostMapping(consumes = "application/json")
   @Operation(summary = "Request a bank statement (delivered asynchronously via email)")
   public ResponseEntity<StatementResponse> requestStatement(
       @AuthenticationPrincipal Jwt jwt,

@@ -19,7 +19,7 @@ public class UserController {
 
   private final UserService userService;
 
-  @PatchMapping("/me")
+  @PatchMapping(value = "/me", consumes = "application/json")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public UserDto updateMyProfile(
       @AuthenticationPrincipal Jwt jwt,

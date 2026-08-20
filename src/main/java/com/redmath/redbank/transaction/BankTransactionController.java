@@ -59,7 +59,7 @@ public class BankTransactionController {
     return ResponseEntity.ok(BankTransactionDetailDto.fromDetail(transaction));
   }
 
-  @PostMapping("/transfers")
+  @PostMapping(value = "/transfers", consumes = "application/json")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   @RequireIdempotency(required = false)
   public ResponseEntity<BankTransactionDto> createTransfer(
@@ -71,7 +71,7 @@ public class BankTransactionController {
     return ResponseEntity.status(HttpStatus.CREATED).body(BankTransactionDto.from(transaction));
   }
 
-  @PostMapping("/withdrawals")
+  @PostMapping(value = "/withdrawals", consumes = "application/json")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   @RequireIdempotency(required = false)
   public ResponseEntity<BankTransactionDto> createWithdrawal(

@@ -60,7 +60,7 @@ public class AdminBankTransactionController {
     return ResponseEntity.ok(transactions.map(AdminBankTransactionDto::from));
   }
 
-  @PostMapping("/deposits")
+  @PostMapping(value = "/deposits", consumes = "application/json")
   @PreAuthorize("hasRole('ADMIN')")
   @RequireIdempotency(required = false)
   public ResponseEntity<AdminBankTransactionDto> createDeposit(
@@ -108,7 +108,7 @@ public class AdminBankTransactionController {
     return ResponseEntity.ok(AdminBankTransactionDto.from(completed));
   }
 
-  @PostMapping("/transactions/{id}/reject")
+  @PostMapping(value = "/transactions/{id}/reject", consumes = "application/json")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<AdminBankTransactionDto> rejectTransaction(
       @AuthenticationPrincipal Jwt jwt,
