@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -24,7 +25,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "balance")
+@Table(name = "balance", indexes = {
+    @Index(name = "idx_balance_transaction_id", columnList = "transaction_id")
+})
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Balance {
