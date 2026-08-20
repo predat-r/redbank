@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-alter-sequence-increments
+      author: antigravity
+      changes:
+        - sql:
+            sql: |
+              ALTER SEQUENCE users_id_seq INCREMENT BY 50;
+              ALTER SEQUENCE roles_id_seq INCREMENT BY 50;
+              ALTER SEQUENCE account_holders_id_seq INCREMENT BY 50;
+              ALTER SEQUENCE bank_transactions_id_seq INCREMENT BY 50;
+              ALTER SEQUENCE balance_id_seq INCREMENT BY 50;
+              ALTER SEQUENCE audit_logs_id_seq INCREMENT BY 50;
+              ALTER SEQUENCE anomaly_reports_id_seq INCREMENT BY 50;
+              ALTER SEQUENCE login_events_id_seq INCREMENT BY 50;
