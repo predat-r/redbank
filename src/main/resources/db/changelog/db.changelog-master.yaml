@@ -45,3 +45,6 @@ databaseChangeLog:
       file: db/changelog/seed/015-seed-dev-transactions-and-balances.yaml
   - include:
       file: db/changelog/tables/013-create-login-events.yaml
+
+  - include:
+      file: db/changelog/tables/014-add-foreign-key-indexes.yaml
