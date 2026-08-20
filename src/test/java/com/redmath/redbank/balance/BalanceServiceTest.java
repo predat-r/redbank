@@ -80,7 +80,7 @@ class BalanceServiceTest {
     
     Balance balance = new Balance();
     balance.setAccountHolder(accountHolder);
-    balance.setTransaction(tx);
+    balance.setTransactionId(tx.getId());
     balance.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     balance.setAmount(new BigDecimal("150.00"));
     balance.setIndicator(BalanceIndicator.CREDIT);
@@ -101,31 +101,28 @@ class BalanceServiceTest {
 
     // AccountHolder null
     assertThrows(IllegalArgumentException.class, () ->
-        balanceService.recordLedgerEntry(null, tx, BalanceIndicator.CREDIT));
+        balanceService.recordLedgerEntry(null, tx.getId(), tx.getAmount(), BalanceIndicator.CREDIT));
 
     // AccountHolder ID null
     AccountHolder invalidAh = new AccountHolder();
     assertThrows(IllegalArgumentException.class, () ->
-        balanceService.recordLedgerEntry(invalidAh, tx, BalanceIndicator.CREDIT));
+        balanceService.recordLedgerEntry(invalidAh, tx.getId(), tx.getAmount(), BalanceIndicator.CREDIT));
 
-    // Transaction null
+    // Transaction ID null
     assertThrows(IllegalArgumentException.class, () ->
-        balanceService.recordLedgerEntry(accountHolder, null, BalanceIndicator.CREDIT));
+        balanceService.recordLedgerEntry(accountHolder, null, tx.getAmount(), BalanceIndicator.CREDIT));
 
     // Transaction amount null
-    BankTransaction invalidTx = new BankTransaction();
     assertThrows(IllegalArgumentException.class, () ->
-        balanceService.recordLedgerEntry(accountHolder, invalidTx, BalanceIndicator.CREDIT));
+        balanceService.recordLedgerEntry(accountHolder, tx.getId(), null, BalanceIndicator.CREDIT));
 
     // Balance indicator null
     assertThrows(IllegalArgumentException.class, () ->
-        balanceService.recordLedgerEntry(accountHolder, tx, null));
+        balanceService.recordLedgerEntry(accountHolder, tx.getId(), tx.getAmount(), null));
 
     // Zero or negative transaction amount
-    BankTransaction zeroTx = new BankTransaction();
-    zeroTx.setAmount(BigDecimal.ZERO);
     assertThrows(IllegalArgumentException.class, () ->
-        balanceService.recordLedgerEntry(accountHolder, zeroTx, BalanceIndicator.CREDIT));
+        balanceService.recordLedgerEntry(accountHolder, tx.getId(), BigDecimal.ZERO, BalanceIndicator.CREDIT));
   }
 
   @Test
@@ -135,7 +132,7 @@ class BalanceServiceTest {
     BankTransaction tx = createTransaction(accountHolder, "TX-SVC-003", new BigDecimal("100.00"));
 
     InsufficientFundsException ex = assertThrows(InsufficientFundsException.class, () ->
-        balanceService.recordLedgerEntry(accountHolder, tx, BalanceIndicator.DEBIT));
+        balanceService.recordLedgerEntry(accountHolder, tx.getId(), tx.getAmount(), BalanceIndicator.DEBIT));
     assertEquals("Insufficient funds for this transaction", ex.getMessage());
   }
 
@@ -147,14 +144,14 @@ class BalanceServiceTest {
     BankTransaction creditTx = createTransaction(
         accountHolder, "TX-SVC-004", new BigDecimal("200.00"));
 
-    balanceService.recordLedgerEntry(accountHolder, creditTx, BalanceIndicator.CREDIT);
+    balanceService.recordLedgerEntry(accountHolder, creditTx.getId(), creditTx.getAmount(), BalanceIndicator.CREDIT);
 
     Balance latest1 = balanceService.getLatestBalanceByUserId(accountHolder.getUser().getId());
     assertEquals(new BigDecimal("200.00"), latest1.getRunningBalance());
 
     BankTransaction debitTx = createTransaction(
         accountHolder, "TX-SVC-005", new BigDecimal("50.00"));
-    balanceService.recordLedgerEntry(accountHolder, debitTx, BalanceIndicator.DEBIT);
+    balanceService.recordLedgerEntry(accountHolder, debitTx.getId(), debitTx.getAmount(), BalanceIndicator.DEBIT);
 
     Balance latest2 = balanceService.getLatestBalanceByUserId(accountHolder.getUser().getId());
     assertEquals(new BigDecimal("150.00"), latest2.getRunningBalance());

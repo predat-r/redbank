@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.balance.dto.BalanceDto;
-import com.redmath.redbank.transaction.BankTransaction;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -50,14 +49,11 @@ class BalanceDtoTest {
     AccountHolder accountHolder = new AccountHolder();
     accountHolder.setId(10L);
 
-    BankTransaction transaction = new BankTransaction();
-    transaction.setId(20L);
-
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
     Balance balance = new Balance();
     balance.setAccountHolder(accountHolder);
-    balance.setTransaction(transaction);
+    balance.setTransactionId(20L);
     balance.setEntryDate(now);
     balance.setAmount(new BigDecimal("100.50"));
     balance.setIndicator(BalanceIndicator.DEBIT);

@@ -28,6 +28,9 @@ class StatementGenerationListenerTest {
   private BalanceRepository balanceRepository;
 
   @Mock
+  private com.redmath.redbank.transaction.BankTransactionRepository bankTransactionRepository;
+
+  @Mock
   private StatementPdfGenerator pdfGenerator;
 
   @Mock
@@ -37,7 +40,7 @@ class StatementGenerationListenerTest {
 
   @BeforeEach
   void setUp() {
-    listener = new StatementGenerationListener(accountHolderRepository, balanceRepository, pdfGenerator, emailService);
+    listener = new StatementGenerationListener(accountHolderRepository, balanceRepository, bankTransactionRepository, pdfGenerator, emailService);
   }
 
   @Test

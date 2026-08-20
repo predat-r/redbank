@@ -89,7 +89,7 @@ class BalanceControllerTest {
 
     Balance balance = new Balance();
     balance.setAccountHolder(accountHolder);
-    balance.setTransaction(transaction);
+    balance.setTransactionId(transaction.getId());
     balance.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     balance.setAmount(new BigDecimal("250.00"));
     balance.setIndicator(BalanceIndicator.CREDIT);
