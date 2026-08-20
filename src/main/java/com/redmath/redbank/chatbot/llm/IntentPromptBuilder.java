@@ -2,7 +2,11 @@ package com.redmath.redbank.chatbot.llm;
 
 import java.time.LocalDate;
 
-public class IntentPromptBuilder {
+public final class IntentPromptBuilder {
+
+  private IntentPromptBuilder() {
+    throw new UnsupportedOperationException("Utility class");
+  }
 
   public static String buildSystemPrompt(LocalDate today) {
     return """
