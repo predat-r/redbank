@@ -19,6 +19,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.redmath.redbank.transaction.BankTransaction;
+import com.redmath.redbank.transaction.BankTransactionRepository;
+
 @Component
 public class StatementGenerationListener {
 
@@ -26,6 +29,7 @@ public class StatementGenerationListener {
 
   private final AccountHolderRepository accountHolderRepository;
   private final BalanceRepository balanceRepository;
+  private final BankTransactionRepository bankTransactionRepository;
   private final StatementPdfGenerator pdfGenerator;
   private final StatementEmailService emailService;
 
@@ -33,10 +37,12 @@ public class StatementGenerationListener {
   public StatementGenerationListener(
       AccountHolderRepository accountHolderRepository,
       BalanceRepository balanceRepository,
+      BankTransactionRepository bankTransactionRepository,
       StatementPdfGenerator pdfGenerator,
       StatementEmailService emailService) {
     this.accountHolderRepository = accountHolderRepository;
     this.balanceRepository = balanceRepository;
+    this.bankTransactionRepository = bankTransactionRepository;
     this.pdfGenerator = pdfGenerator;
     this.emailService = emailService;
   }
@@ -68,12 +74,25 @@ public class StatementGenerationListener {
           .findByAccountHolderIdAndEntryDateBetweenOrderByEntryDateAscIdAsc(
               event.accountHolderId(), startOfDay, endOfDay);
 
+      List<Long> txIds = balances.stream()
+          .map(Balance::getTransactionId)
+          .filter(java.util.Objects::nonNull)
+          .distinct()
+          .toList();
+
+      java.util.Map<Long, BankTransaction> transactionMap = txIds.isEmpty()
+          ? java.util.Collections.emptyMap()
+          : bankTransactionRepository.findAllById(txIds).stream()
+              .collect(java.util.stream.Collectors.toMap(BankTransaction::getId, java.util.function.Function.identity()));
+
       BigDecimal totalCredits = BigDecimal.ZERO;
       BigDecimal totalDebits = BigDecimal.ZERO;
 
       List<StatementData.StatementTransactionData> txData = new ArrayList<>();
       for (Balance b : balances) {
-        var transaction = b.getTransaction();
+        BankTransaction transaction = b.getTransactionId() != null
+            ? transactionMap.get(b.getTransactionId())
+            : null;
 
         if (b.getIndicator() == BalanceIndicator.CREDIT) {
           totalCredits = totalCredits.add(b.getAmount());
@@ -82,7 +101,7 @@ public class StatementGenerationListener {
         }
 
         String counterpartyName = null;
-        if (transaction.getDestinationAccountHolder() != null
+        if (transaction != null && transaction.getDestinationAccountHolder() != null
             && transaction.getSourceAccountHolder() != null) {
           if (transaction.getSourceAccountHolder().getId().equals(accountHolder.getId())) {
             counterpartyName = transaction.getDestinationAccountHolder().getUser().getName();
@@ -93,11 +112,11 @@ public class StatementGenerationListener {
 
         txData.add(StatementData.StatementTransactionData.builder()
             .dateTime(b.getEntryDate())
-            .reference(transaction.getTransactionReference())
-            .type(transaction.getType().name())
-            .category(transaction.getCategory() != null ? transaction.getCategory().name() : "")
+            .reference(transaction != null ? transaction.getTransactionReference() : "")
+            .type(transaction != null ? transaction.getType().name() : "")
+            .category(transaction != null && transaction.getCategory() != null ? transaction.getCategory().name() : "")
             .counterparty(counterpartyName)
-            .status(transaction.getStatus().name())
+            .status(transaction != null ? transaction.getStatus().name() : "")
             .amount(b.getIndicator() == BalanceIndicator.CREDIT ? b.getAmount()
                 : b.getAmount().negate())
             .runningBalance(b.getRunningBalance())
