@@ -1,8 +1,5 @@
 package com.redmath.redbank.transaction.admin;
 
-import com.redmath.redbank.anomaly.AnomalyAnalysisService;
-import com.redmath.redbank.anomaly.AnomalyReport;
-import com.redmath.redbank.anomaly.AnomalyReportDto;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
@@ -37,14 +34,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminBankTransactionController {
 
   private final BankTransactionService bankTransactionService;
-  private final AnomalyAnalysisService anomalyAnalysisService;
   private final AuditService auditService;
 
   public AdminBankTransactionController(BankTransactionService bankTransactionService,
-      AnomalyAnalysisService anomalyAnalysisService,
       AuditService auditService) {
     this.bankTransactionService = bankTransactionService;
-    this.anomalyAnalysisService = anomalyAnalysisService;
     this.auditService = auditService;
   }
 
@@ -121,13 +115,6 @@ public class AdminBankTransactionController {
     auditService.recordAuditLog(adminUserId, AuditAction.TRANSACTION_REJECTED,
         AuditTargetType.TRANSACTION, id.toString(), reason);
     return ResponseEntity.ok(AdminBankTransactionDto.from(reversal));
-  }
-
-  @GetMapping("/transactions/{id}/anomaly-report")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<AnomalyReportDto> getAnomalyReport(@PathVariable Long id) {
-    AnomalyReport report = anomalyAnalysisService.getAnomalyReportByTransactionId(id);
-    return ResponseEntity.ok(AnomalyReportDto.from(report));
   }
 
   private Long extractUserId(Jwt jwt) {
