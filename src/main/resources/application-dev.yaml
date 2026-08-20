@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/redbank
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/redbank}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
   docker:

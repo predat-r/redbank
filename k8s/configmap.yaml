@@ -6,3 +6,4 @@ metadata:
 
 data:
   SPRING_PROFILES_ACTIVE: "dev"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://host.docker.internal:4318"
