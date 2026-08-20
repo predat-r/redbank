@@ -1,7 +1,6 @@
 package com.redmath.redbank.balance;
 
 import com.redmath.redbank.account.AccountHolder;
-import com.redmath.redbank.transaction.BankTransaction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,16 +33,14 @@ public class Balance {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "account_holder_id", nullable = false)
   private AccountHolder accountHolder;
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "transaction_id", nullable = false)
-  private BankTransaction transaction;
+  @Column(name = "transaction_id", nullable = false)
+  private Long transactionId;
 
   @NotNull
   @Column(name = "entry_date", nullable = false)
