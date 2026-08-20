@@ -111,6 +111,10 @@
       <artifactId>spring-boot-starter-hazelcast</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.hazelcast</groupId>
+      <artifactId>hazelcast-spring</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.bucket4j</groupId>
       <artifactId>bucket4j-core</artifactId>
       <version>${bucket4j-core.version}</version>
