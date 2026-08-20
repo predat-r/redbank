@@ -49,7 +49,7 @@ public class AuthController {
   }
 
 
-  @PostMapping("/register")
+  @PostMapping(value = "/register", consumes = "application/json")
   @ResponseStatus(HttpStatus.CREATED)
   public RegisterResponse register(@Valid @RequestBody RegisterRequest request,
       HttpServletResponse servletResponse) {
@@ -59,7 +59,7 @@ public class AuthController {
   }
 
 
-  @PostMapping("/login")
+  @PostMapping(value = "/login", consumes = "application/json")
   public LoginResponse login(@Valid @RequestBody LoginRequest request,
       HttpServletResponse servletResponse, HttpServletRequest httpRequest) {
     LoginContext context = new LoginContext(httpRequest.getRemoteAddr(),
@@ -95,7 +95,7 @@ public class AuthController {
     }
   }
 
-  @PutMapping("/password")
+  @PutMapping(value = "/password", consumes = "application/json")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void changePassword(@AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody ChangePasswordRequest request) {

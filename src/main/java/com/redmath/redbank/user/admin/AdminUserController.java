@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.http.ResponseEntity;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/admin/users")
@@ -30,13 +33,18 @@ public class AdminUserController {
 
   private final AdminUserService adminUserService;
 
-  @PostMapping
-  @ResponseStatus(HttpStatus.CREATED)
-  public CreateUserResponse createUser(
+  @PostMapping(consumes = "application/json")
+  public ResponseEntity<CreateUserResponse> createUser(
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody CreateUserRequest request
   ) {
-    return adminUserService.createUser(extractUserId(jwt), request);
+    CreateUserResponse response = adminUserService.createUser(extractUserId(jwt), request);
+    URI location = ServletUriComponentsBuilder
+        .fromCurrentRequest()
+        .path("/{id}")
+        .buildAndExpand(response.user().id())
+        .toUri();
+    return ResponseEntity.created(location).body(response);
   }
 
   @GetMapping
@@ -55,7 +63,7 @@ public class AdminUserController {
     return adminUserService.findUser(userId);
   }
 
-  @PutMapping("/{userId}")
+  @PutMapping(value = "/{userId}", consumes = "application/json")
   public AdminUserResponse updateUser(
       @AuthenticationPrincipal Jwt jwt,
       @PathVariable Long userId,
