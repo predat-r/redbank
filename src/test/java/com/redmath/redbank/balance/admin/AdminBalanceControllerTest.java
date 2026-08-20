@@ -90,7 +90,7 @@ class AdminBalanceControllerTest {
 
     Balance balance = new Balance();
     balance.setAccountHolder(accountHolder);
-    balance.setTransaction(transaction);
+    balance.setTransactionId(transaction.getId());
     balance.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     balance.setAmount(new BigDecimal("500.00"));
     balance.setIndicator(BalanceIndicator.CREDIT);
@@ -167,7 +167,7 @@ class AdminBalanceControllerTest {
 
     Balance b1 = new Balance();
     b1.setAccountHolder(accountHolder);
-    b1.setTransaction(tx1);
+    b1.setTransactionId(tx1.getId());
     b1.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     b1.setAmount(new BigDecimal("100.00"));
     b1.setIndicator(BalanceIndicator.CREDIT);
@@ -186,7 +186,7 @@ class AdminBalanceControllerTest {
 
     Balance b2 = new Balance();
     b2.setAccountHolder(accountHolder);
-    b2.setTransaction(tx2);
+    b2.setTransactionId(tx2.getId());
     b2.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     b2.setAmount(new BigDecimal("40.00"));
     b2.setIndicator(BalanceIndicator.DEBIT);
@@ -240,7 +240,7 @@ class AdminBalanceControllerTest {
 
     Balance b1 = new Balance();
     b1.setAccountHolder(accountHolder);
-    b1.setTransaction(tx1);
+    b1.setTransactionId(tx1.getId());
     b1.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     b1.setAmount(new BigDecimal("100.00"));
     b1.setIndicator(BalanceIndicator.CREDIT);

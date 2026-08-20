@@ -65,7 +65,7 @@ public class StatementPdfGenerator {
       return baos.toByteArray();
     } catch (Exception e) {
       log.error("Failed to generate PDF statement", e);
-      throw new RuntimeException("PDF generation failed", e);
+      throw new IllegalStateException("PDF generation failed", e);
     }
   }
 

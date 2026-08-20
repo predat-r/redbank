@@ -4,7 +4,6 @@ import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountHolderRepository;
 import com.redmath.redbank.common.exception.InsufficientFundsException;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
-import com.redmath.redbank.transaction.BankTransaction;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -42,18 +41,22 @@ public class BalanceService {
 
   @Transactional
   public void recordLedgerEntry(AccountHolder accountHolder,
-      BankTransaction transaction,
+      Long transactionId,
+      BigDecimal amount,
       BalanceIndicator indicator) {
     if (accountHolder == null || accountHolder.getId() == null) {
       throw new IllegalArgumentException("Account holder is required");
     }
-    if (transaction == null || transaction.getAmount() == null) {
+    if (transactionId == null) {
+      throw new IllegalArgumentException("Transaction id is required");
+    }
+    if (amount == null) {
       throw new IllegalArgumentException("Transaction with amount is required");
     }
     if (indicator == null) {
       throw new IllegalArgumentException("Balance indicator is required");
     }
-    if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("Transaction amount must be positive");
     }
 
@@ -73,19 +76,19 @@ public class BalanceService {
         .orElse(BigDecimal.ZERO);
 
     if (indicator == BalanceIndicator.DEBIT
-        && previousRunningBalance.compareTo(transaction.getAmount()) < 0) {
+        && previousRunningBalance.compareTo(amount) < 0) {
       throw new InsufficientFundsException("Insufficient funds for this transaction");
     }
 
     BigDecimal newRunningBalance = (indicator == BalanceIndicator.CREDIT)
-        ? previousRunningBalance.add(transaction.getAmount())
-        : previousRunningBalance.subtract(transaction.getAmount());
+        ? previousRunningBalance.add(amount)
+        : previousRunningBalance.subtract(amount);
 
     Balance entry = new Balance();
     entry.setAccountHolder(accountHolder);
-    entry.setTransaction(transaction);
+    entry.setTransactionId(transactionId);
     entry.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
-    entry.setAmount(transaction.getAmount());
+    entry.setAmount(amount);
     entry.setIndicator(indicator);
     entry.setRunningBalance(newRunningBalance);
     balanceRepository.save(entry);

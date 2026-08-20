@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.anomaly.AnomalyAnalysisService;
-import com.redmath.redbank.anomaly.AnomalyFlag;
+import com.redmath.redbank.transaction.AnomalyFlag;
 import com.redmath.redbank.anomaly.AnomalyReport;
 import com.redmath.redbank.anomaly.AnomalyReportRepository;
 import com.redmath.redbank.anomaly.RuleEvaluationResult;

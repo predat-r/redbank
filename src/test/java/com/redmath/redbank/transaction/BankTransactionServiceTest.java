@@ -206,7 +206,7 @@ class BankTransactionServiceTest {
     assertEquals(TransactionType.DEPOSIT, result.getType());
     assertEquals(new BigDecimal("500.00"), result.getAmount());
     assertEquals(null, result.getCategory());
-    verify(balanceService).recordLedgerEntry(eq(target), any(BankTransaction.class),
+    verify(balanceService).recordLedgerEntry(eq(target), eq(100L), eq(new BigDecimal("500.00")),
         eq(BalanceIndicator.CREDIT));
     verify(auditService).recordAuditLog(eq(99L), eq(AuditAction.ADMIN_DEPOSIT_RECORDED),
         eq(AuditTargetType.TRANSACTION), eq("100"), eq(null));
@@ -239,7 +239,7 @@ class BankTransactionServiceTest {
     assertEquals(new BigDecimal("100.00"), result.getAmount());
     assertEquals(TransactionCategory.FOOD, result.getCategory());
     assertEquals(TransactionStatus.PENDING, result.getStatus());
-    verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class),
+    verify(balanceService).recordLedgerEntry(eq(source), eq(101L), eq(new BigDecimal("100.00")),
         eq(BalanceIndicator.DEBIT));
     verify(eventPublisher).publishEvent(
         any(com.redmath.redbank.transaction.event.TransactionSubmittedEvent.class));
@@ -261,7 +261,11 @@ class BankTransactionServiceTest {
     when(accountHolderService.getAccountHolderByUserId(10L)).thenReturn(source);
     when(accountHolderService.findByAccountNumber("RB-DEST-002")).thenReturn(Optional.of(dest));
     when(bankTransactionRepository.save(any(BankTransaction.class))).thenAnswer(
-        invocation -> invocation.getArgument(0));
+        invocation -> {
+          BankTransaction tx = invocation.getArgument(0);
+          tx.setId(102L);
+          return tx;
+        });
 
     TransferRequest request = new TransferRequest();
     request.setDestinationAccountNumber("RB-DEST-002");
@@ -275,7 +279,7 @@ class BankTransactionServiceTest {
     assertEquals(TransactionType.TRANSFER, result.getType());
     assertEquals(TransactionCategory.GROCERY, result.getCategory());
     assertEquals(TransactionStatus.PENDING, result.getStatus());
-    verify(balanceService).recordLedgerEntry(eq(source), any(BankTransaction.class),
+    verify(balanceService).recordLedgerEntry(eq(source), eq(102L), eq(new BigDecimal("200.00")),
         eq(BalanceIndicator.DEBIT));
     verify(eventPublisher).publishEvent(
         any(com.redmath.redbank.transaction.event.TransactionSubmittedEvent.class));
