@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: redbank-backend
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: redbank-backend
+
+  template:
+    metadata:
+      labels:
+        app: redbank-backend
+
+    spec:
+      containers:
+        - name: redbank-backend
+          image: redbank-backend:local
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8080
+
+          envFrom:
+            - configMapRef:
+                name: redbank-backend-config
+
+            - secretRef:
+                name: redbank-backend-secrets
