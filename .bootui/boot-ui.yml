@@ -1,0 +1,5 @@
+# BootUI configuration (developer-local; safe to delete).
+
+dismissedRules:
+  - SEC-METHOD-001
+  - SEC-SESSION-006
