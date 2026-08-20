@@ -1,6 +1,5 @@
 package com.redmath.redbank.statement;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -14,7 +13,6 @@ public class StatementGenerationListener {
 
   private final StatementProcessorService statementProcessorService;
 
-  @SuppressFBWarnings("EI_EXPOSE_REP2")
   public StatementGenerationListener(StatementProcessorService statementProcessorService) {
     this.statementProcessorService = statementProcessorService;
   }
