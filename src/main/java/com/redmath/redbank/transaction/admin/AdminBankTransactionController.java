@@ -113,7 +113,7 @@ public class AdminBankTransactionController {
   public ResponseEntity<AdminBankTransactionDto> rejectTransaction(
       @AuthenticationPrincipal Jwt jwt,
       @PathVariable Long id,
-      @RequestBody(required = false) RejectTransactionRequest request) {
+      @Valid @RequestBody(required = false) RejectTransactionRequest request) {
     Long adminUserId = extractUserId(jwt);
     String reason = request != null && request.getReason() != null
         ? request.getReason() : "Rejected by admin";
