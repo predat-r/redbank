@@ -28,9 +28,7 @@ class EmailServiceTest {
 
   @BeforeEach
   void setUp() {
-    emailService = new EmailService(javaMailSender);
-    ReflectionTestUtils.setField(emailService, "fromEmailAddress", "no-reply@redbank.com");
-    ReflectionTestUtils.setField(emailService, "mailHost", "smtp.redbank.com");
+    emailService = new EmailService(javaMailSender, "no-reply@redbank.com", "smtp.redbank.com");
   }
 
   @Test

@@ -79,7 +79,7 @@ class AdminBalanceServiceTest {
 
     Balance balance = new Balance();
     balance.setAccountHolder(accountHolder);
-    balance.setTransaction(tx);
+    balance.setTransactionId(tx.getId());
     balance.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     balance.setAmount(new BigDecimal("300.00"));
     balance.setIndicator(BalanceIndicator.CREDIT);
@@ -127,7 +127,7 @@ class AdminBalanceServiceTest {
 
     Balance balance = new Balance();
     balance.setAccountHolder(accountHolder);
-    balance.setTransaction(tx);
+    balance.setTransactionId(tx.getId());
     balance.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     balance.setAmount(new BigDecimal("100.00"));
     balance.setIndicator(BalanceIndicator.CREDIT);

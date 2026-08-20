@@ -54,9 +54,6 @@ public interface BalanceRepository extends JpaRepository<Balance, Long> {
   Optional<Balance> findTopByAccountHolderIdAndEntryDateLessThanEqualOrderByEntryDateDescIdDesc(
       Long accountHolderId, OffsetDateTime entryDate);
 
-  @EntityGraph(attributePaths = {"transaction", "transaction.sourceAccountHolder",
-      "transaction.sourceAccountHolder.user", "transaction.destinationAccountHolder",
-      "transaction.destinationAccountHolder.user"})
   List<Balance> findByAccountHolderIdAndEntryDateBetweenOrderByEntryDateAscIdAsc(
       Long accountHolderId, OffsetDateTime from, OffsetDateTime to);
 

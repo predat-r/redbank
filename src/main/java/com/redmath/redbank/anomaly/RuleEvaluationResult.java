@@ -1,5 +1,6 @@
 package com.redmath.redbank.anomaly;
 
+import com.redmath.redbank.transaction.AnomalyFlag;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;

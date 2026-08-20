@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountStatus;
-import com.redmath.redbank.anomaly.AnomalyFlag;
+import com.redmath.redbank.transaction.AnomalyFlag;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.TransactionStatus;
 import com.redmath.redbank.transaction.TransactionType;

@@ -120,7 +120,7 @@ class BankTransactionConcurrencyTest {
 
     Balance initBalance = new Balance();
     initBalance.setAccountHolder(testAccountHolder);
-    initBalance.setTransaction(initTx);
+    initBalance.setTransactionId(initTx.getId());
     initBalance.setEntryDate(OffsetDateTime.now(ZoneOffset.UTC));
     initBalance.setAmount(new BigDecimal("100.00"));
     initBalance.setIndicator(BalanceIndicator.CREDIT);

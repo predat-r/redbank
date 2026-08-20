@@ -1,7 +1,5 @@
 package com.redmath.redbank.user.admin;
 
-import com.redmath.redbank.account.AccountHolder;
-import com.redmath.redbank.account.AccountHolderService;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
@@ -33,13 +31,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RegistrationReviewService {
 
-
   private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "id");
   private final AuditService auditService;
   private final UserService userService;
   private final RoleRepository roleRepository;
   private final UserRoleRepository userRoleRepository;
-  private final AccountHolderService accountHolderService;
+  private final AccountHolderCreator accountHolderCreator;
 
   @Transactional
   public void approveRegistration(Long userId, Long adminUserId) {
@@ -82,10 +79,8 @@ public class RegistrationReviewService {
     auditService.recordAuditLog(adminUserId, AuditAction.REGISTRATION_APPROVED,
         AuditTargetType.USER,
         userId.toString(), null);
-    AccountHolder createdAccount = accountHolderService.createAccountHolder(user);
 
-    auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_CREATED, AuditTargetType.ACCOUNT,
-        createdAccount.getId().toString(), null);
+    accountHolderCreator.createAccountHolder(user, adminUserId);
   }
 
   @Transactional(readOnly = true)

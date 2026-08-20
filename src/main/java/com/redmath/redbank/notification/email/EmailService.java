@@ -16,7 +16,6 @@ import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
   private static final Pattern EMAIL_PATTERN = Pattern.compile(
@@ -24,12 +23,17 @@ public class EmailService {
   );
 
   private final JavaMailSender javaMailSender;
+  private final String fromEmailAddress;
+  private final String mailHost;
 
-  @Value("${spring.mail.username:${app.email.sender:no-reply@redbank.com}}")
-  private String fromEmailAddress;
-
-  @Value("${spring.mail.host:}")
-  private String mailHost;
+  public EmailService(
+      JavaMailSender javaMailSender,
+      @Value("${spring.mail.username:${app.email.sender:no-reply@redbank.com}}") String fromEmailAddress,
+      @Value("${spring.mail.host:}") String mailHost) {
+    this.javaMailSender = javaMailSender;
+    this.fromEmailAddress = fromEmailAddress;
+    this.mailHost = mailHost;
+  }
 
   public boolean sendEmail(EmailMessage emailMessage) {
     return sendEmailWithAttachment(emailMessage, null, null, null);
