@@ -23,7 +23,6 @@ public class AuditService {
   private final AuditActorResolver auditActorResolver;
 
   @Async("auditTaskExecutor")
-  @Transactional
   public void recordAuditLog(Long actorUserId, AuditAction action, AuditTargetType targetType,
       String targetIdentifier, String details) {
     if (actorUserId == null) {
