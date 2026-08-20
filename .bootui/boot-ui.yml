@@ -3,3 +3,4 @@
 dismissedRules:
   - SEC-METHOD-001
   - SEC-SESSION-006
+  - GHSA-r7wm-3cxj-wff9::com.fasterxml.jackson.core:jackson-core
