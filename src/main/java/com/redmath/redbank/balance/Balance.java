@@ -1,7 +1,6 @@
 package com.redmath.redbank.balance;
 
 import com.redmath.redbank.account.AccountHolder;
-import com.redmath.redbank.transaction.BankTransaction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,7 +8,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -25,15 +26,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "balance")
+@Table(name = "balance", indexes = {
+    @Index(name = "idx_balance_transaction_id", columnList = "transaction_id")
+})
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Balance {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "balance_seq")
+  @SequenceGenerator(name = "balance_seq", sequenceName = "balance_id_seq", allocationSize = 50)
   private Long id;
-
 
   @NotNull
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -41,9 +44,8 @@ public class Balance {
   private AccountHolder accountHolder;
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "transaction_id", nullable = false)
-  private BankTransaction transaction;
+  @Column(name = "transaction_id", nullable = false)
+  private Long transactionId;
 
   @NotNull
   @Column(name = "entry_date", nullable = false)

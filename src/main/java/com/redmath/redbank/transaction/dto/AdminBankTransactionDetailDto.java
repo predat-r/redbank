@@ -2,7 +2,7 @@ package com.redmath.redbank.transaction.dto;
 
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountStatus;
-import com.redmath.redbank.anomaly.AnomalyFlag;
+import com.redmath.redbank.transaction.AnomalyFlag;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.TransactionCategory;
 import com.redmath.redbank.transaction.TransactionStatus;

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -29,11 +30,11 @@ public class StatementController {
     this.accountHolderService = accountHolderService;
   }
 
-  @PostMapping
+  @PostMapping(consumes = "application/json")
   @Operation(summary = "Request a bank statement (delivered asynchronously via email)")
   public ResponseEntity<StatementResponse> requestStatement(
       @AuthenticationPrincipal Jwt jwt,
-      @RequestBody StatementRequest request) {
+      @Valid @RequestBody StatementRequest request) {
     Long userId = jwt.getClaim("userId");
     AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(userId);
     StatementResponse response = statementRequestService.requestStatement(request, accountHolder.getId());

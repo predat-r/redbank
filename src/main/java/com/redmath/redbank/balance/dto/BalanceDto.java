@@ -27,7 +27,7 @@ public class BalanceDto {
     dto.id = balance.getId();
     dto.accountHolderId =
         balance.getAccountHolder() != null ? balance.getAccountHolder().getId() : null;
-    dto.transactionId = balance.getTransaction() != null ? balance.getTransaction().getId() : null;
+    dto.transactionId = balance.getTransactionId();
     dto.entryDate = balance.getEntryDate();
     dto.amount = balance.getAmount() != null ? balance.getAmount() : BigDecimal.ZERO;
     dto.indicator = balance.getIndicator();

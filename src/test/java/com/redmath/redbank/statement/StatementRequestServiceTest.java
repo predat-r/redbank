@@ -15,8 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class StatementRequestServiceTest {
@@ -53,9 +51,9 @@ class StatementRequestServiceTest {
   @Test
   void shouldThrowWhenDatesAreNull() {
     StatementRequest request = new StatementRequest();
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
         () -> statementRequestService.requestStatement(request, 10L));
-    assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    assertEquals("fromDate and toDate are required.", ex.getMessage());
   }
 
   @Test
@@ -64,9 +62,9 @@ class StatementRequestServiceTest {
     request.setFromDate(LocalDate.now());
     request.setToDate(LocalDate.now().minusDays(1));
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
         () -> statementRequestService.requestStatement(request, 10L));
-    assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    assertEquals("fromDate cannot be after toDate.", ex.getMessage());
   }
 
   @Test
@@ -75,9 +73,9 @@ class StatementRequestServiceTest {
     request.setFromDate(LocalDate.now());
     request.setToDate(LocalDate.now().plusDays(1));
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
         () -> statementRequestService.requestStatement(request, 10L));
-    assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    assertEquals("toDate cannot be in the future.", ex.getMessage());
   }
 
   @Test
@@ -86,8 +84,8 @@ class StatementRequestServiceTest {
     request.setFromDate(LocalDate.now().minusDays(400));
     request.setToDate(LocalDate.now());
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
         () -> statementRequestService.requestStatement(request, 10L));
-    assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    assertEquals("Date range cannot exceed 366 days.", ex.getMessage());
   }
 }

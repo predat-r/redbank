@@ -8,13 +8,17 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
 
 @Getter
 @Entity
@@ -22,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "user_roles")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class UserRole {
+public class UserRole implements Persistable<UserRoleId> {
 
   @EmbeddedId
   private UserRoleId id;
@@ -39,4 +43,19 @@ public class UserRole {
 
   @Column(name = "assigned_at", nullable = false)
   private Instant assignedAt;
+
+  @Transient
+  @Builder.Default
+  private boolean isNew = true;
+
+  @Override
+  public boolean isNew() {
+    return isNew;
+  }
+
+  @PostPersist
+  @PostLoad
+  void markNotNew() {
+    this.isNew = false;
+  }
 }

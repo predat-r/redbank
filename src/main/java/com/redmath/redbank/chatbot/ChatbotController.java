@@ -21,7 +21,7 @@ public class ChatbotController {
     this.chatbotService = chatbotService;
   }
 
-  @PostMapping
+  @PostMapping(consumes = "application/json")
   @PreAuthorize("hasRole('ACCOUNT_HOLDER')")
   public ChatResponse chat(@Valid @RequestBody ChatRequest request,
       @AuthenticationPrincipal Jwt jwt) {

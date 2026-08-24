@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.redmath.redbank.common.MockMvcSecurityTestConfig;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserRepository;
 import java.time.Instant;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@Import(MockMvcSecurityTestConfig.class)
 class AuditLogEndpointTests {
 
   private static final String ADMIN_EMAIL = "admin@redbank.com";
@@ -160,7 +163,7 @@ class AuditLogEndpointTests {
       String details
   ) {
     AuditLog auditLog = AuditLog.builder()
-        .actor(adminUser())
+        .actorUserId(adminUserId())
         .action(action)
         .targetType(targetType)
         .targetIdentifier(targetIdentifier)

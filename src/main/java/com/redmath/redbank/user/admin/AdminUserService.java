@@ -1,9 +1,5 @@
 package com.redmath.redbank.user.admin;
 
-import com.redmath.redbank.account.AccountHolder;
-import com.redmath.redbank.account.AccountHolderService;
-import com.redmath.redbank.account.admin.AdminAccountHolderService;
-import com.redmath.redbank.account.dto.AccountHolderDto;
 import com.redmath.redbank.audit.AuditAction;
 import com.redmath.redbank.audit.AuditService;
 import com.redmath.redbank.audit.AuditTargetType;
@@ -16,6 +12,7 @@ import com.redmath.redbank.user.UserService;
 import com.redmath.redbank.user.UserStatus;
 import com.redmath.redbank.user.admin.dto.AdminUserResponse;
 import com.redmath.redbank.user.admin.dto.CreateUserRequest;
+import com.redmath.redbank.user.admin.dto.AccountHolderSummaryDto;
 import com.redmath.redbank.user.admin.dto.CreateUserResponse;
 import com.redmath.redbank.user.admin.dto.UpdateUserRequest;
 import com.redmath.redbank.user.role.Role;
@@ -45,8 +42,7 @@ public class AdminUserService {
   private final PasswordEncoder passwordEncoder;
   private final RoleRepository roleRepository;
   private final UserRoleRepository userRoleRepository;
-  private final AccountHolderService accountHolderService;
-  private final AdminAccountHolderService adminAccountHolderService;
+  private final AccountHolderCreator accountHolderCreator;
   private final AuditService auditService;
 
   @Transactional
@@ -74,14 +70,12 @@ public class AdminUserService {
 
     User savedUser = userService.save(user);
     assignAccountHolderRole(savedUser, now);
-    AccountHolder accountHolder = accountHolderService.createAccountHolder(savedUser);
+    AccountHolderSummaryDto accountHolder = accountHolderCreator.createAccountHolder(savedUser, adminUserId);
 
     auditService.recordAuditLog(adminUserId, AuditAction.USER_CREATED, AuditTargetType.USER,
         savedUser.getId().toString(), null);
-    auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_CREATED, AuditTargetType.ACCOUNT,
-        accountHolder.getId().toString(), null);
 
-    return new CreateUserResponse(toResponse(savedUser), AccountHolderDto.from(accountHolder));
+    return new CreateUserResponse(toResponse(savedUser), accountHolder);
   }
 
   @Transactional(readOnly = true)
@@ -124,15 +118,13 @@ public class AdminUserService {
   @Transactional
   public void deactivateUser(Long adminUserId, Long userId) {
     requireActiveAdmin(adminUserId);
-    User user = userService.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
+    userService.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
 
     if (!userService.deactivateUser(userId)) {
       return;
     }
 
-    accountHolderService.findByUser(user)
-        .ifPresent(accountHolder -> adminAccountHolderService.deactivateAccountHolder(
-            accountHolder.getId(), adminUserId));
+    accountHolderCreator.deactivateAccountHolder(userId, adminUserId);
     auditService.recordAuditLog(adminUserId, AuditAction.USER_DEACTIVATED,
         AuditTargetType.USER, userId.toString(), null);
   }
@@ -140,15 +132,13 @@ public class AdminUserService {
   @Transactional
   public void reactivateUser(Long adminUserId, Long userId) {
     requireActiveAdmin(adminUserId);
-    User user = userService.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
+    userService.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
 
     if (!userService.reactivateUser(userId)) {
       return;
     }
 
-    accountHolderService.findByUser(user)
-        .ifPresent(accountHolder -> adminAccountHolderService.reactivateAccountHolder(
-            accountHolder.getId(), adminUserId));
+    accountHolderCreator.reactivateAccountHolder(userId, adminUserId);
     auditService.recordAuditLog(adminUserId, AuditAction.USER_ACTIVATED,
         AuditTargetType.USER, userId.toString(), null);
   }

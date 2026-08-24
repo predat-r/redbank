@@ -123,7 +123,7 @@ class BalanceQueryServiceTest {
   private void createBalance(BankTransaction tx, OffsetDateTime date, BigDecimal amount) {
     Balance balance = new Balance();
     balance.setAccountHolder(tx.getSourceAccountHolder());
-    balance.setTransaction(tx);
+    balance.setTransactionId(tx.getId());
     balance.setEntryDate(date);
     balance.setAmount(amount);
     balance.setIndicator(BalanceIndicator.CREDIT);

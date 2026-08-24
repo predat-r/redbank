@@ -77,6 +77,15 @@ public class AdminAccountHolderService {
 
   @Transactional
   public void unfreezeAccountHolder(Long accountId, Long adminUserId) {
+    doUnfreezeOrReactivate(accountId, adminUserId);
+  }
+
+  @Transactional
+  public void reactivateAccountHolder(Long accountId, Long adminUserId) {
+    doUnfreezeOrReactivate(accountId, adminUserId);
+  }
+
+  private void doUnfreezeOrReactivate(Long accountId, Long adminUserId) {
     AccountHolder accountHolder = getOrThrow(accountId);
 
     if (accountHolder.getAccountStatus() == AccountStatus.ACTIVE) {
@@ -96,11 +105,6 @@ public class AdminAccountHolderService {
 
     auditService.recordAuditLog(adminUserId, AuditAction.ACCOUNT_ACTIVATED,
         AuditTargetType.ACCOUNT, accountId.toString(), null);
-  }
-
-  @Transactional
-  public void reactivateAccountHolder(Long accountId, Long adminUserId) {
-    unfreezeAccountHolder(accountId, adminUserId);
   }
 
   private AccountHolder getOrThrow(Long accountId) {
