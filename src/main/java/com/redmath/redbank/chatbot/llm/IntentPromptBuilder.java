@@ -15,7 +15,7 @@ public final class IntentPromptBuilder {
         
           Schema:
           {
-            "queryType": "TRANSACTION_AGGREGATE" | "BALANCE_AT_DATE" | "PROJECTION" | "ADVICE_REQUEST" | "UNSUPPORTED",
+            "queryType": "TRANSACTION_AGGREGATE" | "BALANCE_AT_DATE" | "PROJECTION" | "ADVICE_REQUEST" | "UNSUPPORTED" | "GREETING",
             "metric": "SUM" | "COUNT" | "AVERAGE" | null,
             "direction": "DEBIT" | "CREDIT" | "BOTH" | null,
             "category": one of [FOOD, GROCERY, DONATION, BILLS, ENTERTAINMENT, SHOPPING, HEALTH,TRANSPORT,EDUCATION,INVESTMENT,OTHER;] or null,
@@ -46,6 +46,7 @@ public final class IntentPromptBuilder {
           - "What will my balance be by end of month" / projections -> queryType PROJECTION.
           - Any question asking for a recommendation, opinion, or "should I..." -> queryType ADVICE_REQUEST.
             Do NOT attempt to answer these yourself.
+          - Normal greetings like "Hi", "Hello", "How are you" -> queryType GREETING.
           - If the date range is ambiguous or missing and cannot be reasonably inferred, set
             needsClarification=true and write a short clarificationQuestion.
           - If the question doesn't relate to the user's own financial data at all, use UNSUPPORTED.
