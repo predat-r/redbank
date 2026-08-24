@@ -88,8 +88,15 @@ public class ChatbotService {
       case BALANCE_AT_DATE -> handleBalanceAtDate(intent, accountHolderId);
       case PROJECTION -> handleProjection(accountHolderId, message, conversationId);
       case TRANSACTION_LOOKUP -> handleTransactionLookup(intent, accountHolderId);
+      case GREETING -> handleGreeting(message, conversationId);
       case null, default -> new ChatResponse("Sorry, I couldn't process that question.", false);
     };
+  }
+
+  private ChatResponse handleGreeting(String originalMessage, String conversationId) {
+    String rawFacts = "The user is greeting you. Reply warmly and ask how you can help them with their banking.";
+    String naturalReply = llmClient.phraseAnswer(originalMessage, rawFacts, conversationId);
+    return new ChatResponse(naturalReply, false);
   }
 
   private ChatResponse handleTransactionAggregate(FinancialQueryIntent intent,

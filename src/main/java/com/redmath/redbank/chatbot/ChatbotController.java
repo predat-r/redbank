@@ -30,6 +30,7 @@ public class ChatbotController {
       throw new IllegalArgumentException("Authenticated user is required");
     }
 
-    return chatbotService.handle(request.getMessage(), userId);
+    ChatResponse response = chatbotService.handle(request.getMessage(), userId);
+    return response;
   }
 }
