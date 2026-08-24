@@ -36,7 +36,6 @@
   <properties>
     <bootui-spring-boot-starter.version>1.14.0</bootui-spring-boot-starter.version>
     <bucket4j-core.version>8.10.1</bucket4j-core.version>
-    <cucumber.version>7.34.5</cucumber.version>
     <datasource-micrometer.version>2.2.1</datasource-micrometer.version>
     <findsecbugs.version>1.14.0</findsecbugs.version>
     <jacoco.version>0.8.15</jacoco.version>
@@ -76,10 +75,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -158,10 +153,6 @@
       <groupId>org.springframework.ai</groupId>
       <artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.ai</groupId>
-      <artifactId>spring-ai-vector-store-advisor</artifactId>
-    </dependency>
 
     <!-- Email and document generation -->
     <dependency>
@@ -207,22 +198,7 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-hazelcast-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-opentelemetry-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security-oauth2-client-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -235,32 +211,10 @@
       <artifactId>spring-boot-starter-webmvc-test</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-java</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-junit-platform-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-spring</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>io.cucumber</groupId>
-        <artifactId>cucumber-bom</artifactId>
-        <version>${cucumber.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
       <dependency>
         <groupId>org.springframework.ai</groupId>
         <artifactId>spring-ai-bom</artifactId>
