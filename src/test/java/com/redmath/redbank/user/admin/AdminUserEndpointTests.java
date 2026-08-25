@@ -1,7 +1,5 @@
 package com.redmath.redbank.user.admin;
 
-import com.redmath.redbank.common.MockMvcSecurityTestConfig;
-
 import static com.redmath.redbank.common.AuthUtilities.withAccountHolder;
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +15,7 @@ import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountHolderRepository;
 import com.redmath.redbank.account.AccountStatus;
 import com.redmath.redbank.auth.dto.RegisterRequest;
+import com.redmath.redbank.common.MockMvcSecurityTestConfig;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserRepository;
 import com.redmath.redbank.user.UserStatus;
@@ -29,10 +28,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;

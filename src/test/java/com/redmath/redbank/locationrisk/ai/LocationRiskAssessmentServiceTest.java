@@ -6,9 +6,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.redmath.redbank.locationrisk.assessment.AssessmentConfidence;
 import com.redmath.redbank.locationrisk.assessment.LocationRiskAssessment;
 import com.redmath.redbank.locationrisk.assessment.LocationRiskAssessmentService;
-import com.redmath.redbank.locationrisk.assessment.AssessmentConfidence;
 import com.redmath.redbank.locationrisk.assessment.RecommendedAction;
 import com.redmath.redbank.locationrisk.assessment.RiskLevel;
 import com.redmath.redbank.locationrisk.geolocation.IpGeolocationResult;

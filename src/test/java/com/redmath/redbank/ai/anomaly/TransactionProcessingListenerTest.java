@@ -1,16 +1,15 @@
 package com.redmath.redbank.ai.anomaly;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.redmath.redbank.anomaly.AnomalyAnalysisService;
 import com.redmath.redbank.anomaly.AnomalyDetectionService;
-import com.redmath.redbank.transaction.AnomalyFlag;
 import com.redmath.redbank.anomaly.RuleEvaluationResult;
 import com.redmath.redbank.anomaly.TransactionProcessingListener;
+import com.redmath.redbank.transaction.AnomalyFlag;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;
 import com.redmath.redbank.transaction.BankTransactionService;

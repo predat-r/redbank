@@ -6,16 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.anomaly.AnomalyAnalysisService;
-import com.redmath.redbank.transaction.AnomalyFlag;
 import com.redmath.redbank.anomaly.AnomalyReport;
 import com.redmath.redbank.anomaly.AnomalyReportRepository;
 import com.redmath.redbank.anomaly.RuleEvaluationResult;
 import com.redmath.redbank.common.exception.ResourceNotFoundException;
+import com.redmath.redbank.transaction.AnomalyFlag;
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;
 import com.redmath.redbank.transaction.TransactionCategory;

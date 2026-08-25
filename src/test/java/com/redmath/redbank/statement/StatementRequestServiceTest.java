@@ -2,7 +2,6 @@ package com.redmath.redbank.statement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import com.redmath.redbank.statement.dto.StatementRequest;

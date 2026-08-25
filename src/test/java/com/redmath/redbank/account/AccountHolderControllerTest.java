@@ -3,13 +3,13 @@ package com.redmath.redbank.account;
 import static com.redmath.redbank.common.AuthUtilities.withAccountHolder;
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static com.redmath.redbank.common.AuthUtilities.withPendingUser;
-import com.redmath.redbank.common.MockMvcSecurityTestConfig;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.redmath.redbank.common.MockMvcSecurityTestConfig;
 import com.redmath.redbank.user.User;
 import com.redmath.redbank.user.UserRepository;
 import com.redmath.redbank.user.UserStatus;
@@ -21,9 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
