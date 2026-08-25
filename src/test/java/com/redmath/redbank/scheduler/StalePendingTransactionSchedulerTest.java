@@ -1,7 +1,5 @@
 package com.redmath.redbank.scheduler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -9,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.redmath.redbank.transaction.BankTransaction;
 import com.redmath.redbank.transaction.BankTransactionRepository;
+import com.redmath.redbank.transaction.BankTransactionService;
 import com.redmath.redbank.transaction.TransactionStatus;
 import com.redmath.redbank.transaction.TransactionType;
 import java.math.BigDecimal;
@@ -21,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.redmath.redbank.transaction.BankTransactionService;
 
 @ExtendWith(MockitoExtension.class)
 class StalePendingTransactionSchedulerTest {

@@ -1,7 +1,5 @@
 package com.redmath.redbank.auth;
 
-import com.redmath.redbank.common.MockMvcSecurityTestConfig;
-
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static com.redmath.redbank.common.AuthUtilities.withPendingUser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,6 +15,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.redmath.redbank.auth.dto.ChangePasswordRequest;
 import com.redmath.redbank.auth.dto.LoginRequest;
 import com.redmath.redbank.auth.dto.RegisterRequest;
+import com.redmath.redbank.common.MockMvcSecurityTestConfig;
 import com.redmath.redbank.user.UserRepository;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
@@ -25,11 +24,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;

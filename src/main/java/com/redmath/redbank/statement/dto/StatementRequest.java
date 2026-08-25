@@ -1,7 +1,7 @@
 package com.redmath.redbank.statement.dto;
 
-import java.time.LocalDate;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 

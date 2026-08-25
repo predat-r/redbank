@@ -1,7 +1,5 @@
 package com.redmath.redbank.transaction;
 
-import com.redmath.redbank.common.MockMvcSecurityTestConfig;
-
 import static com.redmath.redbank.common.AuthUtilities.withAccountHolder;
 import static com.redmath.redbank.common.AuthUtilities.withAdmin;
 import static com.redmath.redbank.common.AuthUtilities.withPendingUser;
@@ -15,6 +13,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.redmath.redbank.account.AccountHolder;
 import com.redmath.redbank.account.AccountHolderRepository;
 import com.redmath.redbank.auth.dto.RegisterRequest;
+import com.redmath.redbank.common.MockMvcSecurityTestConfig;
 import com.redmath.redbank.transaction.request.DepositRequest;
 import com.redmath.redbank.transaction.request.TransferRequest;
 import com.redmath.redbank.transaction.request.WithdrawalRequest;
@@ -28,10 +27,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;

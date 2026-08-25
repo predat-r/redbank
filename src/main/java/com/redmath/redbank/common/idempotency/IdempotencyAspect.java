@@ -1,6 +1,7 @@
 package com.redmath.redbank.common.idempotency;
 
 import com.redmath.redbank.common.exception.ConflictException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +15,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @Slf4j
 @Aspect
