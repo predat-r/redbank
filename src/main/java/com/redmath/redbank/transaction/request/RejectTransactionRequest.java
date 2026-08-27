@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RejectTransactionRequest {
+
   @Size(max = 500, message = "Reason must not exceed 500 characters")
   private String reason;
 }

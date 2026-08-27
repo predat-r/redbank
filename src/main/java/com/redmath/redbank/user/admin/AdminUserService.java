@@ -70,7 +70,8 @@ public class AdminUserService {
 
     User savedUser = userService.save(user);
     assignAccountHolderRole(savedUser, now);
-    AccountHolderSummaryDto accountHolder = accountHolderCreator.createAccountHolder(savedUser, adminUserId);
+    AccountHolderSummaryDto accountHolder = accountHolderCreator.createAccountHolder(savedUser,
+        adminUserId);
 
     auditService.recordAuditLog(adminUserId, AuditAction.USER_CREATED, AuditTargetType.USER,
         savedUser.getId().toString(), null);

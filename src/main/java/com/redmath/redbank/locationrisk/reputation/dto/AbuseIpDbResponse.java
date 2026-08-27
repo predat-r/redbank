@@ -24,6 +24,7 @@ public record AbuseIpDbResponse(
 
       List<Report> reports
   ) {
+
     public Data {
       reports = reports == null ? List.of() : List.copyOf(reports);
     }
@@ -32,6 +33,7 @@ public record AbuseIpDbResponse(
   public record Report(
       List<Integer> categories
   ) {
+
     public Report {
       categories = categories == null ? List.of() : List.copyOf(categories);
     }

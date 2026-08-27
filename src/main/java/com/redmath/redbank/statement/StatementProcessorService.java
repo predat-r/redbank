@@ -73,7 +73,8 @@ public class StatementProcessorService {
     java.util.Map<Long, BankTransaction> transactionMap = txIds.isEmpty()
         ? java.util.Collections.emptyMap()
         : bankTransactionRepository.findAllById(txIds).stream()
-            .collect(java.util.stream.Collectors.toMap(BankTransaction::getId, java.util.function.Function.identity()));
+            .collect(java.util.stream.Collectors.toMap(BankTransaction::getId,
+                java.util.function.Function.identity()));
 
     BigDecimal totalCredits = BigDecimal.ZERO;
     BigDecimal totalDebits = BigDecimal.ZERO;
@@ -104,7 +105,9 @@ public class StatementProcessorService {
           .dateTime(b.getEntryDate())
           .reference(transaction != null ? transaction.getTransactionReference() : "")
           .type(transaction != null ? transaction.getType().name() : "")
-          .category(transaction != null && transaction.getCategory() != null ? transaction.getCategory().name() : "")
+          .category(
+              transaction != null && transaction.getCategory() != null ? transaction.getCategory()
+                  .name() : "")
           .counterparty(counterpartyName)
           .status(transaction != null ? transaction.getStatus().name() : "")
           .amount(b.getIndicator() == BalanceIndicator.CREDIT ? b.getAmount()

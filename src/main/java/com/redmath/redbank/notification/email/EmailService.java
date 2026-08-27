@@ -38,7 +38,8 @@ public class EmailService {
     return sendEmailWithAttachment(emailMessage, null, null, null);
   }
 
-  public boolean sendEmailWithAttachment(EmailMessage emailMessage, String attachmentFileName, byte[] attachmentBytes, String attachmentContentType) {
+  public boolean sendEmailWithAttachment(EmailMessage emailMessage, String attachmentFileName,
+      byte[] attachmentBytes, String attachmentContentType) {
     // Silently skip if email configuration (username/host) is missing or default placeholder
     if (!isEmailConfigured()) {
       log.debug("Email sending skipped: SMTP username or host configuration is incomplete.");
@@ -76,9 +77,12 @@ public class EmailService {
         }
       }
 
-      if (StringUtils.hasText(attachmentFileName) && attachmentBytes != null && attachmentBytes.length > 0) {
-        String contentType = StringUtils.hasText(attachmentContentType) ? attachmentContentType : "application/pdf";
-        helper.addAttachment(attachmentFileName, new ByteArrayResource(attachmentBytes), contentType);
+      if (StringUtils.hasText(attachmentFileName) && attachmentBytes != null
+          && attachmentBytes.length > 0) {
+        String contentType =
+            StringUtils.hasText(attachmentContentType) ? attachmentContentType : "application/pdf";
+        helper.addAttachment(attachmentFileName, new ByteArrayResource(attachmentBytes),
+            contentType);
       }
 
       javaMailSender.send(message);

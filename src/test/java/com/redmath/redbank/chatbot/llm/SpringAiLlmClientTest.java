@@ -12,6 +12,7 @@ import com.redmath.redbank.chatbot.dto.FinancialQueryIntent;
 import com.redmath.redbank.chatbot.dto.LlmIntentOutput;
 import com.redmath.redbank.chatbot.enums.QueryType;
 import java.time.LocalDate;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,12 +25,14 @@ class SpringAiLlmClientTest {
   private ChatClient intentChatClient;
   private ChatClient conversationChatClient;
   private SpringAiLlmClient llmClient;
+  private ObjectMapper objectMapper;
 
   @BeforeEach
   void setUp() {
     intentChatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
     conversationChatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
-    llmClient = new SpringAiLlmClient(intentChatClient, conversationChatClient);
+    objectMapper = new ObjectMapper();
+    llmClient = new SpringAiLlmClient(intentChatClient, conversationChatClient, objectMapper);
   }
 
   @Test
