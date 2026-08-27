@@ -12,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LlmIntentOutput {
+
   private QueryType queryType;
   private Metric metric;
   private Direction direction;

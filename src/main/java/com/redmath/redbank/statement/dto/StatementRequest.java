@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class StatementRequest {
+
   @NotNull(message = "From date is required")
   private LocalDate fromDate;
   @NotNull(message = "To date is required")

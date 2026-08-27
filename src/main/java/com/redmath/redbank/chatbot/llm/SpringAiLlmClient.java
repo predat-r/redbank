@@ -35,11 +35,15 @@ public class SpringAiLlmClient implements LlmClient {
    */
   private final ChatClient conversationChatClient;
 
+  private final ObjectMapper objectMapper;
+
   public SpringAiLlmClient(
       @Qualifier("intentChatClient") ChatClient intentChatClient,
-      @Qualifier("conversationChatClient") ChatClient conversationChatClient) {
+      @Qualifier("conversationChatClient") ChatClient conversationChatClient,
+      ObjectMapper objectMapper) {
     this.intentChatClient = intentChatClient;
     this.conversationChatClient = conversationChatClient;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -47,7 +51,8 @@ public class SpringAiLlmClient implements LlmClient {
       String conversationId) {
     String systemPrompt = IntentPromptBuilder.buildSystemPrompt(today);
 
-    String convId = (conversationId != null && !conversationId.isBlank()) ? conversationId : "default";
+    String convId =
+        (conversationId != null && !conversationId.isBlank()) ? conversationId : "default";
 
     // intentChatClient uses memory so it can handle follow-up questions
     LlmIntentOutput output = intentChatClient.prompt()
@@ -110,8 +115,7 @@ public class SpringAiLlmClient implements LlmClient {
         .content();
 
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode node = mapper.readTree(response);
+      JsonNode node = objectMapper.readTree(response);
       if (node.has("response")) {
         return node.get("response").asText();
       }

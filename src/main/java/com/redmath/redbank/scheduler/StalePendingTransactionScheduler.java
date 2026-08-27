@@ -51,7 +51,9 @@ public class StalePendingTransactionScheduler {
         });
 
     if (log.isInfoEnabled()) {
-      log.info("Stale pending transaction cleanup completed: {} transactions cancelled and reversed", count[0]);
+      log.info(
+          "Stale pending transaction cleanup completed: {} transactions cancelled and reversed",
+          count[0]);
     }
   }
 }

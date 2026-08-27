@@ -12,19 +12,20 @@ import lombok.Setter;
 @Setter
 @Builder
 public class StatementData {
+
   private String accountHolderName;
   private String accountNumber;
   private String address;
   private String currency;
   private LocalDate fromDate;
   private LocalDate toDate;
-  
+
   private BigDecimal openingBalance;
   private BigDecimal closingBalance;
   private BigDecimal totalCredits;
   private BigDecimal totalDebits;
   private int transactionCount;
-  
+
   private OffsetDateTime generationTimestamp;
 
   private List<StatementTransactionData> transactions;
@@ -33,6 +34,7 @@ public class StatementData {
   @Setter
   @Builder
   public static class StatementTransactionData {
+
     private OffsetDateTime dateTime;
     private String reference;
     private String type;

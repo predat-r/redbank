@@ -25,7 +25,8 @@ public class StatementController {
   private final StatementRequestService statementRequestService;
   private final AccountHolderService accountHolderService;
 
-  public StatementController(StatementRequestService statementRequestService, AccountHolderService accountHolderService) {
+  public StatementController(StatementRequestService statementRequestService,
+      AccountHolderService accountHolderService) {
     this.statementRequestService = statementRequestService;
     this.accountHolderService = accountHolderService;
   }
@@ -37,7 +38,8 @@ public class StatementController {
       @Valid @RequestBody StatementRequest request) {
     Long userId = jwt.getClaim("userId");
     AccountHolder accountHolder = accountHolderService.getAccountHolderByUserId(userId);
-    StatementResponse response = statementRequestService.requestStatement(request, accountHolder.getId());
+    StatementResponse response = statementRequestService.requestStatement(request,
+        accountHolder.getId());
     return ResponseEntity.ok(response);
   }
 }

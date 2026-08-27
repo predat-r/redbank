@@ -19,8 +19,10 @@ public class StatementEmailServiceImpl implements StatementEmailService {
   private final EmailTemplateService emailTemplateService;
 
   @Override
-  public void sendStatement(AccountHolder accountHolder, byte[] pdfBytes, LocalDate fromDate, LocalDate toDate) {
-    if (accountHolder == null || accountHolder.getUser() == null || !StringUtils.hasText(accountHolder.getUser().getEmail())) {
+  public void sendStatement(AccountHolder accountHolder, byte[] pdfBytes, LocalDate fromDate,
+      LocalDate toDate) {
+    if (accountHolder == null || accountHolder.getUser() == null || !StringUtils.hasText(
+        accountHolder.getUser().getEmail())) {
       log.warn("Cannot send statement email: account holder or recipient email is missing");
       return;
     }
@@ -29,7 +31,8 @@ public class StatementEmailServiceImpl implements StatementEmailService {
     String recipientName = accountHolder.getUser().getName();
     String accountNumber = accountHolder.getAccountNumber();
 
-    String htmlBody = emailTemplateService.buildStatementCompletedHtml(recipientName, accountNumber, fromDate, toDate);
+    String htmlBody = emailTemplateService.buildStatementCompletedHtml(recipientName, accountNumber,
+        fromDate, toDate);
     String subject = String.format("RedBank: Account Statement (%s to %s)", fromDate, toDate);
     String filename = String.format("Statement_%s_%s_to_%s.pdf", accountNumber, fromDate, toDate);
 

@@ -50,6 +50,7 @@ public interface AccountHolderRepository extends JpaRepository<AccountHolder, Lo
       AND ah.id != :myId
       AND LOWER(ah.user.name) LIKE LOWER(CONCAT('%', :name, '%'))
       """)
-  java.util.List<AccountHolder> findTransactedCounterparties(@Param("myId") Long myId, @Param("name") String name);
+  java.util.List<AccountHolder> findTransactedCounterparties(@Param("myId") Long myId,
+      @Param("name") String name);
 }
 
